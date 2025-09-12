@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Notification</title>
+</head>
+<body>
+    <p>Bonjour</p>
+    <p>Une erreur est intervenue pendant l'exécution de la pipeline "{{ pipeline_name }}".</p>
+    {% include "./dag_info.html" %}
+    {% if error_msg %}
+        <h4>Description de l'erreur:</h3>
+        <pre>{{ error_msg }}</pre>
+    {% endif %}
+    <p>Si vous recevez ce mail alors que vous n'avez effectué aucune action, merci de l'ignorer.</p>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Notification</title>
+</head>
+<body>
+    <p>Bonjour</p>
+    <p>La pipeline "{{ pipeline_name }}" a été entièrement exécutée.</p>
+    {% include "./dag_info.html" %}
+    <p>Vos données sont désormails disponibles dans votre tableau de bord.</p>
+</body>
+</html>
