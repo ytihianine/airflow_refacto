@@ -1,6 +1,6 @@
 import pandas as pd
 
-from utils.api_client.base import AbstractApiClient
+from infra.http_client.base import AbstractApiClient
 
 
 class GristAPI:

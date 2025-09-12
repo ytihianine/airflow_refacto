@@ -3,7 +3,7 @@ from datetime import timedelta
 from airflow.decorators import task
 from airflow.models import Variable
 
-from utils.api_client.adapters import HttpxAPIClient
+from infra.http_client.adapters import HttpxAPIClient
 from utils.file_handler import MinioFileHandler
 from utils.grist import GristAPI
 from utils.common.config_func import get_storage_rows
