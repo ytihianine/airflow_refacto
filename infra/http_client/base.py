@@ -5,17 +5,6 @@ from typing import Any, Dict, Optional, Union
 from urllib.parse import urljoin
 
 from .config import ClientConfig
-from .exceptions import (
-    APIError,
-    AuthenticationError,
-    AuthorizationError,
-    ConnectionError,
-    HTTPClientError,
-    RateLimitError,
-    RequestError,
-    ResponseError,
-    TimeoutError,
-)
 
 ResponseType = Union[Dict[str, Any], str, bytes]
 

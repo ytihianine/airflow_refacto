@@ -3,12 +3,13 @@ from datetime import timedelta
 from airflow.decorators import task
 from airflow.models import Variable
 
-from infra.http_client.adapters import HttpxAPIClient
-from utils.file_handler import MinioFileHandler
+from infra.file_handling.s3 import S3FileHandler
+from infra.http_client.adapters import RequestsClient
+from infra.http_client.config import ClientConfig
 from utils.grist import GristAPI
-from utils.common.config_func import get_storage_rows
+from utils.config.tasks import get_selecteur_config
 
-from utils.common.vars import PROXY, AGENT
+from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID, PROXY, AGENT
 
 
 def clean_sql_tables(input_file: str, output_file: str) -> None:
@@ -104,26 +105,32 @@ def generate_sql_tbl_script(
 
 @task(task_id="download_grist_doc_to_s3", retries=1, retry_delay=timedelta(seconds=20))
 def download_grist_doc_to_s3(
+    selecteur: str,
     workspace_id: str,
     doc_id_key: str,
-    s3_filepath: str = None,
-    nom_projet: str = None,
-    selecteur: str = None,
     grist_host: str = "https://grist.numerique.gouv.fr",
     api_token_key: str = "grist_secret_key",
     http_client_over_internet: bool = True,
     **context,
 ) -> None:
     """Download SQLite from a specific Grist doc to S3"""
+    params = context.get("params", {})
+    nom_projet = params.get("nom_projet")
+    if not nom_projet:
+        raise ValueError("Project name must be provided in DAG parameters!")
+
+    selecteur_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
 
     # Instanciate Grist client
     if http_client_over_internet:
-        httpx_client = HttpxAPIClient(proxy=PROXY, user_agent=AGENT)
+        http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
+        request_client = RequestsClient(config=http_config)
     else:
-        httpx_client = HttpxAPIClient()
+        http_config = ClientConfig()
+        request_client = RequestsClient(config=http_config)
 
-    grist_api_client = GristAPI(
-        api_client=httpx_client,
+    grist_client = GristAPI(
+        http_client=request_client,
         base_url=grist_host,
         workspace_id=workspace_id,
         doc_id=Variable.get(doc_id_key),
@@ -131,24 +138,17 @@ def download_grist_doc_to_s3(
     )
 
     # Hooks
-    s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-    # Variables
-    if nom_projet is not None and selecteur is not None:
-        s3_filepath = (
-            get_storage_rows(nom_projet=nom_projet, selecteur=selecteur).loc[
-                0, "filepath_s3"
-            ]
-            + ".db"
-        )
+    s3_handler = S3FileHandler(
+        connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+    )
 
     # Get document data from Grist
-    grist_response = grist_api_client.get_doc_sqlite_file()
-    doc_sqlite_bytes = grist_response.content
+    grist_response = grist_client.get_doc_sqlite_file()
 
     # Export sqlite file to S3
-    print(f"Exporting file to < {s3_filepath} >")
-    s3_hook.load_bytes(
-        bytes_data=doc_sqlite_bytes,
-        key=s3_filepath,
-        replace=True,
+    print(f"Exporting file to < {selecteur_config.filepath_tmp_s3} >")
+    s3_handler.write(
+        file_path=selecteur_config.filepath_tmp_s3,
+        content=grist_response,
     )
+    print("✅ Export done!")

@@ -5,7 +5,7 @@ from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     get_project_config,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -18,7 +18,7 @@ from utils.common.tasks_sql import (
 #     copy_files_to_minio,
 #     del_files_from_minio,
 # )
-from utils.common.config_func import (
+from utils.config.tasks import (
     get_s3_keys_source,
     get_storage_rows,
 )

@@ -3,9 +3,9 @@ from airflow.decorators import task
 
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from utils.file_handler import MinioFileHandler
-from utils.df_utility import df_info
-from utils.common.tasks_sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
-from utils.common.config_func import get_storage_rows
+from utils.dataframe import df_info
+from utils.tasks.sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
+from utils.config.tasks import get_storage_rows
 
 from dags.sg.sircom.tdb_interne import process
 

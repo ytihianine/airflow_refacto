@@ -1,5 +1,5 @@
 from airflow.decorators import task
-from utils.common.vars import paris_tz
+from utils.config.vars import paris_tz
 
 
 @task(map_index_template="{{ import_task_name }}")

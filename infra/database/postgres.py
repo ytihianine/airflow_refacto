@@ -8,7 +8,7 @@ import pandas as pd
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from sqlalchemy.engine.base import Engine
 
-from .base import BaseDBHandler, QueryResult
+from .base import BaseDBHandler
 from .exceptions import DatabaseError
 
 
@@ -34,6 +34,10 @@ class PostgresDBHandler(BaseDBHandler):
         if self._engine is None:
             self._engine = cast(Engine, self.hook.get_sqlalchemy_engine())
         return self._engine
+
+    def get_uri(self) -> str:
+        """Get the database URI."""
+        return self.hook.get_uri()
 
     def execute(self, query: str, parameters: Optional[Tuple[Any, ...]] = None) -> None:
         """Execute a query without returning results."""

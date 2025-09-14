@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union, Callable
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -140,7 +140,7 @@ class MailSender:
         self.send(message)
 
 
-def create_airflow_callback(mail_status: MailStatus):
+def create_airflow_callback(mail_status: MailStatus) -> Callable:
     """
     Create an Airflow callback function for mail notifications.
 
@@ -157,8 +157,14 @@ def create_airflow_callback(mail_status: MailStatus):
             config = MailConfig.from_airflow_context(context)
             sender = MailSender(config)
 
-            # Get recipients from context
+            # Get mail configuration from context
             params = context.get("params", {}).get("mail", {})
+
+            # Check if mail notifications are enabled
+            if not params.get("enable", False):
+                print("Mail notifications are disabled for this DAG")
+                return
+
             to = params.get("to", [])
             cc = params.get("cc", [])
 

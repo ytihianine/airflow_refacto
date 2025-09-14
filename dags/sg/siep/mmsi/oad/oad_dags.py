@@ -7,8 +7,8 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.config_func import get_storage_rows, get_s3_keys_source
-from utils.common.tasks_sql import (
+from utils.config.tasks import get_storage_rows, get_s3_keys_source
+from utils.tasks.sql import (
     get_project_config,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -18,7 +18,7 @@ from utils.common.tasks_sql import (
     # set_dataset_last_update_date,
 )
 
-from utils.common.tasks_minio import (
+from utils.tasks.s3 import (
     copy_files_to_minio,
     del_files_from_minio,
 )

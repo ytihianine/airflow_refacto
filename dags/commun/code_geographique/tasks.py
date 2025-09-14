@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
-from utils.api_client.base import AbstractApiClient
-from utils.grist import GristAPI
-from utils.df_utility import df_info
+from infra.http_client.base import AbstractApiClient
+from infra.grist.client import GristAPI
+from utils.dataframe import df_info
 
 from dags.commun.code_geographique import process
 

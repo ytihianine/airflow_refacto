@@ -3,8 +3,8 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_grist import download_grist_doc_to_s3
-from utils.common.tasks_sql import get_tbl_names_from_postgresql, create_tmp_tables
+from utils.tasks.grist import download_grist_doc_to_s3
+from utils.tasks.sql import get_tbl_names_from_postgresql, create_tmp_tables
 
 from dags.applications.catalogue.tasks import (
     create_task,

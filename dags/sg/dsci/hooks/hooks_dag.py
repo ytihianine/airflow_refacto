@@ -42,9 +42,9 @@ def hooks_check():
     @task(task_id="mail_hook")
     def mail_hook() -> None:
         from airflow.providers.smtp.hooks.smtp import SmtpHook
-        from utils.api_client.adapters import HttpxAPIClient
-        from utils.grist import GristAPI
-        from utils.common.vars import PROXY, AGENT
+        from infra.http_client.adapters import HttpxAPIClient
+        from infra.grist.client import GristAPI
+        from utils.config.vars import PROXY, AGENT
 
         nubo_smtp = SmtpHook(smtp_conn_id="smtp_nubonyxia")
         httpx_internet_client = HttpxAPIClient(proxy=PROXY, user_agent=AGENT)

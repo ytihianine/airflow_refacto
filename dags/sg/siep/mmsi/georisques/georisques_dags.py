@@ -5,8 +5,8 @@ from airflow.utils.dates import days_ago
 
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.config_func import get_storage_rows
-from utils.common.tasks_sql import (
+from utils.config.tasks import get_storage_rows
+from utils.tasks.sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,

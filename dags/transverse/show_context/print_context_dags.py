@@ -5,7 +5,7 @@ from datetime import timedelta
 from pprint import pprint
 import pytz
 
-from utils.common.tasks_sql import get_project_config
+from utils.tasks.sql import get_project_config
 from utils.mails.mails import make_mail_func_callback, MailStatus
 
 default_args = {

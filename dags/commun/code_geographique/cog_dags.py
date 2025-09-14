@@ -6,12 +6,12 @@ from airflow.utils.dates import days_ago
 from airflow.models import Variable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from utils.api_client.adapters import HttpxAPIClient
-from utils.grist import GristAPI
-from utils.common.vars import PROXY, AGENT
+from infra.http_client.adapters import HttpxAPIClient
+from infra.grist.client import GristAPI
+from utils.config.vars import PROXY, AGENT
 from utils.mails.mails import make_mail_func_callback, MailStatus
 
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     # set_dataset_last_update_date,

@@ -1,5 +1,5 @@
 import pandas as pd
-from utils.api_client.base import AbstractApiClient
+from infra.http_client.base import AbstractApiClient
 
 
 def can_perform_api_call(lat: float, lon: float) -> bool:

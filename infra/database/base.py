@@ -1,26 +1,18 @@
 """Base database handler interface and types."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Generic, cast
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
 import pandas as pd
-from airflow.hooks.base import BaseHook
-
-T = TypeVar("T")
-
-
-@dataclass
-class QueryResult(Generic[T]):
-    """Represents the result of a database query."""
-
-    data: T
-    affected_rows: Optional[int] = None
-    query_time: Optional[float] = None
 
 
 class BaseDBHandler(ABC):
     """Base class for database operations."""
+
+    @abstractmethod
+    def get_uri(self) -> str:
+        """Get the database URI."""
+        pass
 
     @abstractmethod
     def execute(self, query: str, parameters: Optional[Tuple[Any, ...]] = None) -> None:

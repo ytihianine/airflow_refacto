@@ -2,15 +2,15 @@ from airflow.decorators import dag, task_group
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     # get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
     import_file_to_db,
     copy_tmp_table_to_real_table,
 )
-from utils.common.tasks_grist import download_grist_doc_to_s3
-from utils.common.config_func import get_storage_rows
+from utils.tasks.grist import download_grist_doc_to_s3
+from utils.config.tasks import get_storage_rows
 
 from dags.sg.dsci.accompagnements_dsci.tasks import create_task
 from dags.sg.dsci.accompagnements_dsci import process

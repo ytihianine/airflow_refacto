@@ -4,13 +4,13 @@ from airflow.utils.dates import days_ago
 from datetime import timedelta
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     get_project_config,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     get_tbl_names_from_postgresql,
 )
-from utils.common.tasks_grist import download_grist_doc_to_s3
+from utils.tasks.grist import download_grist_doc_to_s3
 from dags.sg.sircom.tdb_interne.tasks import create_task
 from dags.sg.sircom.tdb_interne import process
 

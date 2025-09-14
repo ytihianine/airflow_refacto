@@ -7,7 +7,7 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
 
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
@@ -15,11 +15,11 @@ from utils.common.tasks_sql import (
     copy_tmp_table_to_real_table,
     # set_dataset_last_update_date,
 )
-from utils.common.tasks_minio import (
+from utils.tasks.s3 import (
     copy_files_to_minio,
     del_files_from_minio,
 )
-from utils.common.config_func import get_s3_keys_source
+from utils.config.tasks import get_s3_keys_source
 
 from dags.sg.siep.mmsi.consommation_batiment.tasks import (
     convert_cons_mens_to_parquet,

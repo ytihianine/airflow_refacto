@@ -1,7 +1,7 @@
 import pandas as pd
 import ast
 
-from utils.common.vars import NO_PROCESS_MSG
+from utils.config.vars import NO_PROCESS_MSG
 
 
 def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:

@@ -3,8 +3,8 @@ from airflow.decorators import task
 from airflow.models import Variable
 
 from utils.file_handler import MinioFileHandler
-from utils.api_client.adapters import RequestsAPIClient
-from utils.common.vars import get_root_folder, paris_tz
+from infra.http_client.adapters import RequestsAPIClient
+from utils.config.vars import get_root_folder, paris_tz
 
 from dags.applications.sauvegarde.process import (
     convert_str_to_ascii_str,

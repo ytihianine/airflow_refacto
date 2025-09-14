@@ -2,10 +2,10 @@ from airflow.decorators import task
 from airflow.models import Variable
 
 from utils.file_handler import MinioFileHandler
-from utils.api_client.base import AbstractApiClient
+from infra.http_client.base import AbstractHTTPClient
 
-from utils.common.config_func import get_storage_rows
-from utils.df_utility import df_info
+from utils.config.tasks import get_storage_rows
+from utils.dataframe import df_info
 
 from dags.sg.siep.mmsi.api_operat.process import (
     split_declaration_and_adresse_efa,
@@ -25,7 +25,7 @@ def build_header() -> dict[str, str]:
     }
 
 
-def get_token(api_client: AbstractApiClient, url: str) -> str:
+def get_token(api_client: AbstractHTTPClient, url: str) -> str:
     endpoint = "/api/v1/operat/authentification"
     id_structure_assujettie = "ETAT_MIN_EF"
     # [
@@ -49,7 +49,9 @@ def get_token(api_client: AbstractApiClient, url: str) -> str:
     return result["token"]
 
 
-def get_liste_declarations(api_client: AbstractApiClient, url: str, token: str) -> None:
+def get_liste_declarations(
+    api_client: AbstractHTTPClient, url: str, token: str
+) -> None:
     endpoint = "/api/v1/operat/consommations"
     headers = build_header() | {"Authorization": f"Bearer {token}"}
 
@@ -59,7 +61,7 @@ def get_liste_declarations(api_client: AbstractApiClient, url: str, token: str) 
 
 
 def get_consommation_by_id(
-    api_client: AbstractApiClient, url: str, token: str, id_consommation: str
+    api_client: AbstractHTTPClient, url: str, token: str, id_consommation: str
 ) -> dict:
     endpoint = "/api/v1/operat/consommation/"
     full_url = url + endpoint + id_consommation
@@ -72,8 +74,8 @@ def get_consommation_by_id(
 @task(task_id="liste_declaration")
 def liste_declaration(nom_projet: str, url: str) -> None:
     import pandas as pd
-    from utils.common.vars import PROXY, AGENT
-    from utils.api_client.adapters import HttpxAPIClient
+    from utils.config.vars import PROXY, AGENT
+    from infra.http_client.adapters import HttpxAPIClient
 
     # Hooks
     s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci")
@@ -117,8 +119,8 @@ def liste_declaration(nom_projet: str, url: str) -> None:
 
 @task(task_id="consommation_by_id")
 def consommation_by_id(nom_projet: str, url: str) -> None:
-    from utils.common.vars import PROXY, AGENT
-    from utils.api_client.adapters import HttpxAPIClient
+    from utils.config.vars import PROXY, AGENT
+    from infra.http_client.adapters import HttpxAPIClient
 
     # Hooks
     s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci")
