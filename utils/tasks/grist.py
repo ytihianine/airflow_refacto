@@ -6,7 +6,7 @@ from airflow.models import Variable
 from infra.file_handling.s3 import S3FileHandler
 from infra.http_client.adapters import RequestsClient
 from infra.http_client.config import ClientConfig
-from utils.grist import GristAPI
+from infra.grist.client import GristAPI
 from utils.config.tasks import get_selecteur_config
 
 from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID, PROXY, AGENT

@@ -21,7 +21,7 @@ from infra.file_handling.s3 import S3FileHandler
 from utils.config.tasks import get_projet_config, get_tbl_names
 from utils.config.types import SelecteurConfig
 from utils.control.structures import are_lists_egal
-from utils.vars import (
+from utils.config.vars import (
     DEFAULT_TMP_SCHEMA,
     DEFAULT_PG_DATA_CONN_ID,
     DEFAULT_PG_CONFIG_CONN_ID,
