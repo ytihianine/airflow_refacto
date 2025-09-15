@@ -160,8 +160,6 @@ def create_tmp_tables(
 
 @task(task_id="copy_tmp_table_to_real_table")
 def copy_tmp_table_to_real_table(
-    prod_schema: str,
-    tmp_schema: str = DEFAULT_TMP_SCHEMA,
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     **context,
 ) -> None:
@@ -170,6 +168,17 @@ def copy_tmp_table_to_real_table(
     nom_projet = params.get("nom_projet")
     if not nom_projet:
         raise ValueError("Project name must be provided in DAG parameters!")
+
+    db_info = params.get("db", {})
+    prod_schema = db_info.get("prod_schema", None)
+    tmp_schema = db_info.get("tmp_schema", None)
+
+    if not prod_schema:
+        raise ValueError("Database schema must be provided in DAG parameters!")
+    if not tmp_schema:
+        raise ValueError(
+            "Temporary database schema must be provided in DAG parameters!"
+        )
 
     # Hook
     db = create_db_handler(pg_conn_id)
