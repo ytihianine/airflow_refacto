@@ -46,6 +46,10 @@ default_args = {
     default_args=default_args,
     params={
         "nom_projet": "Dag standard",
+        "db": {
+            "prod_schema": "siep",
+            "tmp_schema": "temporaire",
+        },
         "mail": {
             "enable": False,
             "to": [
