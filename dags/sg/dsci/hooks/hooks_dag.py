@@ -7,7 +7,7 @@ from utils.mails.mails import make_mail_func_callback, MailStatus
 from dags.sg.dsci.hooks.process import create_ics_file
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = []
 
 default_args = {
@@ -28,7 +28,7 @@ default_args = {
     params={
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "link_documentation_pipeline": "",
@@ -64,7 +64,7 @@ def hooks_check():
                 ics_filepath = create_ics_file(data_row=row)
                 print(f"ICS file created at < {ics_filepath} >")
                 smtp.send_email_smtp(
-                    to=To,
+                    to=to,
                     subject="AirflowTest",
                     html_content="Ceci est un message automatique",
                     files=[ics_filepath],

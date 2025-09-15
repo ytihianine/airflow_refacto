@@ -26,7 +26,7 @@ if needs_debug:
     HTTPConnection.debuglevel = 1
 
 # Mails
-To = ["mmsi.siep@finances.gouv.fr"]
+to = ["mmsi.siep@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/api_operat?ref_type=heads"  # noqa
 link_documentation_donnees = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
@@ -56,7 +56,7 @@ default_args = {
         "nom_projet": "API Opera",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

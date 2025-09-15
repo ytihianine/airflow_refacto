@@ -13,7 +13,7 @@ from dags.applications.clean_logs_and_tasks.task import (
 
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 
 # Liens
@@ -47,7 +47,7 @@ default_args = {
         "nom_projet": "Clean tasks, logs and S3",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

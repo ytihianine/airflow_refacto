@@ -16,7 +16,7 @@ from dags.sg.sircom.tdb_interne import process
 
 
 # Mails
-To = ["brigitte.lekime@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
+to = ["brigitte.lekime@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/carte_identite_mef?ref_type=heads"  # noqa
 LINK_DOC_DONNEE = (
@@ -49,7 +49,7 @@ default_args = {
         "nom_projet": "TdB interne - SIRCOM",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

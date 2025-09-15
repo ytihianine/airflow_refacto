@@ -22,7 +22,7 @@ from dags.cgefi.suivi_activite.tasks import (
 )
 
 # Mails
-To = []  # ["brigitte.lekime@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
+to = []  # ["brigitte.lekime@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/carte_identite_mef?ref_type=heads"  # noqa
 LINK_DOC_DATA = (
@@ -56,7 +56,7 @@ default_args = {
         "sqlite_file_s3_filepath": "cgefi/suivi_activite/suivi_activite.db",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

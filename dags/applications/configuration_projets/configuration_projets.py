@@ -18,7 +18,7 @@ from dags.applications.configuration_projets.tasks import (
 )
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 
 default_args = {
@@ -41,7 +41,7 @@ default_args = {
         "nom_projet": "Configuration des projets",
         "mail": {
             "enable": True,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

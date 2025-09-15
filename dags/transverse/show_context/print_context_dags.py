@@ -35,7 +35,7 @@ link_documentation_donnees = "Non-défini"
         "nom_projet": "Projet test",
         "mail": {
             "enable": False,
-            "To": ["yanis.tihianine@finances.gouv.fr"],
+            "to": ["yanis.tihianine@finances.gouv.fr"],
             "CC": [""],
         },
         "docs": {

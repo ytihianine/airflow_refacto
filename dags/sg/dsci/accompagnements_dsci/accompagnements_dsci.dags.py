@@ -41,7 +41,7 @@ default_args = {
         "sqlite_file_s3_filepath": "sg/dsci/accompagnements_dsci/accompagnements_dsci.db",
         "mail": {
             "enable": False,
-            "To": ["yanis.tihianine@finances.gouv.fr"],
+            "to": ["yanis.tihianine@finances.gouv.fr"],
             "CC": ["labo-data@finances.gouv.fr"],
         },
         "docs": {

@@ -13,7 +13,7 @@ from dags.applications.catalogue.tasks import (
 )
 
 
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 
 
@@ -46,7 +46,7 @@ default_args = {
         "nom_projet": "Catalogue des données",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

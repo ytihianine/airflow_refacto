@@ -29,7 +29,7 @@ from dags.commun.code_geographique.tasks import (
 )
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 LINK_DOC_DATA = ""  # noqa
@@ -60,7 +60,7 @@ default_args = {
         "nom_projet": "Code géographique",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

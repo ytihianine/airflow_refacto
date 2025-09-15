@@ -9,7 +9,7 @@ from utils.mails.mails import make_mail_func_callback, MailStatus
 from dags.applications.db_backup.tasks import create_dump_files
 
 
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 
 default_args = {
@@ -36,7 +36,7 @@ default_args = {
         "nom_projet": "Sauvegarde databases",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

@@ -54,7 +54,7 @@ default_args = {
             "enable": False,
             "to": [
                 "yanis.tihianine@finances.gouv.fr"
-            ],  # Changed To -> to to match the code
+            ],  # Changed to -> to to match the code
             "cc": ["labo-data@finances.gouv.fr"],  # Changed CC -> cc to match the code
         },
         "docs": {

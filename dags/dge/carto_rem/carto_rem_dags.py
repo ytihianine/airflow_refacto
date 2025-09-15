@@ -32,7 +32,7 @@ from dags.dge.carto_rem.tasks import (
 
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 link_documentation_donnees = ""  # noqa
@@ -64,7 +64,7 @@ default_args = {
         "sqlite_file_s3_filepath": "sg/dge/cartographie_remuneration/carto_rem.db",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

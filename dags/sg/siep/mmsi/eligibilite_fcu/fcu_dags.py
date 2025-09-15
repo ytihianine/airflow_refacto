@@ -33,7 +33,7 @@ default_args = {
 
 
 # Mails
-To = ["mmsi.siep@finances.gouv.fr"]
+to = ["mmsi.siep@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/eligibilite_fcu?ref_type=heads"  # noqa
 LINK_DOC_DONNEE = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
@@ -53,7 +53,7 @@ LINK_DOC_DONNEE = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gou
         "nom_projet": "France Chaleur Urbaine (FCU)",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

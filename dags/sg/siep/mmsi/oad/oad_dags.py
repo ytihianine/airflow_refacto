@@ -34,7 +34,7 @@ from dags.sg.siep.mmsi.oad.indicateurs.tasks import (
 
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 LINK_DOC_DONNEE = ""  # noqa
@@ -64,7 +64,7 @@ default_args = {
         "nom_projet": "Outil aide diagnostic",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {

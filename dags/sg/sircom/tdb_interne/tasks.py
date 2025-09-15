@@ -36,7 +36,7 @@ def create_task(
         # Get data of table
         conn = get_conn_from_s3_sqlite(sqlite_file_s3_filepath=sqlite_file_s3_filepath)
         df = get_data_from_s3_sqlite_file(
-            grist_tbl_name=grist_tbl_name,
+            table_name=grist_tbl_name,
             sqlite_s3_filepath=sqlite_file_s3_filepath,
             sqlite_conn=conn,
         )

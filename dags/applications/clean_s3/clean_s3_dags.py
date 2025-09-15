@@ -9,7 +9,7 @@ from dags.applications.clean_s3.task import list_keys, process_keys, delete_old_
 
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
+to = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr"]
 
 # Liens
@@ -43,7 +43,7 @@ default_args = {
         "nom_projet": "Clean old S3 objects",
         "mail": {
             "enable": False,
-            "To": To,
+            "to": to,
             "CC": CC,
         },
         "docs": {
