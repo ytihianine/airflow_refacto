@@ -1,33 +1,44 @@
-""" Répertorie les variables communes à toutes les pipelines """
+"""Common variables and constants for all pipelines.
+
+This module contains configuration constants and utility functions
+used across different pipeline components.
+"""
 
 import os
 import pytz
 from functools import lru_cache
+from typing import Dict, Any
 
 
 @lru_cache(maxsize=1)
 def get_root_folder() -> str:
-    """Get root folder based on environment."""
+    """Get root folder path based on environment.
+
+    Returns:
+        str: Root folder path for the Airflow project
+    """
     base_folder = os.getenv("AIRFLOW_HOME")
     if base_folder is None:
         return "/home/onyxia/work/airflow-demo"
     return os.path.join(base_folder, "dags", "repo")
 
 
+# Process status messages
 NO_PROCESS_MSG = "No complementary actions needed ! Skipping ..."
 
-ENV_VAR = os.environ.copy()
+# Environment variables copy
+ENV_VAR: Dict[str, Any] = os.environ.copy()
 
-""" Configuration du proxy """
+# Proxy configuration
 PROXY = "172.16.0.53:3128"
 AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0"
 )
 
-""" TimeZone """
+# Timezone configuration
 paris_tz = pytz.timezone("Europe/Paris")
 
-""" MinIO """
+# MinIO/S3 configuration
 TMP_KEY = "tmp"
 
 # DEFAULT VARIABLES
