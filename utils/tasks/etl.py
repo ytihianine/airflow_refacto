@@ -10,6 +10,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.s3 import S3FileHandler
+from utils.tasks.sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
 from utils.dataframe import df_info
 from utils.config.tasks import (
     get_selecteur_config,
@@ -59,6 +60,14 @@ def create_grist_etl_task(
         )
 
         # Get data of table
+        conn = get_conn_from_s3_sqlite(
+            sqlite_file_s3_filepath=doc_config.filepath_source_s3
+        )
+        df = get_data_from_s3_sqlite_file(
+            table_name=task_config.nom_source,
+            sqlite_s3_filepath=doc_config.filepath_source_s3,
+            sqlite_conn=conn,
+        )
         df = read_dataframe(
             file_handler=s3_hook,
             file_path=str(task_config.filepath_source_s3),
@@ -131,5 +140,30 @@ def create_file_etl_task(
             file_path=str(task_config.filepath_tmp_s3),
             content=df.to_parquet(path=None, index=False),
         )
+
+    return _task
+
+
+def create_action_etl_task(
+    task_id: str,
+    action_func: Callable,
+) -> Callable[..., XComArg]:
+    """Create an ETL task for extracting, transforming and loading data from a file.
+
+    Args:
+        selecteur: The identifier for this ETL task
+        file_format: Optional format of the source file (csv, excel, parquet)
+        process_func: Optional function to process the DataFrame
+        read_options: Optional options for reading the source file
+
+    Returns:
+        An Airflow task that performs the ETL operation
+    """
+
+    @task(task_id=task_id)
+    def _task(**context) -> None:
+        """The actual ETL task function."""
+        # Execute the provided action function
+        action_func(**context)
 
     return _task
