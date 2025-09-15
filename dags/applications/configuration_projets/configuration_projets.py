@@ -19,7 +19,7 @@ from dags.applications.configuration_projets.tasks import (
 
 # Mails
 to = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 
 default_args = {
     "owner": "airflow",
@@ -42,7 +42,7 @@ default_args = {
         "mail": {
             "enable": True,
             "to": to,
-            "CC": CC,
+            "cc": cc,
         },
         "docs": {
             "lien_pipeline": "",

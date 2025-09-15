@@ -10,7 +10,7 @@ from dags.applications.db_backup.tasks import create_dump_files
 
 
 to = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 
 default_args = {
     "owner": "airflow",
@@ -37,7 +37,7 @@ default_args = {
         "mail": {
             "enable": False,
             "to": to,
-            "CC": CC,
+            "cc": cc,
         },
         "docs": {
             "lien_pipeline": "",

@@ -36,7 +36,7 @@ link_documentation_donnees = "Non-défini"
         "mail": {
             "enable": False,
             "to": ["yanis.tihianine@finances.gouv.fr"],
-            "CC": [""],
+            "cc": [""],
         },
         "docs": {
             "lien_pipeline": link_documentation_pipeline,

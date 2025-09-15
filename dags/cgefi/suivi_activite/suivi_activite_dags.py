@@ -23,7 +23,7 @@ from dags.cgefi.suivi_activite.tasks import (
 
 # Mails
 to = []  # ["brigitte.lekime@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/carte_identite_mef?ref_type=heads"  # noqa
 LINK_DOC_DATA = (
     "https://grist.numerique.gouv.fr/o/catalogue/k9LvttaYoxe6/catalogage-MEF"
@@ -57,7 +57,7 @@ default_args = {
         "mail": {
             "enable": False,
             "to": to,
-            "CC": CC,
+            "cc": cc,
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,

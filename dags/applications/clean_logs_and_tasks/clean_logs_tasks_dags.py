@@ -14,7 +14,7 @@ from dags.applications.clean_logs_and_tasks.task import (
 
 # Mails
 to = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 
 # Liens
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/catalogue?ref_type=heads"  # noqa
@@ -48,7 +48,7 @@ default_args = {
         "mail": {
             "enable": False,
             "to": to,
-            "CC": CC,
+            "cc": cc,
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,

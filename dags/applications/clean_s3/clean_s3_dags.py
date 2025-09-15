@@ -10,7 +10,7 @@ from dags.applications.clean_s3.task import list_keys, process_keys, delete_old_
 
 # Mails
 to = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 
 # Liens
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/catalogue?ref_type=heads"  # noqa
@@ -44,7 +44,7 @@ default_args = {
         "mail": {
             "enable": False,
             "to": to,
-            "CC": CC,
+            "cc": cc,
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,

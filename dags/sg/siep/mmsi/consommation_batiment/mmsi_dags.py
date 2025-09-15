@@ -37,7 +37,7 @@ from dags.sg.siep.mmsi.consommation_batiment.tasks import (
 
 # Mails
 to = ["mmsi.siep@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/consommation_batiment?ref_type=heads"  # noqa
 link_documentation_donnees = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
@@ -64,7 +64,7 @@ default_args = {
     default_args=default_args,
     params={
         "nom_projet": "Consommation des bâtiments",
-        "mail": {"enable": False, "to": to, "CC": CC},
+        "mail": {"enable": False, "to": to, "cc": cc},
         "docs": {
             "lien_pipeline": link_documentation_pipeline,
             "lien_donnees": link_documentation_donnees,

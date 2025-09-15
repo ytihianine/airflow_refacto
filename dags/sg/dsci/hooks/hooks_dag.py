@@ -8,7 +8,7 @@ from dags.sg.dsci.hooks.process import create_ics_file
 
 # Mails
 to = ["yanis.tihianine@finances.gouv.fr"]
-CC = []
+cc = []
 
 default_args = {
     "owner": "airflow",
@@ -29,7 +29,7 @@ default_args = {
         "mail": {
             "enable": False,
             "to": to,
-            "CC": CC,
+            "cc": cc,
         },
         "link_documentation_pipeline": "",
         "link_documentation_donnees": "",

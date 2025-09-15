@@ -35,7 +35,7 @@ from dags.cgefi.barometre.tasks import (
 
 # Mails
 to = ["corpus.cgefi@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 link_documentation_donnees = ""  # noqa
 
@@ -66,7 +66,7 @@ default_args = {
         "mail": {
             "enable": False,
             "to": to,
-            "CC": CC,
+            "cc": cc,
         },
         "docs": {
             "lien_pipeline": link_documentation_pipeline,

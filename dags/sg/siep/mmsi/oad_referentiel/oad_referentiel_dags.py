@@ -28,7 +28,7 @@ from dags.sg.siep.mmsi.oad_referentiel.tasks import bien_typologie
 
 # Mails
 to = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+cc = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 LINK_DOC_DATA = ""  # noqa
 

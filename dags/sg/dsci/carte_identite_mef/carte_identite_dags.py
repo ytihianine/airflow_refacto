@@ -41,7 +41,7 @@ default_args = {
         "mail": {
             "enable": False,
             "to": ["yanis.tihianine@finances.gouv.fr"],
-            "CC": ["labo-data@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr"],
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,

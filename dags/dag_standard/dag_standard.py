@@ -55,7 +55,7 @@ default_args = {
             "to": [
                 "yanis.tihianine@finances.gouv.fr"
             ],  # Changed to -> to to match the code
-            "cc": ["labo-data@finances.gouv.fr"],  # Changed CC -> cc to match the code
+            "cc": ["labo-data@finances.gouv.fr"],  # Changed cc -> cc to match the code
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,
