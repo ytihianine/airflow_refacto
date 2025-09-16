@@ -4,15 +4,16 @@ from typing import Optional
 
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from .base import BaseDBHandler
-from .postgres import PostgresDBHandler
+from infra.database.base import BaseDBHandler
+from infra.database.postgres import PostgresDBHandler
+from infra.database.sqlite import SQLiteDBHandler
 
 
 def create_db_handler(connection_id: str, db_type: str = "postgres") -> BaseDBHandler:
     """Create a database handler based on connection type.
 
     Args:
-        connection_id: Airflow connection ID
+        connection_id: Airflow connection ID or database path for sqlite
         db_type: Type of database ('postgres', etc.)
 
     Returns:
@@ -23,6 +24,8 @@ def create_db_handler(connection_id: str, db_type: str = "postgres") -> BaseDBHa
     """
     if db_type == "postgres":
         return PostgresDBHandler(connection_id)
+    elif db_type == "sqlite":
+        return SQLiteDBHandler(connection_id)
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
 

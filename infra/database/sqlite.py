@@ -14,15 +14,14 @@ from infra.database.exceptions import DatabaseError
 class SQLiteDBHandler(BaseDBHandler):
     """Handler for SQLite database operations using sqlite3."""
 
-    def __init__(self, db_path: str = ":memory:", s3_db_path: str = "") -> None:
+    def __init__(self, connection_id: str) -> None:
         """
         Initialize SQLite handler.
 
         Args:
-            db_path: Path to SQLite database file. Defaults to in-memory.
+            connection_id: Path to SQLite database file. Defaults to in-memory.
         """
-        self.db_path = db_path
-        self.s3_db_path = s3_db_path
+        self.db_path = connection_id
         self._conn: Optional[sqlite3.Connection] = None
 
     @property
