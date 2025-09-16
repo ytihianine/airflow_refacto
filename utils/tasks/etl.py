@@ -7,7 +7,9 @@ import pandas as pd
 from airflow.decorators import task
 
 from infra.file_handling.dataframe import read_dataframe
+from infra.file_handling.local import LocalFileHandler
 from infra.file_handling.s3 import S3FileHandler
+from infra.database.factory import create_db_handler
 from utils.tasks.sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
 from utils.dataframe import df_info
 from utils.config.tasks import (
@@ -49,9 +51,6 @@ def create_grist_etl_task(
         if not nom_projet:
             raise ValueError("nom_projet must be defined in DAG parameters")
 
-        # Initialize hooks
-        s3_hook = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-
         # Get config values related to the task
         task_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
         doc_config = get_selecteur_config(
@@ -60,18 +59,20 @@ def create_grist_etl_task(
         if task_config.nom_source is None:
             raise ValueError(f"nom_source must be defined for selecteur {selecteur}")
 
+        # Initialize hooks
+        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        local_handler = LocalFileHandler()
+        sqlite_handler = create_db_handler(
+            connection_id=doc_config.filepath_local, db_type="sqlite"
+        )
+
+        # Download Grist doc from S3 to local temp file
+        grist_doc = s3_handler.read(file_path=str(doc_config.filepath_source_s3))
+        local_handler.write(file_path=str(doc_config.filepath_local), content=grist_doc)
+
         # Get data of table
-        conn = get_conn_from_s3_sqlite(
-            sqlite_file_s3_filepath=doc_config.filepath_source_s3
-        )
-        df = get_data_from_s3_sqlite_file(
-            table_name=task_config.nom_source,
-            sqlite_s3_filepath=doc_config.filepath_source_s3,
-            sqlite_conn=conn,
-        )
-        df = read_dataframe(
-            file_handler=s3_hook,
-            file_path=str(task_config.filepath_source_s3),
+        df = sqlite_handler.fetch_df(
+            query=f"SELECT * FROM ?", parameters=(task_config.nom_source,)
         )
 
         df_info(df=df, df_name=f"{selecteur} - Source normalisée")
@@ -82,7 +83,7 @@ def create_grist_etl_task(
         df_info(df=df, df_name=f"{selecteur} - After processing")
 
         # Export
-        s3_hook.write(
+        s3_handler.write(
             file_path=str(task_config.filepath_tmp_s3),
             content=df.to_parquet(path=None, index=False),
         )
