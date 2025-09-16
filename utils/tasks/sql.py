@@ -488,12 +488,28 @@ def set_dataset_last_update_date(
 
 
 @task
-def refresh_views(views: list[str], pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID) -> None:
+def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
     """Tâche pour actualiser les vues matérialisées"""
+    db = create_db_handler(pg_conn_id)
+    params = context.get("params", {})
+
+    db_info = params.get("db", {})
+    prod_schema = db_info.get("prod_schema", None)
+
+    if not prod_schema:
+        raise ValueError("Database schema must be provided in DAG parameters!")
+
+    get_mview_query = """
+        SELECT matviewname
+        FROM pg_matviews
+        WHERE schemaname = %s;
+    """
+
+    views = db.fetch_df(get_mview_query, (prod_schema,))["matviewname"].tolist()
+
     if len(views) == 0:
-        print("Aucune vue matérialisée à actualier. Skipping ...")
+        print(f"No materialized views found for schema {prod_schema}. Skipping ...")
     else:
-        db = create_db_handler(pg_conn_id)
         sql_queries = [f"REFRESH MATERIALIZED VIEW {view_name};" for view_name in views]
         for query in sql_queries:
             db.execute(query=query)
