@@ -5,8 +5,6 @@ from airflow import XComArg
 import pandas as pd
 
 from airflow.decorators import task
-from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.s3 import S3FileHandler
@@ -17,6 +15,7 @@ from utils.config.tasks import (
     get_cols_mapping,
     format_cols_mapping,
 )
+from utils.config.types import P, R
 
 
 def create_grist_etl_task(
@@ -148,7 +147,7 @@ def create_file_etl_task(
 
 def create_action_etl_task(
     task_id: str,
-    action_func: Callable,
+    action_func: Callable[P, R],
 ) -> Callable[..., XComArg]:
     """Create an ETL task for extracting, transforming and loading data from a file.
 
@@ -163,9 +162,9 @@ def create_action_etl_task(
     """
 
     @task(task_id=task_id)
-    def _task(**context) -> None:
+    def _task(*args: P.args, **kwargs: P.kwargs) -> R:
         """The actual ETL task function."""
         # Execute the provided action function
-        action_func(**context)
+        return action_func(*args, **kwargs)
 
     return _task

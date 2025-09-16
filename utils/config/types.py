@@ -1,7 +1,11 @@
 """Type definitions for configuration data structures."""
 
 from dataclasses import dataclass
-from typing import Optional, TypedDict, List, Dict
+from typing import Optional, TypedDict, List, ParamSpec, TypeVar
+
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 @dataclass
