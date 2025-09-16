@@ -6,6 +6,7 @@ import tempfile
 from typing import cast
 from datetime import datetime
 
+import psycopg2
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
 import pandas as pd
@@ -91,6 +92,75 @@ def get_tbl_names_from_postgresql(**context) -> list[str]:
 
     tbl_names = get_tbl_names(nom_projet=nom_projet)
     return tbl_names
+
+
+@task
+def ensure_monthly_partition(
+    pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
+    partition_column: str = "import_date",
+    **context,
+) -> None:
+    """
+    Vérifie si une partition mensuelle existe pour une table partitionnée par date.
+    Si elle n'existe pas, la crée.
+
+    Args:
+        pg_conn_id: Connexion Postgres
+        partition_column: Colonne de partition (par défaut 'import_date')
+
+    Returns:
+        Le nom de la partition (créée ou existante)
+    """
+    params = context.get("params", {})
+    nom_projet = params.get("nom_projet")
+    if not nom_projet:
+        raise ValueError("Project name must be provided in DAG parameters!")
+
+    db_info = params.get("db", {})
+    prod_schema = db_info.get("prod_schema", None)
+
+    if not prod_schema:
+        raise ValueError("Database schema must be provided in DAG parameters!")
+
+    # Récupérer les informations de la table parente
+    tbl_names = get_tbl_names(nom_projet=nom_projet)
+
+    db = create_db_handler(pg_conn_id)
+    # Get timing information
+    execution_date = context.get("execution_date")
+    if not execution_date or not isinstance(execution_date, datetime):
+        raise ValueError("Invalid execution date in Airflow context")
+
+    for tbl in tbl_names:
+        # Nom de la partition : parenttable_YYYY_MM
+        partition_name = f"{tbl}_y{execution_date.year}m{execution_date.month:02d}"
+
+        # Calcul des bornes de la partition
+        from_date = execution_date.replace(day=1)
+        if execution_date.month == 12:
+            to_date = execution_date.replace(
+                year=execution_date.year + 1, month=1, day=1
+            )
+        else:
+            to_date = execution_date.replace(month=execution_date.month + 1, day=1)
+
+        try:
+            logging.info(f"Creating partition {partition_name} for {tbl}.")
+            # Créer la partition
+            create_sql = f"""
+                CREATE TABLE {prod_schema}.{partition_name}
+                PARTITION OF {prod_schema}.{tbl}
+                FOR VALUES FROM ('{from_date}') TO ('{to_date}');
+            """
+            db.execute(create_sql)
+            logging.info(f"Partition {partition_name} created successfully.")
+        except psycopg2.errors.DuplicateTable:
+            logging.info(
+                f"Partition {partition_name} already exists. Skipping creation."
+            )
+        except Exception as e:
+            logging.error(f"Error creating partition {partition_name}: {str(e)}")
+            raise
 
 
 @task(task_id="create_tmp_tables")
