@@ -58,6 +58,8 @@ def create_grist_etl_task(
         doc_config = get_selecteur_config(
             nom_projet=nom_projet, selecteur=doc_selecteur
         )
+        if task_config.nom_source is None:
+            raise ValueError(f"nom_source must be defined for selecteur {selecteur}")
 
         # Get data of table
         conn = get_conn_from_s3_sqlite(
@@ -124,7 +126,7 @@ def create_file_etl_task(
         # Get data of table
         df = read_dataframe(
             file_handler=s3_hook,
-            file_path=str(task_config.filepath_source_s3),
+            file_path=task_config.filepath_source_s3,
             read_options=read_options,
         )
 
