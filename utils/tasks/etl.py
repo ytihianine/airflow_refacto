@@ -146,6 +146,72 @@ def create_file_etl_task(
     return _task
 
 
+def create_multi_files_input_etl_task(
+    output_selecteur: str,
+    input_selecteurs: list[str],
+    process_func: Callable[..., pd.DataFrame],
+    read_options: dict[str, Any] | None = None,
+) -> Callable[..., XComArg]:
+    """
+    Create an ETL task that:
+      1. Reads multiple input datasets (from S3 or configured sources)
+      2. Processes them with a custom process_func
+      3. Writes the result to the output_selecteur location in S3
+
+    There must be a unique DataFrame returned by process_func.
+
+    Args:
+        output_selecteur: The config selector key for the merged dataset
+        input_selecteurs: List of selector keys for the input datasets
+        process_func: A function that merges/processes (*dfs) -> DataFrame
+        read_options: Optional file read options (csv, excel, parquet, etc.)
+
+    Returns:
+        Callable: Airflow task function
+    """
+
+    @task(task_id=output_selecteur)
+    def _task(**context) -> None:
+        # Get project name from context
+        params = context.get("params", {})
+        nom_projet = params.get("nom_projet")
+        if not nom_projet:
+            raise ValueError("nom_projet must be defined in DAG parameters")
+
+        # Initialize handler
+        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+
+        # Resolve configs
+        output_config = get_selecteur_config(
+            nom_projet=nom_projet, selecteur=output_selecteur
+        )
+
+        # Load all input datasets
+        dfs: list[pd.DataFrame] = []
+        for sel in input_selecteurs:
+            cfg = get_selecteur_config(nom_projet=nom_projet, selecteur=sel)
+            df = read_dataframe(
+                file_handler=s3_handler,
+                file_path=cfg.filepath_source_s3,
+                read_options=read_options,
+            )
+            df_info(df=df, df_name=f"{sel} - Source normalisée")
+            dfs.append(df)
+
+        # Process all datasets
+        merged_df = process_func(*dfs)
+
+        df_info(df=merged_df, df_name=f"{output_selecteur} - After processing")
+
+        # Export merged result
+        s3_handler.write(
+            file_path=str(output_config.filepath_tmp_s3),
+            content=merged_df.to_parquet(path=None, index=False),
+        )
+
+    return _task
+
+
 def create_action_etl_task(
     task_id: str,
     action_func: Callable[P, R],
