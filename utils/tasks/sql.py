@@ -97,7 +97,6 @@ def get_tbl_names_from_postgresql(**context) -> list[str]:
 @task
 def ensure_monthly_partition(
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
-    partition_column: str = "import_date",
     **context,
 ) -> None:
     """
