@@ -88,11 +88,13 @@ def create_validate_params_task(
         missing: List[str] = []
         falsy: List[str] = []
 
+        # Check keys existence in dag parameters
         for path in required_paths:
             value, found = _get_by_path(params, path)
             if not found or _is_missing(value):
                 missing.append(path)
 
+        # Check keys truthiness in dag parameters
         for path in require_truthy:
             value, found = _get_by_path(params, path)
             if not found:
