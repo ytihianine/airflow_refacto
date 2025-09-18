@@ -10,8 +10,8 @@ from utils.tasks.sql import (
 )
 from utils.tasks.grist import download_grist_doc_to_s3
 
-from dags.applications.configuration_projets import process
 from dags.applications.configuration_projets.tasks import (
+    validate_params,
     process_data,
 )
 
@@ -59,6 +59,7 @@ default_args = {
 def configuration_projets():
     """Tasks order"""
     chain(
+        validate_params(),
         download_grist_doc_to_s3(
             selecteur="grist_doc",
             workspace_id="dsci",
