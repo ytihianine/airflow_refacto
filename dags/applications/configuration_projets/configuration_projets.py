@@ -4,22 +4,21 @@ from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 from utils.tasks.sql import (
-    get_project_config,
-    get_tbl_names_from_postgresql,
     create_tmp_tables,
+    import_files_to_db,
     copy_tmp_table_to_real_table,
-    import_file_to_db_at_once,
 )
 from utils.tasks.grist import download_grist_doc_to_s3
 
 from dags.applications.configuration_projets import process
 from dags.applications.configuration_projets.tasks import (
-    create_task,
+    process_data,
 )
 
-# Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+
+nom_projet = "Configuration des projets"
+LINK_DOC_PIPELINE = ""
+LINK_DOC_DONNEE = ""
 
 default_args = {
     "owner": "airflow",
@@ -38,15 +37,19 @@ default_args = {
     default_args=default_args,
     catchup=False,
     params={
-        "nom_projet": "Configuration des projets",
+        "nom_projet": nom_projet,
+        "db": {
+            "prod_schema": "conf_projets",
+            "tmp_schema": "temporaire",
+        },
         "mail": {
-            "enable": True,
-            "To": To,
-            "CC": CC,
+            "enable": False,
+            "to": ["yanis.tihianine@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr"],
         },
         "docs": {
-            "lien_pipeline": "",
-            "lien_donnees": "",
+            "lien_pipeline": LINK_DOC_PIPELINE,
+            "lien_donnees": LINK_DOC_DONNEE,
         },
     },
     on_failure_callback=create_airflow_callback(
@@ -54,93 +57,17 @@ default_args = {
     ),
 )
 def configuration_projets():
-    """Variables"""
-    sqlite_file_s3_filepath = "SG/DSCI/conf_projets/conf_projets.db"
-    # Database
-    prod_schema = "conf_projets"
-
-    nom_projet = "Configuration des projets"
-
-    """ Tasks definition """
-    ref_direction = create_task(
-        selecteur="direction",
-        process_func=process.process_direction,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-    ref_service = create_task(
-        selecteur="service",
-        process_func=process.process_service,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-    projets = create_task(
-        selecteur="projets",
-        process_func=process.process_projets,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-    selecteur = create_task(
-        selecteur="selecteur",
-        process_func=process.process_selecteur,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-    source = create_task(
-        selecteur="source",
-        process_func=process.process_source,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-    storage_paths = create_task(
-        selecteur="storage_path",
-        process_func=process.process_storage_path,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-    col_mapping = create_task(
-        selecteur="col_mapping",
-        process_func=process.process_col_mapping,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-    col_requises = create_task(
-        selecteur="col_requises",
-        process_func=process.process_col_requises,
-        sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-    )
-
-    """ Tasks order"""
-    projet_config = get_project_config()
-
+    """Tasks order"""
     chain(
-        projet_config,
         download_grist_doc_to_s3(
+            selecteur="grist_doc",
             workspace_id="dsci",
             doc_id_key="grist_doc_id_gestion_interne",
-            s3_filepath=sqlite_file_s3_filepath,
         ),
-        get_tbl_names_from_postgresql(nom_projet=nom_projet),
-        create_tmp_tables(
-            prod_schema=prod_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-            pg_conn_id="db_depose_fichier",
-        ),
-        [
-            ref_direction,
-            ref_service,
-            projets,
-            selecteur,
-            source,
-            storage_paths,
-            col_mapping,
-            col_requises,
-        ],
-        import_file_to_db_at_once(
-            nom_projet=nom_projet,
-            sqlite_file_s3_filepath=sqlite_file_s3_filepath,
-            pg_conn_id="db_depose_fichier",
-            s3_conn_id="minio_bucket_dsci",
-            keep_file_id_col=True,
-        ),
-        copy_tmp_table_to_real_table(
-            prod_schema=prod_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-            pg_conn_id="db_depose_fichier",
-        ),
+        create_tmp_tables(),
+        process_data(),
+        import_files_to_db(keep_file_id_col=True),
+        copy_tmp_table_to_real_table(),
     )
 
 

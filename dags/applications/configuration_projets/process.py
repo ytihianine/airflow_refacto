@@ -11,6 +11,11 @@ def replace_values(
     return df
 
 
+def clean_normalize_df(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.drop(df.filter(regex="^(grist|manual)").columns, axis=1)
+    return df
+
+
 def process_direction(df: pd.DataFrame) -> pd.DataFrame:
     df = df.assign(direction=df["direction"].str.strip()).convert_dtypes()
     df = df.drop_duplicates(subset=["direction"])
