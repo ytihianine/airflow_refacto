@@ -5,7 +5,7 @@ from typing import Union
 
 from utils.control.number import is_in_range, is_upper
 
-from utils.df_utility import df_info, tag_last_value_rows
+from utils.dataframe import tag_last_value_rows
 
 
 def generic_convert_to_float(value: str) -> float:
@@ -62,30 +62,6 @@ def generate_date(year: int, semester: str) -> Union[datetime.datetime, None]:
     return None
 
 
-def has_any_data_differences(df_db: pd.DataFrame, df_grist: pd.DataFrame) -> bool:
-    # Pour avoir les colonnes dans le même ordre
-    df_grist = df_grist.sort_index(axis=1)
-    df_db = df_db.sort_index(axis=1)
-
-    for col in df_grist.columns:
-        if col in df_db.columns:
-            common_type = np.result_type(df_grist[col], df_db[col])
-            df_grist[col] = df_grist[col].astype(common_type)
-            df_db[col] = df_db[col].astype(common_type)
-
-    df_info(df=df_grist, df_name="df grist - recherche de différence")
-    df_info(df=df_db, df_name="df db - recherche de différence")
-
-    df_are_equals = df_grist.equals(df_db)
-    if df_are_equals:
-        print("df_are_equals = True")
-        return False
-    else:
-        print("df_are_equals = False")
-        return True
-    return df_are_equals
-
-
 def process_reseaux_sociaux(df: pd.DataFrame) -> pd.DataFrame:
     # Processing des données
     df["date"] = pd.to_datetime(df["mois"], unit="s")
@@ -128,7 +104,7 @@ def process_reseaux_sociaux(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_abonnes_aux_lettres(df: pd.DataFrame) -> None:
+def process_abonnes_aux_lettres(df: pd.DataFrame) -> pd.DataFrame:
     df["date"] = pd.to_datetime(df["mois"], unit="s")
     df = df.drop(columns=["mois"])
 
