@@ -42,8 +42,8 @@ default_args = {
         "nom_projet": "Sauvegarde tableaux de bords",
         "mail": {
             "enable": True,
-            "to": ["yanis.tihianine@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr"],
+            "To": ["yanis.tihianine@finances.gouv.fr"],
+            "CC": ["labo-data@finances.gouv.fr"],
         },
         "docs": {
             "lien_pipeline": link_documentation_pipeline,

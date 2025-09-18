@@ -22,7 +22,8 @@ from utils.config.types import P, R
 
 def create_grist_etl_task(
     selecteur: str,
-    doc_selecteur: str,
+    doc_selecteur: str = "grist_doc",
+    normalisation_process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
     process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
 ) -> Callable[..., XComArg]:
     """
@@ -35,6 +36,7 @@ def create_grist_etl_task(
     Args:
         selecteur: Configuration selector key
         doc_selecteur: Configuration selector for the Grist document
+        normalisation_process_func: Optional normalization process to run before the process function
         process_func: Optional function to process the DataFrame
 
     Returns:
@@ -75,6 +77,13 @@ def create_grist_etl_task(
             query=f"SELECT * FROM ?", parameters=(task_config.nom_source,)
         )
 
+        if normalisation_process_func is not None:
+            df = normalisation_process_func(df)
+        else:
+            print(
+                "No normalisation process function provided. Skipping the normalisation step ..."
+            )
+
         df_info(df=df, df_name=f"{selecteur} - Source normalisée")
         if process_func is not None:
             df = process_func(df)
@@ -100,7 +109,6 @@ def create_file_etl_task(
 
     Args:
         selecteur: The identifier for this ETL task
-        file_format: Optional format of the source file (csv, excel, parquet)
         process_func: Optional function to process the DataFrame
         read_options: Optional options for reading the source file
 

@@ -3,7 +3,7 @@ from airflow.decorators import task
 import pandas as pd
 
 from utils.file_handler import MinioFileHandler
-from utils.dataframe import df_info
+from utils.df_utility import df_info
 
 from dags.applications.clean_s3.process import (
     check_date_format,

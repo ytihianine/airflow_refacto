@@ -1,4 +1,4 @@
-from utils.config.vars import ENV_VAR
+from utils.common.vars import ENV_VAR
 
 
 # Files & Certificat

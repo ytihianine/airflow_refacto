@@ -3,14 +3,14 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.tasks.sql import (
+from utils.common.tasks_sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db_at_once,
 )
-from utils.tasks.grist import download_grist_doc_to_s3
+from utils.common.tasks_grist import download_grist_doc_to_s3
 
 from dags.applications.configuration_projets import process
 from dags.applications.configuration_projets.tasks import (
@@ -18,8 +18,8 @@ from dags.applications.configuration_projets.tasks import (
 )
 
 # Mails
-to = ["yanis.tihianine@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["yanis.tihianine@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 
 default_args = {
     "owner": "airflow",
@@ -41,8 +41,8 @@ default_args = {
         "nom_projet": "Configuration des projets",
         "mail": {
             "enable": True,
-            "to": to,
-            "cc": cc,
+            "To": To,
+            "CC": CC,
         },
         "docs": {
             "lien_pipeline": "",

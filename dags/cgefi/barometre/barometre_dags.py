@@ -6,7 +6,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.tasks.sql import (
+from utils.common.tasks_sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db_at_once,
@@ -14,11 +14,11 @@ from utils.tasks.sql import (
     # set_dataset_last_update_date,
 )
 
-from utils.tasks.s3 import (
+from utils.common.tasks_minio import (
     copy_files_to_minio,
     del_files_from_minio,
 )
-from utils.config.tasks import (
+from utils.common.config_func import (
     get_s3_keys_source,
 )
 
@@ -34,8 +34,8 @@ from dags.cgefi.barometre.tasks import (
 
 
 # Mails
-to = ["corpus.cgefi@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["corpus.cgefi@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 link_documentation_donnees = ""  # noqa
 
@@ -65,8 +65,8 @@ default_args = {
         "nom_projet": "Baromètre",
         "mail": {
             "enable": False,
-            "to": to,
-            "cc": cc,
+            "To": To,
+            "CC": CC,
         },
         "docs": {
             "lien_pipeline": link_documentation_pipeline,

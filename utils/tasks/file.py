@@ -18,13 +18,12 @@ from utils.config.tasks import (
 from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 
 TaskParams = Dict[str, Any]
-ProcessFunc = Callable[[pd.DataFrame, Optional[dict[str, str]]], pd.DataFrame]
 
 
 def create_parquet_converter_task(
-    task_params: TaskParams,
     selecteur: str,
-    process_func: Optional[ProcessFunc] = None,
+    task_params: Optional[TaskParams] = None,
+    process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
     read_options: Optional[dict[str, Any]] = None,
 ) -> Callable:
     """Create a task that converts files to Parquet format.
@@ -41,6 +40,9 @@ def create_parquet_converter_task(
     Raises:
         ValueError: If task_id not provided in task_params
     """
+    if task_params is None:
+        task_params = {"task_id": selecteur}
+
     if "task_id" not in task_params:
         raise ValueError("task_params must include 'task_id'")
 

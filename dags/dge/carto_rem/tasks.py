@@ -4,14 +4,14 @@ from airflow.models.baseoperator import chain
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 from utils.file_handler import MinioFileHandler
-from utils.tasks.sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
-from utils.config.tasks import (
+from utils.common.tasks_sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
+from utils.common.config_func import (
     get_storage_rows,
     get_cols_mapping,
     format_cols_mapping,
     get_required_cols,
 )
-from utils.dataframe import df_info
+from utils.df_utility import df_info
 
 from dags.dge.carto_rem import process
 
@@ -106,7 +106,7 @@ def create_task_file(
 
 
 @task
-def agent_information(
+def agent(
     selecteur: str, selecteur_carto_rem: str, selecteur_info_car: str, **context
 ) -> None:
     nom_projet = context.get("params").get("nom_projet", None)
@@ -139,7 +139,7 @@ def agent_information(
     # Processing
     df_info(df=df_carto_rem, df_name=f"{selecteur_carto_rem} - Source")
     df_info(df=df_info_car, df_name=f"{selecteur_info_car} - Source")
-    df = process.process_agent_information(
+    df = process.process_agent(
         df_rem_carto=df_carto_rem,
         df_info_car=df_info_car,
         required_cols=required_cols["colname_dest"].to_list(),
@@ -156,7 +156,11 @@ def agent_information(
 
 @task
 def agent_poste(
-    selecteur: str, selecteur_carto_rem: str, selecteur_r4: str, **context
+    selecteur: str,
+    selecteur_agent: str,
+    selecteur_carto_rem: str,
+    selecteur_r4: str,
+    **context,
 ) -> None:
     nom_projet = context.get("params").get("nom_projet", None)
     if nom_projet is None:
@@ -169,6 +173,7 @@ def agent_poste(
 
     # Config
     config_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
+    config_agent = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur_agent)
     config_carto_rem = get_storage_rows(
         nom_projet=nom_projet, selecteur=selecteur_carto_rem
     )
@@ -176,16 +181,18 @@ def agent_poste(
     required_cols = get_required_cols(nom_projet=nom_projet, selecteur=selecteur)
 
     # Read data
+    df_agent = s3_hook.read_parquet(file_name=config_agent.loc[0, "filepath_tmp_s3"])
     df_carto_rem = s3_hook.read_parquet(
         file_name=config_carto_rem.loc[0, "filepath_tmp_s3"]
     )
     df_r4 = s3_hook.read_parquet(file_name=config_r4.loc[0, "filepath_tmp_s3"])
 
     # Processing
-    df_info(df=df_carto_rem, df_name=f"{selecteur_carto_rem} - Source")
+    df_info(df=df_agent, df_name=f"{selecteur_agent} - Source")
     df_info(df=df_r4, df_name=f"{config_r4} - Source")
     df = process.process_agent_poste(
-        df_rem_carto=df_carto_rem,
+        df_agent=df_agent,
+        df_carto_rem=df_carto_rem,
         df_r4=df_r4,
         required_cols=required_cols["colname_dest"].to_list(),
     )
@@ -291,14 +298,15 @@ def output_files() -> None:
 
     # ordre des tâches
     chain(
+        agent(
+            selecteur="agent",
+            selecteur_carto_rem="agent_carto_rem",
+            selecteur_info_car="agent_info_carriere",
+        ),
         [
-            agent_information(
-                selecteur="agent_information",
-                selecteur_carto_rem="agent_carto_rem",
-                selecteur_info_car="agent_info_carriere",
-            ),
             agent_poste(
                 selecteur="agent_poste",
+                selecteur_agent="agent",
                 selecteur_carto_rem="agent_carto_rem",
                 selecteur_r4="agent_r4",
             ),
@@ -307,7 +315,7 @@ def output_files() -> None:
                 selecteur_carto_rem="agent_carto_rem",
                 selecteur_agent_rem_variable="agent_rem_variable",
             ),
-        ]
+        ],
     )
 
 

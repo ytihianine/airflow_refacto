@@ -1,60 +1,154 @@
-from typing import Callable
-from airflow.decorators import task
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.decorators import task_group
+from airflow.models.baseoperator import chain
 
-from utils.dataframe import df_info
-from utils.tasks.sql import (
-    get_conn_from_s3_sqlite,
-    get_data_from_s3_sqlite_file,
-)
-from utils.config.tasks import get_storage_rows
+from utils.tasks.etl import create_grist_etl_task
 
 from dags.sg.dsci.carte_identite_mef import process
 
 
-def create_task(
-    selecteur: str,
-    sqlite_file_s3_filepath: str,
-    process_func: Callable | None = None,
-):
-    @task(task_id=selecteur)
-    def _task(**context):
-        nom_projet = context.get("params").get("nom_projet", None)
-        if nom_projet is None:
-            raise ValueError(
-                "La variable nom_projet n'a pas été définie au niveau du DAG !"
-            )
-        # Hooks
-        db_hook = PostgresHook(postgres_conn_id="db_data_store")
+@task_group()
+def effectif():
+    teletravail = create_grist_etl_task(
+        selecteur="teletravail",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_teletravail,
+    )
+    teletravail_frequence = create_grist_etl_task(
+        selecteur="teletravail_frequence",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_teletravail_frequence,
+    )
+    teletravail_opinion = create_grist_etl_task(
+        selecteur="teletravail_opinion",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_teletravail_opinion,
+    )
+    effectif_direction_perimetre = create_grist_etl_task(
+        selecteur="effectif_direction_perimetre",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_mef_par_direction,
+    )
+    effectif_direction = create_grist_etl_task(
+        selecteur="effectif_direction",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_effectif_direction,
+    )
+    effectif_perimetre = create_grist_etl_task(
+        selecteur="effectif_perimetre",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_effectifs_par_perimetre,
+    )
+    effectif_departements = create_grist_etl_task(
+        selecteur="effectif_departements",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_effectif_par_departements,
+    )
+    masse_salariale = create_grist_etl_task(
+        selecteur="masse_salariale",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_masse_salariale,
+    )
 
-        # Get config values related to the task
-        row_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-        grist_tbl_name = row_selecteur.loc[0, "nom_source"]
-        db_tbl_name = row_selecteur.loc[0, "tbl_name"]
+    """ Task order """
+    chain(
+        [
+            teletravail,
+            teletravail_frequence,
+            teletravail_opinion,
+            effectif_direction_perimetre,
+            effectif_direction,
+            effectif_perimetre,
+            effectif_departements,
+            masse_salariale,
+        ]
+    )
 
-        # Get data of table
-        conn = get_conn_from_s3_sqlite(sqlite_file_s3_filepath=sqlite_file_s3_filepath)
-        df = get_data_from_s3_sqlite_file(
-            grist_tbl_name=grist_tbl_name,
-            sqlite_s3_filepath=sqlite_file_s3_filepath,
-            sqlite_conn=conn,
-        )
 
-        df = process.clean_and_normalize_df(df=df)
-        df_info(df=df, df_name=f"{grist_tbl_name} - Raw and normalized")
-        if process_func is not None:
-            df = process_func(df)
-        else:
-            print("No process function provided. Skipping the processing.")
-        df_info(df=df, df_name=f"{grist_tbl_name} - After processing")
+@task_group()
+def budget():
+    budget_total = create_grist_etl_task(
+        selecteur="budget_total",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_budget_total,
+    )
+    budget_pilotable = create_grist_etl_task(
+        selecteur="budget_pilotable",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_budget_pilotable,
+    )
+    budget_general = create_grist_etl_task(
+        selecteur="budget_general",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_budget_general,
+    )
+    evolution_budget_mef = create_grist_etl_task(
+        selecteur="evolution_budget_mef",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_evolution_budget_mef,
+    )
+    montant_intervention_invest = create_grist_etl_task(
+        selecteur="montant_intervention_invest",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_montant_invest,
+    )
+    budget_ministere = create_grist_etl_task(
+        selecteur="budget_ministere",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_budget_ministere,
+    )
 
-        # Insert into database
-        db_hook.insert_rows(
-            table=f"temporaire.tmp_{db_tbl_name}",
-            rows=df.values.tolist(),
-            target_fields=list(df.columns),
-            commit_every=1000,
-            executemany=False,
-        )
+    """ Task order """
+    chain(
+        [
+            budget_total,
+            budget_pilotable,
+            budget_general,
+            evolution_budget_mef,
+            montant_intervention_invest,
+            budget_ministere,
+        ]
+    )
 
-    return _task()
+
+@task_group()
+def taux_agent():
+    engagement_agent = create_grist_etl_task(
+        selecteur="engagement_agent",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_engagement_agent,
+    )
+    election_resultat = create_grist_etl_task(
+        selecteur="election_resultat",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_resultat_elections,
+    )
+    taux_participation = create_grist_etl_task(
+        selecteur="taux_participation",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_taux_participation,
+    )
+
+    """ Task order """
+    chain(
+        [
+            engagement_agent,
+            election_resultat,
+            taux_participation,
+        ]
+    )
+
+
+@task_group()
+def plafond():
+    plafond_etpt = create_grist_etl_task(
+        selecteur="plafond_etpt",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_plafond_etpt,
+    )
+    db_plafond_etpt = create_grist_etl_task(
+        selecteur="db_plafond_etpt",
+        normalisation_process_func=process.clean_and_normalize_df,
+        process_func=process.process_db_plafond_etpt,
+    )
+    """ Task order """
+    chain([plafond_etpt, db_plafond_etpt])

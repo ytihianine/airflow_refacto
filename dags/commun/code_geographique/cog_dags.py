@@ -6,12 +6,12 @@ from airflow.utils.dates import days_ago
 from airflow.models import Variable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from infra.http_client.adapters import HttpxAPIClient
-from infra.grist.client import GristAPI
-from utils.config.vars import PROXY, AGENT
+from utils.api_client.adapters import HttpxAPIClient
+from utils.grist import GristAPI
+from utils.common.vars import PROXY, AGENT
 from utils.mails.mails import make_mail_func_callback, MailStatus
 
-from utils.tasks.sql import (
+from utils.common.tasks_sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     # set_dataset_last_update_date,
@@ -29,8 +29,8 @@ from dags.commun.code_geographique.tasks import (
 )
 
 # Mails
-to = ["yanis.tihianine@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["yanis.tihianine@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 LINK_DOC_DATA = ""  # noqa
 
@@ -60,8 +60,8 @@ default_args = {
         "nom_projet": "Code géographique",
         "mail": {
             "enable": False,
-            "to": to,
-            "cc": cc,
+            "To": To,
+            "CC": CC,
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,

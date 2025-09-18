@@ -9,8 +9,8 @@ from utils.mails.mails import make_mail_func_callback, MailStatus
 from dags.applications.db_backup.tasks import create_dump_files
 
 
-to = ["yanis.tihianine@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["yanis.tihianine@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 
 default_args = {
     "owner": "airflow",
@@ -36,8 +36,8 @@ default_args = {
         "nom_projet": "Sauvegarde databases",
         "mail": {
             "enable": False,
-            "to": to,
-            "cc": cc,
+            "To": To,
+            "CC": CC,
         },
         "docs": {
             "lien_pipeline": "",

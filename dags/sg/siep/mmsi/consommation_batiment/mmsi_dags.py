@@ -7,7 +7,7 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
 
-from utils.tasks.sql import (
+from utils.common.tasks_sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
@@ -15,11 +15,11 @@ from utils.tasks.sql import (
     copy_tmp_table_to_real_table,
     # set_dataset_last_update_date,
 )
-from utils.tasks.s3 import (
+from utils.common.tasks_minio import (
     copy_files_to_minio,
     del_files_from_minio,
 )
-from utils.config.tasks import get_s3_keys_source
+from utils.common.config_func import get_s3_keys_source
 
 from dags.sg.siep.mmsi.consommation_batiment.tasks import (
     convert_cons_mens_to_parquet,
@@ -36,8 +36,8 @@ from dags.sg.siep.mmsi.consommation_batiment.tasks import (
 
 
 # Mails
-to = ["mmsi.siep@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["mmsi.siep@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/consommation_batiment?ref_type=heads"  # noqa
 link_documentation_donnees = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
@@ -64,7 +64,7 @@ default_args = {
     default_args=default_args,
     params={
         "nom_projet": "Consommation des bâtiments",
-        "mail": {"enable": False, "to": to, "cc": cc},
+        "mail": {"enable": False, "To": To, "CC": CC},
         "docs": {
             "lien_pipeline": link_documentation_pipeline,
             "lien_donnees": link_documentation_donnees,

@@ -6,22 +6,21 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.tasks.grist import download_grist_doc_to_s3
-from utils.tasks.sql import (
+from utils.common.tasks_grist import download_grist_doc_to_s3
+from utils.common.tasks_sql import (
+    get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
-    import_file_to_db_at_once,
+    import_file_to_db,
     get_tbl_names_from_postgresql,
     # set_dataset_last_update_date,
 )
 
-from utils.tasks.s3 import (
+from utils.common.tasks_minio import (
     copy_files_to_minio,
     del_files_from_minio,
 )
-from utils.config.tasks import (
-    get_s3_keys_source,
-)
+from utils.common.config_func import get_s3_keys_source, get_storage_rows
 
 from dags.dge.carto_rem.tasks import (
     source_files,
@@ -32,8 +31,8 @@ from dags.dge.carto_rem.tasks import (
 
 
 # Mails
-to = ["yanis.tihianine@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["yanis.tihianine@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 link_documentation_donnees = ""  # noqa
 
@@ -64,8 +63,8 @@ default_args = {
         "sqlite_file_s3_filepath": "sg/dge/cartographie_remuneration/carto_rem.db",
         "mail": {
             "enable": False,
-            "to": to,
-            "cc": cc,
+            "To": To,
+            "CC": CC,
         },
         "docs": {
             "lien_pipeline": link_documentation_pipeline,
@@ -78,7 +77,6 @@ def cartographie_remuneration():
     nom_projet = "Cartographie rémunération"
     sqlite_file_s3_filepath = "sg/dge/cartographie_remuneration/carto_rem.db"
     prod_schema = "cartographie_remuneration"
-    tmp_schema = "temporaire"
 
     looking_for_files = S3KeySensor(
         task_id="looking_for_files",
@@ -101,8 +99,18 @@ def cartographie_remuneration():
             doc_id_key="grist_doc_id_carto_rem",
             s3_filepath=sqlite_file_s3_filepath,
         ),
+        get_tbl_names_from_postgresql(),
+        create_tmp_tables(
+            prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
+        ),
         [source_files(), referentiels(), source_grist()],
         output_files(),
+        import_file_to_db.partial(keep_file_id_col=True).expand(
+            storage_row=get_storage_rows(nom_projet=nom_projet).to_dict("records")
+        ),
+        copy_tmp_table_to_real_table(
+            prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
+        ),
     )
 
 

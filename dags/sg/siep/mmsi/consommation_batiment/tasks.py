@@ -2,52 +2,17 @@ from airflow.decorators import task
 
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from utils.file_handler import MinioFileHandler
-from utils.dataframe import df_info
-from utils.config.tasks import (
+from utils.df_utility import df_info
+from utils.common.config_func import (
     get_storage_rows,
     get_cols_mapping,
     format_cols_mapping,
 )
+from utils.tasks.file import create_parquet_converter_task
 
 from dags.sg.siep.mmsi.consommation_batiment import process
 
-
-@task(task_id="convert_cons_mens_to_parquet")
-def convert_cons_mens_to_parquet(selecteur: str, **context) -> None:
-    nom_projet = context.get("params").get("nom_projet", None)
-    if nom_projet is None:
-        raise ValueError(
-            "La variable nom_projet n'a pas été définie au niveau du DAG !"
-        )
-    # Variables
-    s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-    db_conf_hook = PostgresHook(postgres_conn_id="db_depose_fichier")
-    row_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-
-    # Main part
-    df_cons_mens = s3_hook.read_excel(
-        file_name=row_selecteur.loc[0, "filepath_source_s3"]
-    )
-
-    df_info(df=df_cons_mens, df_name=f"DF {selecteur} - INITIALISATION")
-
-    # Cleaning df
-    cols_oad_caract = get_cols_mapping(
-        nom_projet=nom_projet, db_hook=db_conf_hook, selecteur=selecteur
-    )
-    cols_oad_caract = format_cols_mapping(df_cols_map=cols_oad_caract.copy())
-    df_cons_mens = process.process_source_conso_mens(
-        df=df_cons_mens, cols_mapping=cols_oad_caract
-    )
-
-    df_info(df=df_cons_mens, df_name=f"DF {selecteur} - Après processing")
-
-    # Export
-    s3_hook.load_bytes(
-        bytes_data=df_cons_mens.to_parquet(path=None, index=False),
-        key=row_selecteur.loc[0, "filepath_tmp_s3"],
-        replace=True,
-    )
+conso_mens_parquet = create_parquet_converter_task(selecteur="conso_mens_source", task_params={"task_id": "convert_cons_mens_to_parquet"}, process_func=process.process_source_conso_mens)
 
 
 @task(task_id="informations_batiments")

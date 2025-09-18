@@ -4,14 +4,14 @@ from airflow.utils.dates import days_ago
 from datetime import timedelta
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.tasks.sql import (
+from utils.common.tasks_sql import (
     get_tbl_names_from_postgresql,
     create_tmp_tables,
     import_file_to_db,
     copy_tmp_table_to_real_table,
 )
-from utils.config.tasks import get_storage_rows
-from utils.tasks.grist import download_grist_doc_to_s3
+from utils.common.config_func import get_storage_rows
+from utils.common.tasks_grist import download_grist_doc_to_s3
 
 from dags.cgefi.suivi_activite.tasks import (
     referentiels,
@@ -22,8 +22,8 @@ from dags.cgefi.suivi_activite.tasks import (
 )
 
 # Mails
-to = []  # ["brigitte.lekime@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = []  # ["brigitte.lekime@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/carte_identite_mef?ref_type=heads"  # noqa
 LINK_DOC_DATA = (
     "https://grist.numerique.gouv.fr/o/catalogue/k9LvttaYoxe6/catalogage-MEF"
@@ -56,8 +56,8 @@ default_args = {
         "sqlite_file_s3_filepath": "cgefi/suivi_activite/suivi_activite.db",
         "mail": {
             "enable": False,
-            "to": to,
-            "cc": cc,
+            "To": To,
+            "CC": CC,
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,

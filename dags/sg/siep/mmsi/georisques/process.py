@@ -1,6 +1,6 @@
 import pandas as pd
 
-from infra.http_client.base import AbstractApiClient
+from utils.api_client.base import AbstractApiClient
 
 
 def clean_rename(df: pd.DataFrame) -> pd.DataFrame:

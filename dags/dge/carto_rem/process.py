@@ -125,6 +125,9 @@ def process_agent_diplome(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["agent"])
     df = df.rename(columns={"niveau_diplome": "id_niveau_diplome"})
     df["libelle_diplome"] = df["libelle_diplome"].str.strip().str.split().str.join(" ")
+    df["id_niveau_diplome"] = df["id_niveau_diplome"].replace({0: None})
+    df = df.reset_index(drop=True)
+    df["id"] = df.index
     return df
 
 
@@ -135,19 +138,24 @@ def process_agent_revalorisation(df: pd.DataFrame) -> pd.DataFrame:
     date_cols = ["date_dernier_renouvellement", "date_derniere_revalorisation"]
     for date_col in date_cols:
         df[date_col] = pd.to_datetime(df[date_col], unit="s", errors="coerce")
+    df["id_base_revalorisation"] = df["id_base_revalorisation"].replace({0: None})
+    df = df.loc[df["matricule_agent"] != 0]
+    df = df.reset_index(drop=True)
+    df["id"] = df.index
     return df
 
 
 def process_agent_contrat(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["agent"])
-    df["duree_cumulee_contrats_tout_contrat_mef"] = (
-        df["duree_cumulee_contrats_tout_contrat_mef"]
-        .apply(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
-        .astype(str)
-        .str.strip()
-        .str.split()
-        .str.join(" ")
-    )
+    # df["duree_cumulee_contrats_tout_contrat_mef"] = (
+    #     df["duree_cumulee_contrats_tout_contrat_mef"]
+    #     .apply(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
+    #     .astype(str)
+    #     .str.strip()
+    #     .str.split()
+    #     .str.join(" ")
+    #     .fillna("")
+    # )
     date_cols = [
         "date_premier_contrat_mef",
         "date_debut_contrat_actuel_dge",
@@ -156,6 +164,10 @@ def process_agent_contrat(df: pd.DataFrame) -> pd.DataFrame:
     ]
     for date_col in date_cols:
         df[date_col] = pd.to_datetime(df[date_col], unit="s")
+    for col in df.select_dtypes(include=["object", "string"]).columns:
+        df[col] = df[col].astype(str).str.replace("\x00", "", regex=False)
+    df = df.reset_index(drop=True)
+    df["id"] = df.index
     return df
 
 
@@ -173,23 +185,31 @@ def process_agent_rem_variable(df: pd.DataFrame) -> pd.DataFrame:
 """
 
 
-def process_agent_information(
+def process_agent(
     df_rem_carto: pd.DataFrame, df_info_car: pd.DataFrame, required_cols: list[str]
 ) -> pd.DataFrame:
     df = pd.merge(
-        left=df_rem_carto, right=df_info_car, how="left", on=["matricule_agent"]
+        left=df_rem_carto, right=df_info_car, how="outer", on=["matricule_agent"]
     )
     df = df[required_cols]
+    df = df.reset_index(drop=True)
+    df["id"] = df.index
 
     return df
 
 
 def process_agent_poste(
-    df_rem_carto: pd.DataFrame, df_r4: pd.DataFrame, required_cols: list[str]
+    df_agent: pd.DataFrame,
+    df_carto_rem: pd.DataFrame,
+    df_r4: pd.DataFrame,
+    required_cols: list[str],
 ) -> pd.DataFrame:
-    df = pd.merge(left=df_rem_carto, right=df_r4, how="left", on=["matricule_agent"])
+    df = pd.merge(left=df_agent, right=df_carto_rem, how="left", on=["matricule_agent"])
+    df = pd.merge(left=df, right=df_r4, how="left", on=["matricule_agent"])
     df = df[required_cols]
     df["date_recrutement_structure"] = None
+    df = df.reset_index(drop=True)
+    df["id"] = df.index
     return df
 
 
@@ -225,4 +245,23 @@ def process_agent_remuneration(
         "Zone à 3%": 0.003,
     }
     df["region_indemnitaire_valeur"] = df["region_indemnitaire"].map(map_region_indem)
+    cols = [
+        "total_indemnitaire_annuel",
+        "totale_brute_annuel",
+        "plafond_part_variable",
+        "total_annuel_ifse",
+        "plafond_part_variable_collective",
+    ]
+
+    for c in cols:
+        df[c] = df[c].astype(str).str.replace(",", ".")
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+
+    df["present_cartographie"] = (
+        df["present_cartographie"]
+        .apply(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
+        .map({"T": True, "F": False})
+    )
+    df = df.reset_index(drop=True)
+    df["id"] = df.index
     return df

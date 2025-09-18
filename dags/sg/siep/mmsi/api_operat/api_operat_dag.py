@@ -4,8 +4,8 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.config.tasks import get_storage_rows
-from utils.tasks.sql import (
+from utils.common.config_func import get_storage_rows
+from utils.common.tasks_sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
@@ -26,8 +26,8 @@ if needs_debug:
     HTTPConnection.debuglevel = 1
 
 # Mails
-to = ["mmsi.siep@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["mmsi.siep@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/api_operat?ref_type=heads"  # noqa
 link_documentation_donnees = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
@@ -56,8 +56,8 @@ default_args = {
         "nom_projet": "API Opera",
         "mail": {
             "enable": False,
-            "to": to,
-            "cc": cc,
+            "To": To,
+            "CC": CC,
         },
         "docs": {
             "lien_pipeline": link_documentation_pipeline,

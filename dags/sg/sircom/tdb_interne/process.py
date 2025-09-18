@@ -5,7 +5,7 @@ from typing import Union
 
 from utils.control.number import is_in_range, is_upper
 
-from utils.dataframe import df_info, tag_last_value_rows
+from utils.df_utility import df_info, tag_last_value_rows
 
 
 def generic_convert_to_float(value: str) -> float:

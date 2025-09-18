@@ -1,57 +1,143 @@
-from typing import Callable
-from airflow.decorators import task
+from airflow.decorators import task_group
+from airflow.models.baseoperator import chain
 
-from utils.file_handler import MinioFileHandler
-from utils.dataframe import df_info
-from utils.tasks.sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
-from utils.config.tasks import get_storage_rows
+from utils.tasks.etl import create_grist_etl_task
 
 from dags.sg.dsci.accompagnements_dsci import process
 
 
-def create_task(
-    selecteur: str,
-    process_func: Callable = None,
-):
-    @task(task_id=selecteur)
-    def _task(**context):
-        nom_projet = context.get("params").get("nom_projet", None)
-        sqlite_file_s3_filepath = context.get("params").get(
-            "sqlite_file_s3_filepath", None
-        )
-        if nom_projet is None:
-            raise ValueError(
-                "La variable nom_projet n'a pas été définie au niveau du DAG !"
-            )
-        if sqlite_file_s3_filepath is None:
-            raise ValueError(
-                "La variable sqlite_file_s3_filepath n'a pas été définie au niveau du DAG !"
-            )
+# Création des tâches
+@task_group
+def referentiels() -> None:
+    ref_bureau = create_grist_etl_task(
+        selecteur="ref_bureau",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_bureau,
+    )
+    ref_certification = create_grist_etl_task(
+        selecteur="ref_certification",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_certification,
+    )
+    ref_competence_particuliere = create_grist_etl_task(
+        selecteur="ref_competence_particuliere",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_competence_particuliere,
+    )
+    ref_direction = create_grist_etl_task(
+        selecteur="ref_direction",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_direction,
+    )
+    ref_profil_correspondant = create_grist_etl_task(
+        selecteur="ref_profil_correspondant",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_profil_correspondant,
+    )
+    ref_promotion_fac = create_grist_etl_task(
+        selecteur="ref_promotion_fac",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_promotion_fac,
+    )
+    ref_qualite_service = create_grist_etl_task(
+        selecteur="ref_qualite_service",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_qualite_service,
+    )
+    ref_region = create_grist_etl_task(
+        selecteur="ref_region",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_region,
+    )
+    ref_semainier = create_grist_etl_task(
+        selecteur="ref_semainier",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_semainier,
+    )
+    ref_typologie_accompagnement = create_grist_etl_task(
+        selecteur="ref_typologie_accompagnement",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_typologie_accompagnement,
+    )
+    ref_pole = create_grist_etl_task(
+        selecteur="ref_pole",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_pole,
+    )
+    ref_type_accompagnement = create_grist_etl_task(
+        selecteur="ref_type_accompagnement",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_ref_type_accompagnement,
+    )
 
-        # Hooks
-        s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-        # Get config values related to the task
-        task_config = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-        grist_tbl_name = task_config.loc[0, "nom_source"]
+    # Ordre des tâches
+    chain(
+        [
+            ref_bureau,
+            ref_certification,
+            ref_competence_particuliere,
+            ref_direction,
+            ref_profil_correspondant,
+            ref_promotion_fac,
+            ref_qualite_service,
+            ref_region,
+            ref_semainier,
+            ref_typologie_accompagnement,
+            ref_pole,
+            ref_type_accompagnement,
+        ],
+    )
 
-        # Get data of table
-        conn = get_conn_from_s3_sqlite(sqlite_file_s3_filepath=sqlite_file_s3_filepath)
-        df = get_data_from_s3_sqlite_file(
-            grist_tbl_name=grist_tbl_name,
-            sqlite_s3_filepath=sqlite_file_s3_filepath,
-            sqlite_conn=conn,
-        )
 
-        df = process.normalize_dataframe(df=df)
-        df_info(df=df, df_name=f"{grist_tbl_name} - Source normalisée")
-        df = process_func(df)
-        df_info(df=df, df_name=f"{grist_tbl_name} - After processing")
+@task_group
+def bilaterales() -> None:
+    struc_bilaterales = create_grist_etl_task(
+        selecteur="struc_bilaterales",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_struc_bilaterales,
+    )
+    struc_bilaterale_remontee = create_grist_etl_task(
+        selecteur="struc_bilaterale_remontee",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_struc_bilaterale_remontee,
+    )
+    # Ordre des tâches
+    chain([struc_bilaterales, struc_bilaterale_remontee])
 
-        # Export
-        s3_hook.load_bytes(
-            bytes_data=df.to_parquet(path=None, index=False),
-            key=task_config.loc[0, "filepath_tmp_s3"],
-            replace=True,
-        )
 
-    return _task()
+@task_group
+def correspondant() -> None:
+    struc_correspondant = create_grist_etl_task(
+        selecteur="struc_correspondant",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_struc_correspondant,
+    )
+    struc_correspondant_profil = create_grist_etl_task(
+        selecteur="struc_correspondant_profil",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_struc_correspondant_profil,
+    )
+    # struc_correspondant_certification = create_grist_etl_task(
+    #     selecteur="struc_correspondant_certification",
+    #     process_func=process.process_struc_correspondant_certification,
+    # )
+
+    # Ordre des tâches
+    chain([struc_correspondant, struc_correspondant_profil])
+
+
+@task_group
+def mission_innovation() -> None:
+    struc_accompagnement_mi = create_grist_etl_task(
+        selecteur="struc_accompagnement_mi",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_struc_accompagnement_mi,
+    )
+    struc_accompagnement_mi_satisfaction = create_grist_etl_task(
+        selecteur="struc_accompagnement_mi_satisfaction",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_struc_accompagnement_mi_satisfaction,
+    )
+
+    # Ordre des tâches
+    chain([struc_accompagnement_mi, struc_accompagnement_mi_satisfaction])

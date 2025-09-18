@@ -1,0 +1,334 @@
+from typing import Union
+from functools import partial
+from datetime import datetime
+import pandas as pd
+
+
+def determiner_aip_direction(aip_group: str) -> str:
+    aip_dir = "Indéterminée"
+    if aip_group is None or aip_group == "":
+        return aip_dir
+
+    aip_dir_split = aip_group.split("_")
+
+    if "SEC_GEN" in aip_group:
+        sub_service = aip_dir_split[-1]
+        aip_dir = "SG_" + sub_service
+        return aip_dir
+    else:
+        if len(aip_dir_split) == 2:
+            aip_dir = aip_dir_split[-1]
+            return aip_dir
+
+    return aip_dir
+
+
+def find_certificat_dir_in_profile(profile: str) -> str:
+    profile = profile.upper()
+    mapping = {
+        # Autres structures
+        "PRESTAT": "ARTEMIS",
+        "DGCCRF": "DGCCRF",
+        "AIFE": "AIFE",
+    }
+
+    for key, value in mapping.items():
+        if key in profile:
+            return value
+
+    return ""
+
+
+def find_certificat_dir_in_dn(dn: str) -> str:
+    dn = dn.upper()
+    mapping = {
+        # Autres structures
+        "DGFIP": "DGFIP",
+        "SIRHIUS": "CISIRH",
+        "AIFE": "AIFE",
+        "OPENTRUST": "IGC",
+        # SG
+        "ALIZE": "SG_SNUM",
+    }
+
+    for key, value in mapping.items():
+        if key in dn:
+            return value
+
+    return ""
+
+
+def find_certificat_dir_in_subjectid(subjectid: str) -> str:
+    subjectid = subjectid.upper()
+    mapping = {
+        # Autres structures
+        "TRACFIN": "TRACFIN",
+        # SG
+        "ARCADE": "SG_SNUM",
+        "TEST": "SG_SNUM",
+    }
+
+    for key, value in mapping.items():
+        if key in subjectid:
+            return value
+
+    return ""
+
+
+def find_certificat_dir_in_contact(contact: str) -> str:
+    contact = contact.upper()
+    mapping = {
+        # Autres structures
+        "SIUDA": "DB",
+        "DGFIP": "DGFIP",
+        "DOUANE": "DGDDI",
+        "AIFE": "AIFE",
+        "INSEE": "INSEE",
+        "CISIRH": "CISIRH",
+        "CARGOET": "CISIRH",
+        "LE-QUELLEC": "CISIRH",
+        "CCRF": "DGCCRF",
+        "@AFT": "AFT",
+        # SG
+        "SAFI": "SG_SAFI",
+        "SEP": "SG_SNUM",
+        "BEAUVOIS": "SG_SNUM",
+        "BRUAL": "SG_SNUM",
+        "NIANG": "SG_SNUM",
+        "DJOUNNADI": "SG_SNUM",
+        "SPOT": "SG_SNUM",
+    }
+
+    for key, value in mapping.items():
+        if key in contact:
+            return value
+
+    return ""
+
+
+def find_certificat_dir_in_mail(mail: str) -> str:
+    mail = mail.upper()
+    mapping = {
+        # Autres structures
+        "DGFIP": "DGFIP",
+        "SGAE": "SGAE",
+        "IGF": "IGF",
+        "SYNDICATS": "SYNDICATS",
+        "INDUSTRIE.GOUV": "CABINETS",
+        "TRANSFORMATION.GOUV": "CABINETS",
+        "NUMERIQUE.GOUV": "CABINETS",
+        "INSEE": "INSEE",
+    }
+
+    for key, value in mapping.items():
+        if key in mail:
+            return value
+
+    return ""
+
+
+def determiner_certificat_direction(row: pd.Series) -> str:
+    certif_dir = find_certificat_dir_in_profile(profile=row.profile)
+    if certif_dir != "":
+        return certif_dir
+    certif_dir = find_certificat_dir_in_dn(profile=row.dn)
+    if certif_dir != "":
+        return certif_dir
+    certif_dir = find_certificat_dir_in_subjectid(profile=row.subjectid)
+    if certif_dir != "":
+        return certif_dir
+    certif_dir = find_certificat_dir_in_contact(profile=row.contact)
+    if certif_dir != "":
+        return certif_dir
+    certif_dir = find_certificat_dir_in_mail(mail=row.contact)
+    if certif_dir != "":
+        return certif_dir
+
+    certif_dir = "Indéterminé"
+    return certif_dir
+
+
+def _match_mapping(
+    text: str,
+    mapping: dict[Union[str, tuple[str, ...]], str],
+    default: str = "Indéterminé",
+) -> str:
+    """
+    Matches `text` against keys in mapping.
+    Keys can be a string (single condition) or a tuple (all substrings required).
+    Returns the mapped value or `default`.
+    """
+    text = text.upper()
+
+    for keys, value in mapping.items():
+        if isinstance(keys, str):  # single key
+            keys = (keys,)
+        if all(k.upper() in text for k in keys):
+            return value
+    return default
+
+
+def determiner_ac(profile: str) -> str:
+    profile = profile.upper()
+    mapping = {
+        "SERVICE": "SERVICE",
+        "SERVEUR": "SERVEURS",
+        "AGENT": "AGENTS",
+        "PRESTATAIRE": "PRESTATAIRES",
+        "OPERATEURS": "OPERATEURS",
+        "TEST": "TEST",
+        "technique": "technique",
+        "interne": "IGC",
+        "AUTH_MOBILE": "MOBILE",
+        "": "IGC",
+    }
+
+    return _match_mapping(text=profile, mapping=mapping)
+
+
+def determiner_type_offre(profile: str) -> str:
+    profile = profile.upper()
+    # Key order is important
+    mapping = {
+        # Autres structures
+        "AUTH_SIGN": "AUTHENTIFICATION_SIGNATURE",
+        "sign": "SIGNATURE",
+        "auth": "AUTHENTIFICATION",
+        "conf": "CONFIDENTIALITE",
+        "prestataire": "ARTEMIS",
+        "clients_multi": "CLIENT MULTIDOMAINE",
+        "veurs_multi": "AUTHENTIFICATION MULTIDOMAINE",
+        "horo": "HORODATAGE",
+        "cachet": "CACHET",
+        "serveurs_clien": "CLIENT SERVEUR",
+        "operateur": "OPERATEUR",
+        # Match exact values for those
+        "F_SERVEURS": "AUTHENTIFICATION SERVEUR",
+        # "F_SERVEURS_2": "AUTHENTIFICATION SERVEUR",
+        # "F_SERVEURS_3": "AUTHENTIFICATION SERVEUR",
+        # "serveurs": "",
+    }
+    return _match_mapping(text=profile, mapping=mapping)
+
+
+def determiner_support(profile: str) -> str:
+    profile = profile.upper()
+    # Key order is important
+    mapping = {
+        # Autres structures
+        "TPM": "TPM",
+        "logi": "LOGICIEL",
+        "mate": "MATERIEL",
+        "conf": "MATERIEL",
+        "agents": "MATERIEL",
+        "serveur": "SERVEUR",
+        "service": "SERVICE",
+        "ac_adm_technique": "MATERIEL",
+    }
+    return _match_mapping(text=profile, mapping=mapping)
+
+
+def determiner_etat(row: pd.Series, date_ajd: datetime) -> str:
+    date_debut_validite = row.date_debut_validite
+    date_fin_validite = row.date_fin_validite
+    date_revocation = row.date_revocation
+
+    if date_revocation is not None:
+        return "REVOQUE"
+
+    if date_ajd > date_fin_validite:
+        return "EXPIRE"
+
+    if date_debut_validite <= date_ajd and date_ajd <= date_fin_validite:
+        return "VALIDE"
+
+    return "Autre"
+
+
+def determiner_version(profile: str) -> str:
+    profile = profile.upper()
+    # Key order is important
+    mapping = {
+        ("SERVEURS", "_3"): "SERVEUR3",
+        ("SERVICE", "_3"): "SERVICE3",
+        ("CONFIDENTIALITE",): "CRYPT",
+        ("FSG3_",): "AC3",
+        ("SERVEURS",): "SERVEUR",
+        ("service",): "SERVICE",
+        ("FSG_",): "AC2",
+    }
+    return _match_mapping(text=profile, mapping=mapping)
+
+
+def determiner_version_serveur(profile: str) -> str:
+    profile = profile.upper()
+    # Key order is important
+    mapping = {
+        ("3072",): "3072",
+        ("serveur", "_2"): "2048",
+        ("service", "_2"): "2048",
+        ("_3",): "2048",
+    }
+    return _match_mapping(text=profile, mapping=mapping)
+
+
+"""
+    Fonctions de processing des fichiers sources
+"""
+
+
+def process_agents(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
+    df = df.rename(columns=cols_mapping)
+    df["ou_sigle"] = df["ou_sigle"].str.strip()
+    df["mail_agent"] = df["mail_agent"].str.strip()
+    df["mail_grid"] = df["mail_grid"].str.strip()
+    return df
+
+
+def process_aip(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
+    df = df.rename(columns=cols_mapping)
+    df["aip_direction"] = list(map(determiner_aip_direction, df["groupe"]))
+    df["mail"] = df["mail"].str.strip()
+    return df
+
+
+def process_certificats(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
+    df = df.rename(columns=cols_mapping)
+    date_cols = ["a_partir_du", "jusqu_au", "date_revocation"]
+    for date_col in date_cols:
+        df[date_col] = pd.to_datetime(
+            df[date_col], format="%d/%m/%Y %H:%M:%S", errors="coerce"
+        )
+    df["certificat_direction"] = list(map(determiner_certificat_direction, df))
+    date_ajd = datetime.now()
+    df["ac"] = list(map(determiner_ac, df["profile"]))
+    df["type_offre"] = list(map(determiner_type_offre, df["profile"]))
+    df["supports"] = list(map(determiner_support, df["profile"]))
+    df["etat"] = list(map(partial(determiner_etat, date_ajd=date_ajd), df))
+    df["version"] = list(map(determiner_version, df["profile"]))
+    df["version_serveur"] = list(map(determiner_version_serveur, df["profile"]))
+    return df
+
+
+def process_igc(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
+    df = df.rename(columns=cols_mapping)
+    df["mail"] = df["mail"].str.strip()
+    df["aip_balf_mail"] = df["aip_balf_mail"].str.strip()
+    return df
+
+
+"""
+    Fonctions de processing des fichiers finaux
+"""
+
+
+def liste_aip(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
+    df = df.rename(columns=cols_mapping)
+
+    return df
+
+
+def liste_certificats(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
+    df = df.rename(columns=cols_mapping)
+
+    return df

@@ -5,7 +5,7 @@ from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.tasks.sql import (
+from utils.common.tasks_sql import (
     get_project_config,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -18,7 +18,7 @@ from utils.tasks.sql import (
 #     copy_files_to_minio,
 #     del_files_from_minio,
 # )
-from utils.config.tasks import (
+from utils.common.config_func import (
     get_s3_keys_source,
     get_storage_rows,
 )
@@ -27,8 +27,8 @@ from dags.sg.siep.mmsi.oad_referentiel.tasks import bien_typologie
 
 
 # Mails
-to = ["yanis.tihianine@finances.gouv.fr"]
-cc = ["labo-data@finances.gouv.fr"]
+To = ["yanis.tihianine@finances.gouv.fr"]
+CC = ["labo-data@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 LINK_DOC_DATA = ""  # noqa
 

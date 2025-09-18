@@ -5,7 +5,7 @@ from datetime import timedelta
 from pprint import pprint
 import pytz
 
-from utils.tasks.sql import get_project_config
+from utils.common.tasks_sql import get_project_config
 from utils.mails.mails import make_mail_func_callback, MailStatus
 
 default_args = {
@@ -35,8 +35,8 @@ link_documentation_donnees = "Non-défini"
         "nom_projet": "Projet test",
         "mail": {
             "enable": False,
-            "to": ["yanis.tihianine@finances.gouv.fr"],
-            "cc": [""],
+            "To": ["yanis.tihianine@finances.gouv.fr"],
+            "CC": [""],
         },
         "docs": {
             "lien_pipeline": link_documentation_pipeline,

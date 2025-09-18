@@ -2,8 +2,8 @@ from airflow.decorators import task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from utils.file_handler import MinioFileHandler
 
-from utils.config.tasks import get_storage_rows
-from utils.dataframe import df_info
+from utils.common.config_func import get_storage_rows
+from utils.df_utility import df_info
 
 from dags.sg.siep.mmsi.eligibilite_fcu.process import (
     get_eligibilite_fcu,
@@ -14,8 +14,8 @@ from dags.sg.siep.mmsi.eligibilite_fcu.process import (
 @task(task_id="eligibilite_fcu")
 def eligibilite_fcu(nom_projet: str, selecteur: str = "fcu"):
     import pandas as pd
-    from utils.config.vars import PROXY, AGENT
-    from infra.http_client.adapters import HttpxAPIClient
+    from utils.common.vars import PROXY, AGENT
+    from utils.api_client.adapters import HttpxAPIClient
 
     # Http client
     httpx_internet_client = HttpxAPIClient(proxy=PROXY, user_agent=AGENT)
