@@ -4,7 +4,6 @@ from airflow.decorators import task
 @task(task_id="clean_s3")
 def clean_s3() -> None:
     from datetime import datetime, timedelta
-    from utils.file_handler import MinioFileHandler
 
     s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
     days_to_keep = 60

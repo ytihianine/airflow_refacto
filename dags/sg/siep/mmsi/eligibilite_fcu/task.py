@@ -1,9 +1,9 @@
 from airflow.decorators import task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from utils.file_handler import MinioFileHandler
+
 
 from utils.config.tasks import get_storage_rows
-from utils.df_utility import df_info
+from utils.dataframe import df_info
 
 from dags.sg.siep.mmsi.eligibilite_fcu.process import (
     get_eligibilite_fcu,

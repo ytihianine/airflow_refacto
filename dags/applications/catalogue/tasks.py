@@ -1,8 +1,8 @@
 from typing import Callable
 from airflow.decorators import task
 
-from utils.file_handler import MinioFileHandler
-from utils.df_utility import df_info
+
+from utils.dataframe import df_info
 from utils.tasks.sql import (
     get_conn_from_s3_sqlite,
     get_data_from_s3_sqlite_file,

@@ -16,7 +16,6 @@ def create_dump_files(
     from airflow.operators.python import get_current_context
     from airflow.models import Variable
     from airflow.providers.postgres.hooks.postgres import PostgresHook
-    from utils.file_handler import MinioFileHandler
 
     # Define task name
     task_context = get_current_context()

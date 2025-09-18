@@ -5,7 +5,7 @@
 # from airflow.providers.common.sql.hooks.sql import DbApiHook
 
 
-# from utils.df_utility import df_info
+# from utils.dataframe import df_info
 
 # from dags.applications.gestion_utilisateurs.process import process_user_info
 

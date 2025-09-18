@@ -2,7 +2,7 @@ from io import BytesIO
 from airflow.decorators import task
 from airflow.models import Variable
 
-from utils.file_handler import MinioFileHandler
+
 from utils.api_client.adapters import RequestsAPIClient
 from utils.common.vars import get_root_folder, paris_tz
 
