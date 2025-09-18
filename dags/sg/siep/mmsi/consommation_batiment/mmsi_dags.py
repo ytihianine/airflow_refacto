@@ -20,6 +20,7 @@ from utils.tasks.s3 import (
 from utils.config.tasks import get_s3_keys_source
 
 from dags.sg.siep.mmsi.consommation_batiment.tasks import (
+    validate_params,
     conso_mens_parquet,
     source_files,
     additionnal_files,
@@ -89,6 +90,7 @@ def consommation_des_batiments():
 
     # Ordre des tâches
     chain(
+        validate_params(),
         looking_for_files,
         conso_mens_parquet(),
         source_files(),

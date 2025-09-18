@@ -1,10 +1,19 @@
 from airflow.decorators import task, task_group
 from airflow.models.baseoperator import chain
 
+from utils.tasks.validation import create_validate_params_task
+from utils.config.types import ALL_KEYS
 from utils.tasks.file import create_parquet_converter_task
 from utils.tasks.etl import create_multi_files_input_etl_task
 
 from dags.sg.siep.mmsi.oad.caracteristiques import process
+
+
+validate_params = create_validate_params_task(
+    required_paths=ALL_KEYS,
+    require_truthy=None,
+    task_id="validate_dag_params",
+)
 
 
 oad_carac_to_parquet = create_parquet_converter_task(
@@ -49,10 +58,10 @@ def tasks_oad_caracteristiques():
 
     chain(
         [
-            sites,
-            biens,
-            gestionnaires,
-            biens_gestionnaires,
-            biens_occupants,
+            sites(),
+            biens(),
+            gestionnaires(),
+            biens_gestionnaires(),
+            biens_occupants(),
         ],
     )

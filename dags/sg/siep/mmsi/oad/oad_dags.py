@@ -22,6 +22,7 @@ from utils.tasks.s3 import (
 )
 
 from dags.sg.siep.mmsi.oad.caracteristiques.tasks import (
+    validate_params,
     oad_carac_to_parquet,
     tasks_oad_caracteristiques,
 )
@@ -109,6 +110,7 @@ def oad():
 
     # Ordre des tâches
     chain(
+        validate_params(),
         looking_for_files,
         convert_file_to_parquet(),
         tasks_oad_caracteristiques(),

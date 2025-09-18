@@ -21,7 +21,7 @@ from utils.config.tasks import (
     get_projet_config,
 )
 
-from dags.sg.siep.mmsi.oad_referentiel.tasks import bien_typologie
+from dags.sg.siep.mmsi.oad_referentiel.tasks import validate_params, bien_typologie
 
 
 # Mails
@@ -93,6 +93,7 @@ def oad_referentiel():
 
     """ Task order """
     chain(
+        validate_params(),
         looking_for_files,
         bien_typologie(),
         create_tmp_tables(),

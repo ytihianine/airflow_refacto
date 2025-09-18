@@ -5,7 +5,13 @@ from datetime import timedelta
 
 from utils.tasks.sql import create_tmp_tables, copy_tmp_table_to_real_table
 from utils.tasks.grist import download_grist_doc_to_s3
-from dags.sg.dsci.carte_identite_mef.tasks import effectif, budget, taux_agent, plafond
+from dags.sg.dsci.carte_identite_mef.tasks import (
+    validate_params,
+    effectif,
+    budget,
+    taux_agent,
+    plafond,
+)
 
 
 nom_projet = "Carte_Identite_MEF"
@@ -52,6 +58,7 @@ default_args = {
 def carte_identite_mef_dag():
     """Tasks order"""
     chain(
+        validate_params(),
         download_grist_doc_to_s3(
             selecteur="grist_doc",
             workspace_id="dsci",

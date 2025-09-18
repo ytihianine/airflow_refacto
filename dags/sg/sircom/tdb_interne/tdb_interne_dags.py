@@ -10,6 +10,7 @@ from utils.tasks.sql import (
 )
 from utils.tasks.grist import download_grist_doc_to_s3
 from dags.sg.sircom.tdb_interne.tasks import (
+    validate_params,
     abonnes_visites,
     budget,
     enquetes,
@@ -73,6 +74,7 @@ default_args = {
 def tdb_sircom():
     """Task order"""
     chain(
+        validate_params(),
         download_grist_doc_to_s3(
             selecteur="grist_doc",
             workspace_id="dsci",

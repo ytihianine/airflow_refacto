@@ -1,61 +1,12 @@
 from typing import Callable
-from airflow.decorators import task
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.decorators import task_group
 
-
-from utils.config.tasks import (
-    get_storage_rows,
-    get_cols_mapping,
-    format_cols_mapping,
-)
-from utils.dataframe import df_info
+from utils.tasks.etl import create_file_etl_task
 
 from dags.cgefi.barometre import process
 
 SELECTEUR_BAROMETRE = "barometre"
 SELECTEUR_ORGA_MERGE = "organisme_merge"
-
-
-def create_task(
-    selecteur: str,
-    sqlite_file_s3_filepath: str,
-    process_func: Callable = None,
-):
-    @task(task_id=selecteur)
-    def _task(**context):
-        nom_projet = context.get("params").get("nom_projet", None)
-        if nom_projet is None:
-            raise ValueError(
-                "La variable nom_projet n'a pas été définie au niveau du DAG !"
-            )
-
-        # Hooks
-        s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci")
-        db_hook = PostgresHook(postgres_conn_id="db_depose_fichier")
-
-        # Config
-        config_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-        cols_to_rename = get_cols_mapping(
-            nom_projet=nom_projet, db_hook=db_hook, selecteur=selecteur
-        )
-        cols_to_rename = format_cols_mapping(df_cols_map=cols_to_rename.copy())
-
-        # Read data
-        df = s3_hook.read_excel(file_name=config_selecteur.loc[0, "filepath_source_s3"])
-
-        # Processing
-        df_info(df=df, df_name=f"{selecteur} - Source")
-        df = process_func(df)
-        df_info(df=df, df_name=f"{selecteur} - Après processing")
-
-        # Export
-        s3_hook.load_bytes(
-            bytes_data=df.to_parquet(path=None, index=False),
-            key=config_selecteur.loc[0, "filepath_tmp_s3"],
-            replace=True,
-        )
-
-    return _task()
 
 
 @task(task_id="organisme")

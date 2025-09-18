@@ -21,6 +21,7 @@ from utils.tasks.s3 import (
 from utils.config.tasks import get_s3_keys_source, get_projet_config
 
 from dags.dge.carto_rem.tasks import (
+    validate_params,
     source_files,
     output_files,
     referentiels,
@@ -90,6 +91,7 @@ def cartographie_remuneration():
 
     """ Task order """
     chain(
+        validate_params(),
         looking_for_files,
         download_grist_doc_to_s3(
             selecteur="grist_doc",
