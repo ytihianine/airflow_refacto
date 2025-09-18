@@ -170,6 +170,7 @@ def create_multi_files_input_etl_task(
     input_selecteurs: list[str],
     process_func: Callable[..., pd.DataFrame],
     read_options: dict[str, Any] | None = None,
+    use_required_cols: bool = False,
 ) -> Callable[..., XComArg]:
     """
     Create an ETL task that:
@@ -188,6 +189,8 @@ def create_multi_files_input_etl_task(
     Returns:
         Callable: Airflow task function
     """
+    if read_options is None:
+        read_options = {}
 
     @task(task_id=output_selecteur)
     def _task(**context) -> None:
@@ -209,6 +212,10 @@ def create_multi_files_input_etl_task(
         dfs: list[pd.DataFrame] = []
         for sel in input_selecteurs:
             cfg = get_selecteur_config(nom_projet=nom_projet, selecteur=sel)
+            if use_required_cols:
+                required_cols = get_cols_mapping(nom_projet=nom_projet, selecteur=sel)
+                if not required_cols.empty:
+                    read_options["columns"] = required_cols["colname_dest"].to_list()
             df = read_dataframe(
                 file_handler=s3_handler,
                 file_path=cfg.filepath_source_s3,
