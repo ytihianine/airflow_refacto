@@ -4,23 +4,21 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_sql import (
-    get_project_config,
+from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db,
-    get_tbl_names_from_postgresql,
     # set_dataset_last_update_date,
 )
 
-# from utils.common.tasks_minio import (
-#     copy_files_to_minio,
-#     del_files_from_minio,
-# )
-from utils.common.config_func import (
+from utils.tasks.s3 import (
+    copy_s3_files,
+    del_s3_files,
+)
+from utils.config.tasks import (
     get_s3_keys_source,
-    get_storage_rows,
+    get_projet_config,
 )
 
 from dags.sg.siep.mmsi.oad_referentiel.tasks import bien_typologie
@@ -59,8 +57,8 @@ default_args = {
         "link_documentation_pipeline": LINK_DOC_PIPELINE,
         "link_documentation_donnees": LINK_DOC_DATA,
     },
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
     default_args=default_args,
 )
@@ -81,47 +79,25 @@ def oad_referentiel():
         poke_interval=timedelta(seconds=30),  # timedelta(minutes=1),
         timeout=timedelta(minutes=1),
         soft_fail=True,
-        on_skipped_callback=make_mail_func_callback(mail_statut=MailStatus.SKIP),
-        on_success_callback=make_mail_func_callback(
-            mail_statut=MailStatus.START,
+        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+        on_success_callback=create_airflow_callback(
+            mail_status=MailStatus.START,
         ),
     )
 
     """ Task order """
-    projet_config = get_project_config()
-
     chain(
-        projet_config,
         looking_for_files,
-        get_tbl_names_from_postgresql(),
-        create_tmp_tables(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
+        bien_typologie(),
+        create_tmp_tables(),
+        import_file_to_db.expand(storage_row=get_projet_config(nom_projet=nom_projet)),
+        copy_tmp_table_to_real_table(),
+        copy_s3_files(
+            bucket="dsci",
         ),
-        [bien_typologie(nom_projet=nom_projet)],
-        import_file_to_db.expand(
-            storage_row=get_storage_rows(nom_projet=nom_projet).to_dict("records")
+        del_s3_files(
+            bucket="dsci",
         ),
-        copy_tmp_table_to_real_table(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-        ),
-        # copy_files_to_minio.partial(
-        #     s3_hook=MINIO_FILE_HANDLER, bucket=BUCKET, dest_key=S3_DEST_KEY
-        # ).expand(
-        #     source_key=storage_paths.loc[
-        #         storage_paths["type_fichier"] == "Source", "s3_filepath"
-        #     ].to_list()
-        # ),
-        # del_files_from_minio(
-        #     s3_hook=MINIO_FILE_HANDLER,
-        #     bucket=bucket,
-        #     s3_filepaths=storage_paths.loc[
-        #         storage_paths["type_fichier"] == "Source", "s3_filepath"
-        #     ].to_list(),
-        # ),
     )
 
 
