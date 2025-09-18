@@ -32,6 +32,7 @@ from dags.sg.siep.mmsi.oad.indicateurs.tasks import (
 
 
 # Mails
+nom_projet = "Outil aide diagnostic"
 To = ["yanis.tihianine@finances.gouv.fr"]
 CC = ["labo-data@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
@@ -59,11 +60,15 @@ default_args = {
     description="""Traitement des données de l'immobilier. Base""",
     default_args=default_args,
     params={
-        "nom_projet": "Outil aide diagnostic",
+        "nom_projet": nom_projet,
+        "db": {
+            "prod_schema": "siep",
+            "tmp_schema": "temporaire",
+        },
         "mail": {
             "enable": False,
-            "To": To,
-            "CC": CC,
+            "to": To,
+            "cc": CC,
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,
@@ -75,10 +80,6 @@ default_args = {
     ),
 )
 def oad():
-    # Variables
-    nom_projet = "Outil aide diagnostic"
-    prod_schema = "siep"
-
     looking_for_files = S3KeySensor(
         task_id="looking_for_files",
         aws_conn_id="minio_bucket_dsci",
@@ -116,10 +117,8 @@ def oad():
         tasks_oad_indicateurs(),
         create_tmp_tables(),
         import_file_to_db.expand(storage_row=get_projet_config(nom_projet=nom_projet)),
-        copy_tmp_table_to_real_table(
-            prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
-        ),
-        refresh_views(views=["siep.bien_caracteristiques_complet_gestionnaire_vw"]),
+        copy_tmp_table_to_real_table(),
+        refresh_views(),
         copy_s3_files(bucket="dsci"),
         del_s3_files(bucket="dsci"),
         end_task,
