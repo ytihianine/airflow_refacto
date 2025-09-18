@@ -25,8 +25,7 @@ from dags.sg.siep.mmsi.oad_referentiel.tasks import bien_typologie
 
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+nom_projet = "Outil aide diagnostic - référentiel"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 LINK_DOC_DATA = ""  # noqa
 
@@ -52,10 +51,23 @@ default_args = {
     description="""Traitement des référentiels issus de l'OAD.""",
     max_consecutive_failed_dag_runs=1,
     params={
-        "nom_projet": "Outil aide diagnostic - référentiel",
-        "send_mail": True,
-        "link_documentation_pipeline": LINK_DOC_PIPELINE,
-        "link_documentation_donnees": LINK_DOC_DATA,
+        "nom_projet": nom_projet,
+        "db": {
+            "prod_schema": "siep",
+            "tmp_schema": "temporaire",
+        },
+        "mail": {
+            "enable": False,
+            "to": [
+                "brigitte.lekime@finances.gouv.fr",
+                "yanis.tihianine@finances.gouv.fr",
+            ],
+            "cc": ["labo-data@finances.gouv.fr"],
+        },
+        "docs": {
+            "lien_pipeline": LINK_DOC_PIPELINE,
+            "lien_donnees": LINK_DOC_DATA,
+        },
     },
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
@@ -63,17 +75,11 @@ default_args = {
     default_args=default_args,
 )
 def oad_referentiel():
-    nom_projet = "Outil aide diagnostic - référentiel"
-    bucket = "dsci"
-    # Databases
-    tmp_schema = "temporaire"
-    prod_schema = "siep"
-
-    """ Task definition """
+    """Task definition"""
     looking_for_files = S3KeySensor(
         task_id="looking_for_files",
         aws_conn_id="minio_bucket_dsci",
-        bucket_name=bucket,
+        bucket_name="dsci",
         bucket_key=get_s3_keys_source(nom_projet=nom_projet),
         mode="reschedule",
         poke_interval=timedelta(seconds=30),  # timedelta(minutes=1),
