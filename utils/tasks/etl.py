@@ -103,7 +103,7 @@ def create_grist_etl_task(
 
 def create_file_etl_task(
     selecteur: str,
-    process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
+    process_func: Optional[Callable[..., pd.DataFrame]] = None,
     read_options: Optional[dict[str, Any]] = None,
     apply_cols_mapping: bool = True,
 ) -> Callable[..., XComArg]:
