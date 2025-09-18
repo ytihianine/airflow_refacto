@@ -8,11 +8,9 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from infra.mails.sender import create_airflow_callback, MailStatus
 from utils.tasks.grist import download_grist_doc_to_s3
 from utils.tasks.sql import (
-    get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db,
-    get_tbl_names_from_postgresql,
     # set_dataset_last_update_date,
 )
 
@@ -20,7 +18,7 @@ from utils.tasks.s3 import (
     copy_s3_files,
     del_s3_files,
 )
-from utils.config.tasks import get_s3_keys_source, get_storage_rows
+from utils.config.tasks import get_s3_keys_source, get_projet_config
 
 from dags.dge.carto_rem.tasks import (
     source_files,
@@ -31,10 +29,9 @@ from dags.dge.carto_rem.tasks import (
 
 
 # Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
-link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
-link_documentation_donnees = ""  # noqa
+nom_projet = "Cartographie rémunération"
+LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
+LINK_DOC_DONNEE = ""  # noqa
 
 
 default_args = {
@@ -59,25 +56,25 @@ default_args = {
     description="""DGE - Cartographie rémunération""",
     default_args=default_args,
     params={
-        "nom_projet": "Cartographie rémunération",
-        "sqlite_file_s3_filepath": "sg/dge/cartographie_remuneration/carto_rem.db",
+        "nom_projet": nom_projet,
+        "db": {
+            "prod_schema": "cartographie_remuneration",
+            "tmp_schema": "temporaire",
+        },
         "mail": {
             "enable": False,
-            "To": To,
-            "CC": CC,
+            "to": ["yanis.tihianine@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr"],
         },
         "docs": {
-            "lien_pipeline": link_documentation_pipeline,
-            "lien_donnees": link_documentation_donnees,
+            "lien_pipeline": LINK_DOC_PIPELINE,
+            "lien_donnees": LINK_DOC_DONNEE,
         },
     },
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def cartographie_remuneration():
-    nom_projet = "Cartographie rémunération"
-    sqlite_file_s3_filepath = "sg/dge/cartographie_remuneration/carto_rem.db"
-    prod_schema = "cartographie_remuneration"
-
+    """Task definitions"""
     looking_for_files = S3KeySensor(
         task_id="looking_for_files",
         aws_conn_id="minio_bucket_dsci",
@@ -95,22 +92,19 @@ def cartographie_remuneration():
     chain(
         looking_for_files,
         download_grist_doc_to_s3(
+            selecteur="grist_doc",
             workspace_id="dsci",
             doc_id_key="grist_doc_id_carto_rem",
-            s3_filepath=sqlite_file_s3_filepath,
-        ),
-        get_tbl_names_from_postgresql(),
-        create_tmp_tables(
-            prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
         ),
         [source_files(), referentiels(), source_grist()],
         output_files(),
+        create_tmp_tables(),
         import_file_to_db.partial(keep_file_id_col=True).expand(
-            storage_row=get_storage_rows(nom_projet=nom_projet).to_dict("records")
+            storage_row=get_projet_config(nom_projet=nom_projet)
         ),
-        copy_tmp_table_to_real_table(
-            prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
-        ),
+        copy_tmp_table_to_real_table(),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
     )
 
 
