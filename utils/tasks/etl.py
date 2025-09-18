@@ -5,6 +5,7 @@ from airflow import XComArg
 import pandas as pd
 
 from airflow.decorators import task
+from airflow.models.taskmixin import DependencyMixin
 
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.local import LocalFileHandler
@@ -22,10 +23,10 @@ from utils.config.types import P, R
 
 def create_grist_etl_task(
     selecteur: str,
-    doc_selecteur: str = "grist_doc",
+    doc_selecteur: Optional[str] = None,
     normalisation_process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
     process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
-) -> Callable[..., XComArg]:
+) -> Callable[..., DependencyMixin]:
     """
     Create an ETL task for extracting, transforming and loading data from a Grist table that:
     1. Gets configuration using selecteur
@@ -43,6 +44,8 @@ def create_grist_etl_task(
         Callable: Airflow task function
         ```
     """
+    if doc_selecteur is None:
+        doc_selecteur = "grist_doc"
 
     @task(task_id=selecteur)
     def _task(**context) -> None:
