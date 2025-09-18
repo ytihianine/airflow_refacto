@@ -52,14 +52,14 @@ def effectif():
     """ Task order """
     chain(
         [
-            teletravail,
-            teletravail_frequence,
-            teletravail_opinion,
-            effectif_direction_perimetre,
-            effectif_direction,
-            effectif_perimetre,
-            effectif_departements,
-            masse_salariale,
+            teletravail(),
+            teletravail_frequence(),
+            teletravail_opinion(),
+            effectif_direction_perimetre(),
+            effectif_direction(),
+            effectif_perimetre(),
+            effectif_departements(),
+            masse_salariale(),
         ]
     )
 
@@ -100,12 +100,12 @@ def budget():
     """ Task order """
     chain(
         [
-            budget_total,
-            budget_pilotable,
-            budget_general,
-            evolution_budget_mef,
-            montant_intervention_invest,
-            budget_ministere,
+            budget_total(),
+            budget_pilotable(),
+            budget_general(),
+            evolution_budget_mef(),
+            montant_intervention_invest(),
+            budget_ministere(),
         ]
     )
 
@@ -131,9 +131,9 @@ def taux_agent():
     """ Task order """
     chain(
         [
-            engagement_agent,
-            election_resultat,
-            taux_participation,
+            engagement_agent(),
+            election_resultat(),
+            taux_participation(),
         ]
     )
 
@@ -151,4 +151,4 @@ def plafond():
         process_func=process.process_db_plafond_etpt,
     )
     """ Task order """
-    chain([plafond_etpt, db_plafond_etpt])
+    chain([plafond_etpt(), db_plafond_etpt()])

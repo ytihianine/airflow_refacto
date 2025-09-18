@@ -73,18 +73,18 @@ def referentiels() -> None:
     # Ordre des tâches
     chain(
         [
-            ref_bureau,
-            ref_certification,
-            ref_competence_particuliere,
-            ref_direction,
-            ref_profil_correspondant,
-            ref_promotion_fac,
-            ref_qualite_service,
-            ref_region,
-            ref_semainier,
-            ref_typologie_accompagnement,
-            ref_pole,
-            ref_type_accompagnement,
+            ref_bureau(),
+            ref_certification(),
+            ref_competence_particuliere(),
+            ref_direction(),
+            ref_profil_correspondant(),
+            ref_promotion_fac(),
+            ref_qualite_service(),
+            ref_region(),
+            ref_semainier(),
+            ref_typologie_accompagnement(),
+            ref_pole(),
+            ref_type_accompagnement(),
         ],
     )
 
@@ -102,7 +102,7 @@ def bilaterales() -> None:
         process_func=process.process_struc_bilaterale_remontee,
     )
     # Ordre des tâches
-    chain([struc_bilaterales, struc_bilaterale_remontee])
+    chain([struc_bilaterales(), struc_bilaterale_remontee()])
 
 
 @task_group
@@ -123,7 +123,7 @@ def correspondant() -> None:
     # )
 
     # Ordre des tâches
-    chain([struc_correspondant, struc_correspondant_profil])
+    chain([struc_correspondant(), struc_correspondant_profil()])
 
 
 @task_group
@@ -140,4 +140,4 @@ def mission_innovation() -> None:
     )
 
     # Ordre des tâches
-    chain([struc_accompagnement_mi, struc_accompagnement_mi_satisfaction])
+    chain([struc_accompagnement_mi(), struc_accompagnement_mi_satisfaction()])
