@@ -51,14 +51,14 @@ def abonnes_visites():
     )
     chain(
         [
-            reseaux_sociaux,
-            visites_portail,
-            visites_bercyinfo,
-            visites_alize,
-            visites_intranet_sg,
-            performances_lettres,
-            abonnes_aux_lettres,
-            ouverture_lettre_alize,
+            reseaux_sociaux(),
+            visites_portail(),
+            visites_bercyinfo(),
+            visites_alize(),
+            visites_intranet_sg(),
+            performances_lettres(),
+            abonnes_aux_lettres(),
+            ouverture_lettre_alize(),
         ]
     )
 
@@ -70,7 +70,7 @@ def budget():
         normalisation_process_func=process.clean_and_normalize_df,
         process_func=process.process_budget_depense,
     )
-    chain(budget_depense)
+    chain(budget_depense())
 
 
 @task_group(group_id="enquetes")
@@ -112,13 +112,13 @@ def enquetes():
     )
     chain(
         [
-            engagement_agents_mef,
-            qualite_vie_travail,
-            collab_inter_structure,
-            obs_interne,
-            enquete_360,
-            obs_interne_participation,
-            engagement_environnement,
+            engagement_agents_mef(),
+            qualite_vie_travail(),
+            collab_inter_structure(),
+            obs_interne(),
+            enquete_360(),
+            obs_interne_participation(),
+            engagement_environnement(),
         ]
     )
 
@@ -152,11 +152,11 @@ def metiers():
     )
     chain(
         [
-            indicateurs_metiers,
-            enquete_satisfaction,
-            etudes,
-            communique_presse,
-            studio_graphique,
+            indicateurs_metiers(),
+            enquete_satisfaction(),
+            etudes(),
+            communique_presse(),
+            studio_graphique(),
         ]
     )
 
@@ -178,4 +178,4 @@ def ressources_humaines():
         normalisation_process_func=process.clean_and_normalize_df,
         process_func=process.process_rh_contractuel,
     )
-    chain([rh_formation, rh_turnover, rh_contractuel])
+    chain([rh_formation(), rh_turnover(), rh_contractuel()])
