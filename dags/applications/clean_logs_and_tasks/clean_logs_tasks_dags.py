@@ -3,7 +3,7 @@ from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
+from infra.mails.sender import create_airflow_callback, MailStatus
 
 from dags.applications.clean_logs_and_tasks.task import (
     clean_s3,
@@ -55,10 +55,10 @@ default_args = {
             "lien_donnees": LINK_DOC_DATA,
         },
     },
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
-    on_success_callback=make_mail_func_callback(mail_statut=MailStatus.SUCCESS),
+    on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
 )
 def clean_logs_tasks():
     # nom_projet = "Clean tasks and logs"

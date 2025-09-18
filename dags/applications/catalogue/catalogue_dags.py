@@ -2,9 +2,9 @@ from airflow.decorators import dag, task_group
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_grist import download_grist_doc_to_s3
-from utils.common.tasks_sql import get_tbl_names_from_postgresql, create_tmp_tables
+from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.tasks.grist import download_grist_doc_to_s3
+from utils.tasks.sql import get_tbl_names_from_postgresql, create_tmp_tables
 
 from dags.applications.catalogue.tasks import (
     create_task,
@@ -38,10 +38,10 @@ default_args = {
     description="""Pipeline qui scanne les nouvelles tables créées dans la base de données
         et synchronise la base de données et le catalogue GRIST""",
     default_args=default_args,
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
-    on_success_callback=make_mail_func_callback(mail_statut=MailStatus.SUCCESS),
+    on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
     params={
         "nom_projet": "Catalogue des données",
         "mail": {

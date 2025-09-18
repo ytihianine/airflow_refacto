@@ -7,7 +7,7 @@ from utils.file_handler import MinioFileHandler
 
 from utils.df_utility import df_info
 
-from utils.common.tasks_sql import get_conn_from_s3_sqlite, get_storage_rows
+from utils.tasks.sql import get_conn_from_s3_sqlite, get_storage_rows
 
 
 def get_storage_rows_from_sqlite(

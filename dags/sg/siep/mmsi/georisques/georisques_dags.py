@@ -4,9 +4,9 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.config_func import get_storage_rows
-from utils.common.tasks_sql import (
+from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.config.tasks import get_storage_rows
+from utils.tasks.sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
@@ -14,9 +14,9 @@ from utils.common.tasks_sql import (
     import_file_to_db,
 )
 
-# from utils.common.tasks_minio import (
-#     copy_files_to_minio,
-#     del_files_from_minio,
+# from utils.tasks.s3 import (
+#     copy_s3_files,
+#     del_s3_files,
 # )
 from dags.sg.siep.mmsi.georisques.task import georisques
 
@@ -60,9 +60,9 @@ default_args = {
             "lien_donnees": LINK_DOC_DONNEE,
         },
     },
-    on_success_callback=make_mail_func_callback(mail_statut=MailStatus.SUCCESS),
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
 )
 def bien_georisques():
@@ -90,10 +90,10 @@ def bien_georisques():
             tmp_schema=tmp_schema,
             tbl_names_task_id="get_tbl_names_from_postgresql",
         ),
-        # copy_files_to_minio.partial(
+        # copy_s3_files.partial(
         #     s3_hook=MINIO_FILE_HANDLER, bucket=BUCKET, dest_key=S3_DEST_KEY
         # ).expand(source_key=storage_paths.loc[:, "s3_tmp_filepath"].to_list()),
-        # del_files_from_minio(
+        # del_s3_files(
         #     s3_hook=MINIO_FILE_HANDLER,
         #     bucket=BUCKET,
         #     s3_filepaths=storage_paths.loc[:, "s3_tmp_filepath"].to_list(),

@@ -4,7 +4,7 @@ from airflow.models import Variable
 from utils.file_handler import MinioFileHandler
 from utils.api_client.base import AbstractApiClient
 
-from utils.common.config_func import get_storage_rows
+from utils.config.tasks import get_storage_rows
 from utils.df_utility import df_info
 
 from dags.sg.siep.mmsi.api_operat.process import (

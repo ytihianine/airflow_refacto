@@ -5,9 +5,9 @@ from airflow.utils.dates import days_ago
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_grist import download_grist_doc_to_s3
-from utils.common.tasks_sql import (
+from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.tasks.grist import download_grist_doc_to_s3
+from utils.tasks.sql import (
     get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -16,11 +16,11 @@ from utils.common.tasks_sql import (
     # set_dataset_last_update_date,
 )
 
-from utils.common.tasks_minio import (
-    copy_files_to_minio,
-    del_files_from_minio,
+from utils.tasks.s3 import (
+    copy_s3_files,
+    del_s3_files,
 )
-from utils.common.config_func import get_s3_keys_source, get_storage_rows
+from utils.config.tasks import get_s3_keys_source, get_storage_rows
 
 from dags.dge.carto_rem.tasks import (
     source_files,
@@ -71,7 +71,7 @@ default_args = {
             "lien_donnees": link_documentation_donnees,
         },
     },
-    on_failure_callback=make_mail_func_callback(mail_statut=MailStatus.ERROR),
+    on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def cartographie_remuneration():
     nom_projet = "Cartographie rémunération"
@@ -87,8 +87,8 @@ def cartographie_remuneration():
         poke_interval=timedelta(seconds=30),
         timeout=timedelta(minutes=13),
         soft_fail=True,
-        on_skipped_callback=make_mail_func_callback(mail_statut=MailStatus.SKIP),
-        on_success_callback=make_mail_func_callback(mail_statut=MailStatus.START),
+        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+        on_success_callback=create_airflow_callback(mail_status=MailStatus.START),
     )
 
     """ Task order """

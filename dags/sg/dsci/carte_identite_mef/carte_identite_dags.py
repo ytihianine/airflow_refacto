@@ -3,7 +3,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 
-from utils.common.tasks_sql import create_tmp_tables, copy_tmp_table_to_real_table
+from utils.tasks.sql import create_tmp_tables, copy_tmp_table_to_real_table
 from utils.tasks.grist import download_grist_doc_to_s3
 from dags.sg.dsci.carte_identite_mef.tasks import effectif, budget, taux_agent, plafond
 

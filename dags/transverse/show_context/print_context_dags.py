@@ -5,8 +5,8 @@ from datetime import timedelta
 from pprint import pprint
 import pytz
 
-from utils.common.tasks_sql import get_project_config
-from utils.mails.mails import make_mail_func_callback, MailStatus
+from utils.tasks.sql import get_project_config
+from infra.mails.sender import create_airflow_callback, MailStatus
 
 default_args = {
     "owner": "airflow",
@@ -43,7 +43,7 @@ link_documentation_donnees = "Non-défini"
             "lien_donnees": link_documentation_donnees,
         },
     },
-    on_success_callback=make_mail_func_callback(mail_statut=MailStatus.SUCCESS),
+    on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
 )
 def liste_contexte_var():
     @task
@@ -73,22 +73,22 @@ def liste_contexte_var():
 
     @task
     def mail_success(**context):
-        mail_func_success = make_mail_func_callback(
-            mail_statut=MailStatus.SUCCESS,
+        mail_func_success = create_airflow_callback(
+            mail_status=MailStatus.SUCCESS,
         )
         mail_func_success(context=context)
 
     @task
     def mail_start(**context):
-        mail_func_start = make_mail_func_callback(
-            mail_statut=MailStatus.START,
+        mail_func_start = create_airflow_callback(
+            mail_status=MailStatus.START,
         )
         mail_func_start(context=context)
 
     @task
     def mail_error(**context):
-        mail_func_error = make_mail_func_callback(
-            mail_statut=MailStatus.ERROR,
+        mail_func_error = create_airflow_callback(
+            mail_status=MailStatus.ERROR,
         )
         mail_func_error(context=context)
 

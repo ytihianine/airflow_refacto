@@ -9,9 +9,9 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from utils.api_client.adapters import HttpxAPIClient
 from utils.grist import GristAPI
 from utils.common.vars import PROXY, AGENT
-from utils.mails.mails import make_mail_func_callback, MailStatus
+from infra.mails.sender import create_airflow_callback, MailStatus
 
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     # set_dataset_last_update_date,
@@ -68,8 +68,8 @@ default_args = {
             "lien_donnees": LINK_DOC_DATA,
         },
     },
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
 )
 def code_geographique():

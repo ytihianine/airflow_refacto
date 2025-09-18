@@ -2,7 +2,7 @@ from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     create_tmp_tables,
     import_file_to_db,
     copy_tmp_table_to_real_table,

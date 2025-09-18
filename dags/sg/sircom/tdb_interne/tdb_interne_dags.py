@@ -3,12 +3,12 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_sql import (
+from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
 )
-from utils.common.tasks_grist import download_grist_doc_to_s3
+from utils.tasks.grist import download_grist_doc_to_s3
 from dags.sg.sircom.tdb_interne.tasks import (
     abonnes_visites,
     budget,
@@ -66,8 +66,8 @@ default_args = {
             "lien_donnees": LINK_DOC_DATA,
         },
     },
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
 )
 def tdb_sircom():

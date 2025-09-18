@@ -2,15 +2,15 @@ from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_sql import (
+from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.tasks.sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db_at_once,
 )
-from utils.common.tasks_grist import download_grist_doc_to_s3
+from utils.tasks.grist import download_grist_doc_to_s3
 
 from dags.applications.configuration_projets import process
 from dags.applications.configuration_projets.tasks import (
@@ -49,8 +49,8 @@ default_args = {
             "lien_donnees": "",
         },
     },
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
 )
 def configuration_projets():

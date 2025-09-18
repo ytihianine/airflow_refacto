@@ -4,8 +4,8 @@ from airflow.models.baseoperator import chain
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 from utils.file_handler import MinioFileHandler
-from utils.common.tasks_sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
-from utils.common.config_func import (
+from utils.tasks.sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
+from utils.config.tasks import (
     get_storage_rows,
     get_cols_mapping,
     format_cols_mapping,

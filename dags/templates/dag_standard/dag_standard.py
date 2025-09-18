@@ -5,9 +5,9 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
+from infra.mails.sender import create_airflow_callback, MailStatus
 
-from utils.common.tasks_sql import (
+from utils.tasks.sql import (
     get_project_config,
     get_tbl_names_from_postgresql,
     create_tmp_tables,
@@ -15,11 +15,11 @@ from utils.common.tasks_sql import (
     set_dataset_last_update_date,
 )
 
-from utils.common.tasks_minio import (
-    copy_files_to_minio,
-    del_files_from_minio,
+from utils.tasks.s3 import (
+    copy_s3_files,
+    del_s3_files,
 )
-from utils.common.config_func import get_s3_keys_source
+from utils.config.tasks import get_s3_keys_source
 
 
 link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/consommation_batiment?ref_type=heads"  # noqa
@@ -58,7 +58,7 @@ default_args = {
             "lien_donnees": link_documentation_donnees,
         },
     },
-    on_failure_callback=make_mail_func_callback(mail_statut=MailStatus.ERROR),
+    on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def consommation_des_batiments():
     # Variables
@@ -75,8 +75,8 @@ def consommation_des_batiments():
         poke_interval=timedelta(minutes=1),
         timeout=timedelta(minutes=15),
         soft_fail=True,
-        on_skipped_callback=make_mail_func_callback(mail_statut=MailStatus.SKIP),
-        on_success_callback=make_mail_func_callback(mail_statut=MailStatus.START),
+        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+        on_success_callback=create_airflow_callback(mail_status=MailStatus.START),
     )
 
     # Ordre des tâches
@@ -97,6 +97,6 @@ def consommation_des_batiments():
         set_dataset_last_update_date(
             dataset_ids=[894651, 7451],
         ),
-        copy_files_to_minio(bucket="dsci"),
-        del_files_from_minio(bucket="dsci"),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
     )

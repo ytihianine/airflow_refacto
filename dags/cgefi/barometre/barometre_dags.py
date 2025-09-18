@@ -5,8 +5,8 @@ from airflow.utils.dates import days_ago
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.tasks_sql import (
+from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db_at_once,
@@ -14,11 +14,11 @@ from utils.common.tasks_sql import (
     # set_dataset_last_update_date,
 )
 
-from utils.common.tasks_minio import (
-    copy_files_to_minio,
-    del_files_from_minio,
+from utils.tasks.s3 import (
+    copy_s3_files,
+    del_s3_files,
 )
-from utils.common.config_func import (
+from utils.config.tasks import (
     get_s3_keys_source,
 )
 
@@ -73,7 +73,7 @@ default_args = {
             "lien_donnees": link_documentation_donnees,
         },
     },
-    on_failure_callback=make_mail_func_callback(mail_statut=MailStatus.ERROR),
+    on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def barometre():
     nom_projet = "Baromètre"
@@ -89,13 +89,13 @@ def barometre():
         poke_interval=timedelta(seconds=30),
         timeout=timedelta(minutes=13),
         soft_fail=True,
-        on_skipped_callback=make_mail_func_callback(mail_statut=MailStatus.SKIP),
-        on_success_callback=make_mail_func_callback(mail_statut=MailStatus.START),
+        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+        on_success_callback=create_airflow_callback(mail_status=MailStatus.START),
     )
 
     end_task = EmptyOperator(
         task_id="end_task",
-        on_success_callback=make_mail_func_callback(mail_statut=MailStatus.SUCCESS),
+        on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
     )
 
     """ Task order """
@@ -128,8 +128,8 @@ def barometre():
             tbl_names_task_id="get_tbl_names_from_postgresql",
         ),
         # set_dataset_last_update_date(db_hook=POSTGRE_HOOK, dataset_ids=[3]),
-        copy_files_to_minio(bucket="dsci"),
-        del_files_from_minio(bucket="dsci"),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
         end_task,
     )
 

@@ -4,7 +4,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 from airflow.models import Variable
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
+from infra.mails.sender import create_airflow_callback, MailStatus
 
 from dags.applications.db_backup.tasks import create_dump_files
 
@@ -44,10 +44,10 @@ default_args = {
             "lien_donnees": "",
         },
     },
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
-    on_success_callback=make_mail_func_callback(mail_statut=MailStatus.SUCCESS),
+    on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
 )
 def sauvegarde_database():
     # Variables
