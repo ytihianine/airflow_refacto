@@ -10,7 +10,6 @@ from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.local import LocalFileHandler
 from infra.file_handling.s3 import S3FileHandler
 from infra.database.factory import create_db_handler
-from utils.tasks.sql import get_conn_from_s3_sqlite, get_data_from_s3_sqlite_file
 from utils.dataframe import df_info
 from utils.config.tasks import (
     get_selecteur_config,
@@ -106,6 +105,7 @@ def create_file_etl_task(
     selecteur: str,
     process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
     read_options: Optional[dict[str, Any]] = None,
+    apply_cols_mapping: bool = True,
 ) -> Callable[..., XComArg]:
     """Create an ETL task for extracting, transforming and loading data from a file.
 
@@ -141,9 +141,18 @@ def create_file_etl_task(
         )
 
         df_info(df=df, df_name=f"{selecteur} - Source normalisée")
+        if apply_cols_mapping:
+            # Apply column mapping if available
+            cols_mapping = get_cols_mapping(nom_projet=nom_projet, selecteur=selecteur)
+            if cols_mapping.empty:
+                print(f"No column mapping found for selecteur {selecteur}")
+            else:
+                df = df.rename(columns=format_cols_mapping(cols_mapping))
+
         if process_func is None:
             print("No process function provided. Skipping the processing step ...")
         else:
+            df_info(df=df, df_name=f"{selecteur} - After column mapping")
             df = process_func(df)
         df_info(df=df, df_name=f"{selecteur} - After processing")
 
