@@ -46,7 +46,7 @@ def cleaning_dataFrame(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def rename_columns(
-    df: pd.DataFrame, colonnes_correspondances: dict[str:str]
+    df: pd.DataFrame, colonnes_correspondances: dict[str, str]
 ) -> pd.DataFrame:
     columns_rename = {}
     for correspondance in colonnes_correspondances:
@@ -72,6 +72,16 @@ def process_conso_mensuelles(df: pd.DataFrame) -> pd.DataFrame:
     # Etape 2
     df = corriger_consommation(df_conso_mens=df)
 
+    return df
+
+
+def process_unpivot_conso_mens_brute(df: pd.DataFrame) -> pd.DataFrame:
+    df = process_unpivot_conso_mens(df=df, use_conso_corrigee=False)
+    return df
+
+
+def process_unpivot_conso_mens_corrigee(df: pd.DataFrame) -> pd.DataFrame:
+    df = process_unpivot_conso_mens(df=df, use_conso_corrigee=True)
     return df
 
 
@@ -313,29 +323,6 @@ def process_conso_statut_batiment(
     return df
 
 
-def transfo_conso_annuelle(
-    colonnes_fluides: list[str], df: pd.DataFrame
-) -> pd.DataFrame:
-    cols_to_drop = [
-        "date_conso" "ratio_electricite",
-        "ratio_autres_fluides",
-        "degres_jours_de_chauffage",
-        "dju_moyen",
-        "degres_jours_de_refroidissement",
-    ]
-
-    df["annee"] = df["date_conso"].dt.year
-    df = df.drop(columns=cols_to_drop)
-
-    # On calcule la conso totale pour chaque année
-    colonnes_id = ["code_bat_gestionnaire", "annee"]
-    cols_to_sum = list(set(df.columns) - set(colonnes_id))
-    df = df.groupby(colonnes_id)[cols_to_sum].sum(min_count=1).reset_index()
-    df = df.fillna(np.nan).replace([np.nan], [None])
-
-    return df
-
-
 def transfo_pour_statut_fluide(
     colonnes_fluides: list[str], df: pd.DataFrame
 ) -> pd.DataFrame:
@@ -524,7 +511,7 @@ def determiner_statut_batiment(
     return statut_tous_les_fluides
 
 
-def statut_batiment(df: pd.DataFrame) -> pd.DataFrame:
+def statut_batiment(df: pd.DataFrame) -> list[str]:
     if "statut_conso_avant_2019" not in df.columns:
         batiment_statut = list(
             map(
