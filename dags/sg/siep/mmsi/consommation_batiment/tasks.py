@@ -24,7 +24,7 @@ def source_files():
         input_selecteurs=["conso_mens_source"],
         process_func=process.process_source_conso_mens,
     )
-    chain((informations_batiments(), conso_mensuelles()))
+    chain([informations_batiments(), conso_mensuelles()])
 
 
 @task_group(group_id="additionnal_files")
@@ -66,10 +66,10 @@ def additionnal_files():
     )
 
     chain(
-        (
+        [
             unpivot_conso_mens_corrigee(),
             unpivot_conso_mens_brute(),
-        ),
+        ],
         conso_annuelle(),
         conso_statut_par_fluide(),
         conso_avant_2019(),
