@@ -23,7 +23,9 @@ TaskParams = Dict[str, Any]
 def create_parquet_converter_task(
     selecteur: str,
     task_params: Optional[TaskParams] = None,
-    process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
+    process_func: Optional[
+        Callable[[pd.DataFrame, dict[str, str]], pd.DataFrame]
+    ] = None,
     read_options: Optional[dict[str, Any]] = None,
 ) -> Callable:
     """Create a task that converts files to Parquet format.
