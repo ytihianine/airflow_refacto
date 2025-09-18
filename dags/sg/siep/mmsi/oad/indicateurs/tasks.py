@@ -1,289 +1,122 @@
-from typing import Callable
-from airflow.decorators import task, task_group
+from airflow.decorators import task_group
 from airflow.models.baseoperator import chain
-from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from utils.file_handler import MinioFileHandler
-from utils.common.config_func import get_storage_rows, get_cols_mapping
-from utils.df_utility import df_info
-from utils.common.config_func import (
-    get_required_cols,
-    format_cols_mapping,
-)
+from utils.tasks.file import create_parquet_converter_task
+from utils.tasks.etl import create_multi_files_input_etl_task
 
 from dags.sg.siep.mmsi.oad.indicateurs import process
 
 
-def create_task_oad_indic(
-    selecteur: str, nom_projet: str = None, process_func: Callable = None
-):
-    @task(task_id=selecteur)
-    def _task(**context):
-        # Hooks
-        s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-        # Get config values related to the task
-        nom_projet = context.get("params").get("nom_projet", None)
-        if nom_projet is None:
-            raise ValueError(
-                "La variable nom_projet n'a pas été définie au niveau du DAG !"
-            )
-        row_oad_indic = get_storage_rows(nom_projet=nom_projet, selecteur="oad_indic")
-        row_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-        required_cols = get_required_cols(nom_projet=nom_projet, selecteur=selecteur)
-        config_bien = get_storage_rows(nom_projet=nom_projet, selecteur="biens")
-
-        # Main part
-        df = s3_hook.read_parquet(
-            file_name=row_oad_indic.loc[0, "filepath_tmp_s3"],
-            columns=required_cols["colname_dest"].to_list(),
-        )
-        df_bien = s3_hook.read_parquet(file_name=config_bien.loc[0, "filepath_tmp_s3"])
-
-        df_info(df=df, df_name=f"DF {selecteur} - INITIALISATION")
-
-        print("Start - Cleaning Process")
-        df = process.filter_bien(df=df, df_bien=df_bien)
-        df = process_func(df=df)
-        print("End - Cleaning Process")
-        df_info(df=df, df_name=f"DF {selecteur} - After Cleaning Process")
-
-        # Export
-        s3_hook.load_bytes(
-            bytes_data=df.to_parquet(path=None, index=False),
-            key=row_selecteur.loc[0, "filepath_tmp_s3"],
-            replace=True,
-        )
-
-    return _task()
-
-
-@task(task_id="convert_oad_indic_to_parquet")
-def convert_oad_indic_to_parquet(
-    nom_projet: str,
-    selecteur: str,
-) -> None:
-    # Variables
-    db_hook = PostgresHook(postgres_conn_id="db_data_store")
-    db_conf_hook = PostgresHook(postgres_conn_id="db_depose_fichier")
-    s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-    row_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-
-    df_oad_indic = s3_hook.read_excel(
-        file_name=row_selecteur.loc[0, "filepath_source_s3"]
-    )
-
-    df_info(df=df_oad_indic, df_name="DF OAD indicateurs - INITIALISATION")
-
-    # Cleaning df
-    cols_mapping = get_cols_mapping(
-        nom_projet=nom_projet, db_hook=db_conf_hook, selecteur=selecteur
-    )
-    cols_oad_indic = format_cols_mapping(df_cols_map=cols_mapping)
-
-    df_oad_indic = (
-        df_oad_indic.set_axis(
-            [" ".join(colname.split()) for colname in df_oad_indic.columns],
-            axis="columns",
-        )
-        .rename(columns=cols_oad_indic, errors="raise")
-        .dropna(subset=["code_bat_ter"])
-    )
-    df_oad_indic = df_oad_indic.drop_duplicates(
-        subset=["code_bat_ter"], ignore_index=True
-    )
-
-    # Removing biens which are not presents in table bien
-    biens = db_hook.get_pandas_df(sql="SELECT code_bat_ter FROM siep.bien;")
-    biens = biens.loc[:, "code_bat_ter"].to_list()
-    df_oad_indic = df_oad_indic[df_oad_indic["code_bat_ter"].isin(biens)]
-
-    df_info(df=df_oad_indic, df_name="DF OAD indicateurs - After processing")
-
-    # Export
-    s3_hook.load_bytes(
-        bytes_data=df_oad_indic.to_parquet(path=None, index=False),
-        key=row_selecteur.loc[0, "filepath_tmp_s3"],
-        replace=True,
-    )
-
-
-@task(task_id="strategie")
-def task_strategie(selecteur: str, **context):
-    # Hooks
-    s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-    # Get config values related to the task
-    nom_projet = context.get("params").get("nom_projet", None)
-    if nom_projet is None:
-        raise ValueError(
-            "La variable nom_projet n'a pas été définie au niveau du DAG !"
-        )
-    row_oad_carac = get_storage_rows(nom_projet=nom_projet, selecteur="oad_carac")
-    row_oad_indic = get_storage_rows(nom_projet=nom_projet, selecteur="oad_indic")
-    row_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-    config_bien = get_storage_rows(nom_projet=nom_projet, selecteur="biens")
-
-    required_cols = get_required_cols(nom_projet=nom_projet, selecteur=selecteur)[
-        "colname_dest"
-    ]
-    common = ["code_bat_ter"]
-    required_cols_oad_carac = common + ["perimetre_spsi_initial", "perimetre_spsi_maj"]
-    required_cols_oad_indic = common + [
-        column for column in required_cols if column not in required_cols_oad_carac
-    ]
-
-    print(required_cols_oad_indic)
-    print(required_cols_oad_carac)
-
-    # Main part
-    df_oad_carac = s3_hook.read_parquet(
-        file_name=row_oad_carac.loc[0, "filepath_tmp_s3"],
-        columns=required_cols_oad_carac,
-    )
-    df_oad_indic = s3_hook.read_parquet(
-        file_name=row_oad_indic.loc[0, "filepath_tmp_s3"],
-        columns=required_cols_oad_indic,
-    )
-    df_bien = s3_hook.read_parquet(file_name=config_bien.loc[0, "filepath_tmp_s3"])
-
-    df_info(df=df_oad_carac, df_name=f"DF {selecteur}/OAD_CARAC - INITIALISATION")
-    df_info(df=df_oad_indic, df_name=f"DF {selecteur}/OAD_INDIC - INITIALISATION")
-
-    print("Start - Cleaning Process")
-    df = process.process_strategie(df_oad_carac=df_oad_carac, df_oad_indic=df_oad_indic)
-    df = process.filter_bien(df=df, df_bien=df_bien)
-    print("End - Cleaning Process")
-    df_info(df=df, df_name=f"DF {selecteur} - After Cleaning Process")
-
-    # Export
-    s3_hook.load_bytes(
-        bytes_data=df.to_parquet(path=None, index=False),
-        key=row_selecteur.loc[0, "filepath_tmp_s3"],
-        replace=True,
-    )
-
-
-@task(task_id="localisation")
-def task_localisation(selecteur: str, **context):
-    # Hooks
-    s3_hook = MinioFileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-    # Get config values related to the task
-    nom_projet = context.get("params").get("nom_projet", None)
-    if nom_projet is None:
-        raise ValueError(
-            "La variable nom_projet n'a pas été définie au niveau du DAG !"
-        )
-    row_oad_carac = get_storage_rows(nom_projet=nom_projet, selecteur="oad_carac")
-    row_oad_indic = get_storage_rows(nom_projet=nom_projet, selecteur="oad_indic")
-    row_selecteur = get_storage_rows(nom_projet=nom_projet, selecteur=selecteur)
-    config_bien = get_storage_rows(nom_projet=nom_projet, selecteur="biens")
-
-    required_cols_oad_carac = get_required_cols(
-        nom_projet=nom_projet, selecteur="localisation_carac"
-    ).get("colname_dest", None)
-    required_cols_oad_indic = get_required_cols(
-        nom_projet=nom_projet, selecteur="localisation_indic"
-    ).get("colname_dest", None)
-
-    print(required_cols_oad_indic)
-    print(required_cols_oad_carac)
-
-    # Main part
-    df_oad_carac = s3_hook.read_parquet(
-        file_name=row_oad_carac.loc[0, "filepath_tmp_s3"],
-        columns=required_cols_oad_carac,
-    )
-    df_oad_indic = s3_hook.read_parquet(
-        file_name=row_oad_indic.loc[0, "filepath_tmp_s3"],
-        columns=required_cols_oad_indic,
-    )
-    df_bien = s3_hook.read_parquet(file_name=config_bien.loc[0, "filepath_tmp_s3"])
-
-    df_info(df=df_oad_carac, df_name=f"DF {selecteur}/OAD_CARAC - INITIALISATION")
-    df_info(df=df_oad_indic, df_name=f"DF {selecteur}/OAD_INDIC - INITIALISATION")
-
-    print("Start - Cleaning Process")
-    df = process.process_localisation(
-        df_oad_carac=df_oad_carac, df_oad_indic=df_oad_indic
-    )
-    df = process.filter_bien(df=df, df_bien=df_bien)
-    print("End - Cleaning Process")
-    df_info(df=df, df_name=f"DF {selecteur} - After Cleaning Process")
-
-    # Export
-    s3_hook.load_bytes(
-        bytes_data=df.to_parquet(path=None, index=False),
-        key=row_selecteur.loc[0, "filepath_tmp_s3"],
-        replace=True,
-    )
+oad_indic_to_parquet = create_parquet_converter_task(
+    selecteur="oad_indic",
+    task_params={"task_id": "convert_oad_indicateur_to_parquet"},
+    process_func=process.process_oad_indic,
+)
 
 
 @task_group
 def tasks_oad_indicateurs():
-    accessibilite = create_task_oad_indic(
-        selecteur="accessibilite",
+    accessibilite = create_multi_files_input_etl_task(
+        output_selecteur="accessibilite",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_accessibilite,
+        use_required_cols=True,
     )
-    accessibilite_detail = create_task_oad_indic(
-        selecteur="accessibilite_detail",
+    accessibilite_detail = create_multi_files_input_etl_task(
+        output_selecteur="accessibilite_detail",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_accessibilite_detail,
+        use_required_cols=True,
     )
-    bacs = create_task_oad_indic(
-        selecteur="bacs",
+    bacs = create_multi_files_input_etl_task(
+        output_selecteur="bacs",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_bacs,
+        use_required_cols=True,
     )
-    bails = create_task_oad_indic(
-        selecteur="bails",
+    bails = create_multi_files_input_etl_task(
+        output_selecteur="bails",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_bails,
+        use_required_cols=True,
     )
-    couts = create_task_oad_indic(
-        selecteur="couts",
+    couts = create_multi_files_input_etl_task(
+        output_selecteur="couts",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_couts,
+        use_required_cols=True,
     )
-    deet_energie_ges = create_task_oad_indic(
-        selecteur="deet_energie_ges",
+    deet_energie_ges = create_multi_files_input_etl_task(
+        output_selecteur="deet_energie_ges",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_deet_energie,
+        use_required_cols=True,
     )
-    etat_de_sante = create_task_oad_indic(
-        selecteur="etat_de_sante",
+    etat_de_sante = create_multi_files_input_etl_task(
+        output_selecteur="etat_de_sante",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_eds,
+        use_required_cols=True,
     )
-    exploitation = create_task_oad_indic(
-        selecteur="exploitation",
+    exploitation = create_multi_files_input_etl_task(
+        output_selecteur="exploitation",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_exploitation,
+        use_required_cols=True,
     )
-    note = create_task_oad_indic(
-        selecteur="note",
+    note = create_multi_files_input_etl_task(
+        output_selecteur="note",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_notes,
+        use_required_cols=True,
     )
-    effectif = create_task_oad_indic(
-        selecteur="effectif",
+    effectif = create_multi_files_input_etl_task(
+        output_selecteur="effectif",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_effectif,
+        use_required_cols=True,
     )
-    proprietaire = create_task_oad_indic(
-        selecteur="proprietaire",
+    proprietaire = create_multi_files_input_etl_task(
+        output_selecteur="proprietaire",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_proprietaire,
+        use_required_cols=True,
     )
-    reglementation = create_task_oad_indic(
-        selecteur="reglementation",
+    reglementation = create_multi_files_input_etl_task(
+        output_selecteur="reglementation",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_reglementation,
+        use_required_cols=True,
     )
-    surface = create_task_oad_indic(
-        selecteur="surface",
+    surface = create_multi_files_input_etl_task(
+        output_selecteur="surface",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_surface,
+        use_required_cols=True,
     )
-    typologie = create_task_oad_indic(
-        selecteur="typologie",
+    typologie = create_multi_files_input_etl_task(
+        output_selecteur="typologie",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_typologie,
+        use_required_cols=True,
     )
-    valeur = create_task_oad_indic(
-        selecteur="valeur",
+    valeur = create_multi_files_input_etl_task(
+        output_selecteur="valeur",
+        input_selecteurs=["oad_indic"],
         process_func=process.process_valeur,
+        use_required_cols=True,
     )
-    localisation = task_localisation(
-        selecteur="localisation",
+    localisation = create_multi_files_input_etl_task(
+        output_selecteur="localisation",
+        input_selecteurs=["oad_carac", "oad_indic", "biens"],
+        process_func=process.process_localisation,
+        use_required_cols=True,
     )
-    strategie = task_strategie(
-        selecteur="strategie",
+    strategie = create_multi_files_input_etl_task(
+        output_selecteur="strategie",
+        input_selecteurs=["oad_carac", "oad_indic", "biens"],
+        process_func=process.process_strategie,
+        use_required_cols=True,
     )
     chain(
         [

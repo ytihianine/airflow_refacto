@@ -290,10 +290,18 @@ def process_exploitation(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_localisation(df_oad_carac: pd.DataFrame, df_oad_indic) -> pd.DataFrame:
+def process_localisation(
+    df_oad_carac: pd.DataFrame, df_oad_indic: pd.DataFrame, df_biens: pd.DataFrame
+) -> pd.DataFrame:
     # Merging data from both sources
     df = pd.merge(left=df_oad_carac, right=df_oad_indic, on="code_bat_ter", how="left")
+    cols_to_keep = [
+        "code_bat_ter",
+        # TODO: Add other columns from oad_carac and oad_indic
+    ]
+    df = df[cols_to_keep]
 
+    # Cleaning data
     df = df.assign(
         adresse_source=df["adresse_source"].str.split().str.join(" "),
         commune_source=df["commune_source"].str.split().str.join(" "),
@@ -304,6 +312,8 @@ def process_localisation(df_oad_carac: pd.DataFrame, df_oad_indic) -> pd.DataFra
         keep="first",
         ignore_index=True,
     )
+
+    df = filter_bien(df=df, df_bien=df_biens)
     return df
 
 
@@ -375,6 +385,14 @@ def process_strategie(
         keep="first",
         ignore_index=True,
     )
+    cols_to_keep = [
+        "code_bat_ter",
+        "perimetre_spsi_initial",
+        "perimetre_spsi_maj",
+        # TODO: add columns from oad_indic
+    ]
+    df = df[cols_to_keep]
+
     return df
 
 

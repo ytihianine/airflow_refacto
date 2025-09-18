@@ -6,29 +6,27 @@ from airflow.utils.dates import days_ago
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-from utils.mails.mails import make_mail_func_callback, MailStatus
-from utils.common.config_func import get_storage_rows, get_s3_keys_source
-from utils.common.tasks_sql import (
-    get_project_config,
+from infra.mails.sender import MailStatus, create_airflow_callback
+from utils.config.tasks import get_s3_keys_source, get_projet_config
+from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db,
-    get_tbl_names_from_postgresql,
     refresh_views,
     # set_dataset_last_update_date,
 )
 
-from utils.common.tasks_minio import (
-    copy_files_to_minio,
-    del_files_from_minio,
+from utils.tasks.s3 import (
+    copy_s3_files,
+    del_s3_files,
 )
 
 from dags.sg.siep.mmsi.oad.caracteristiques.tasks import (
-    convert_oad_caracteristique_to_parquet,
+    oad_carac_to_parquet,
     tasks_oad_caracteristiques,
 )
 from dags.sg.siep.mmsi.oad.indicateurs.tasks import (
-    convert_oad_indic_to_parquet,
+    oad_indic_to_parquet,
     tasks_oad_indicateurs,
 )
 
@@ -72,8 +70,8 @@ default_args = {
             "lien_donnees": LINK_DOC_DONNEE,
         },
     },
-    on_failure_callback=make_mail_func_callback(
-        mail_statut=MailStatus.ERROR,
+    on_failure_callback=create_airflow_callback(
+        mail_status=MailStatus.ERROR,
     ),
 )
 def oad():
@@ -90,9 +88,9 @@ def oad():
         poke_interval=timedelta(seconds=30),
         timeout=timedelta(minutes=13),
         soft_fail=True,
-        on_skipped_callback=make_mail_func_callback(mail_statut=MailStatus.SKIP),
-        on_success_callback=make_mail_func_callback(
-            mail_statut=MailStatus.START,
+        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+        on_success_callback=create_airflow_callback(
+            mail_status=MailStatus.START,
         ),
     )
 
@@ -100,40 +98,30 @@ def oad():
     def convert_file_to_parquet():
         chain(
             [
-                convert_oad_caracteristique_to_parquet(
-                    nom_projet=nom_projet, selecteur="oad_carac"
-                ),
-                convert_oad_indic_to_parquet(
-                    nom_projet=nom_projet, selecteur="oad_indic"
-                ),
+                oad_carac_to_parquet(),
+                oad_indic_to_parquet(),
             ]
         )
 
     end_task = EmptyOperator(
         task_id="end_task",
-        on_success_callback=make_mail_func_callback(mail_statut=MailStatus.SUCCESS),
+        on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
     )
 
     # Ordre des tâches
     chain(
-        get_project_config(),
         looking_for_files,
-        get_tbl_names_from_postgresql(),
-        create_tmp_tables(
-            prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
-        ),
         convert_file_to_parquet(),
         tasks_oad_caracteristiques(),
         tasks_oad_indicateurs(),
-        import_file_to_db.expand(
-            storage_row=get_storage_rows(nom_projet=nom_projet).to_dict("records")
-        ),
+        create_tmp_tables(),
+        import_file_to_db.expand(storage_row=get_projet_config(nom_projet=nom_projet)),
         copy_tmp_table_to_real_table(
             prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
         ),
         refresh_views(views=["siep.bien_caracteristiques_complet_gestionnaire_vw"]),
-        copy_files_to_minio(bucket="dsci"),
-        del_files_from_minio(bucket="dsci"),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
         end_task,
     )
 
