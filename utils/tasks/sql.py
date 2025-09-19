@@ -2,8 +2,9 @@
 
 import logging
 from typing import cast
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from enum import Enum
 import psycopg2
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
@@ -30,6 +31,13 @@ from utils.config.vars import (
 CONF_SCHEMA = "conf_projets"
 
 
+class PartitionTimePeriod(str, Enum):
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
+    YEAR = "year"
+
+
 @task(task_id="get_tbl_names_from_postgresql")
 def get_tbl_names_from_postgresql(**context) -> list[str]:
     params = context.get("params", {})
@@ -41,8 +49,44 @@ def get_tbl_names_from_postgresql(**context) -> list[str]:
     return tbl_names
 
 
+def determine_partition_period(
+    time_period: PartitionTimePeriod, execution_date: datetime
+) -> tuple[datetime, datetime]:
+    """Determine the start and end dates for a partition based on the time period."""
+    if time_period == PartitionTimePeriod.YEAR:
+        from_date_period = execution_date.replace(
+            month=1, day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        to_date_period = from_date_period.replace(year=from_date_period.year + 1)
+    elif time_period == PartitionTimePeriod.MONTH:
+        from_date_period = execution_date.replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        if from_date_period.month == 12:
+            to_date_period = from_date_period.replace(
+                year=from_date_period.year + 1, month=1
+            )
+        else:
+            to_date_period = from_date_period.replace(month=from_date_period.month + 1)
+    elif time_period == PartitionTimePeriod.WEEK:
+        from_date_period = execution_date - timedelta(days=execution_date.weekday())
+        from_date_period = from_date_period.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        to_date_period = from_date_period + timedelta(weeks=1)
+    elif time_period == PartitionTimePeriod.DAY:
+        from_date_period = execution_date.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        to_date_period = from_date_period + timedelta(days=1)
+    else:
+        raise ValueError(f"Unsupported time period: {time_period}")
+    return (from_date_period, to_date_period)
+
+
 @task
-def ensure_monthly_partition(
+def ensure_partition(
+    time_period: PartitionTimePeriod = PartitionTimePeriod.DAY,
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     **context,
 ) -> None:
@@ -77,18 +121,14 @@ def ensure_monthly_partition(
     if not execution_date or not isinstance(execution_date, datetime):
         raise ValueError("Invalid execution date in Airflow context")
 
+    # Get partition period range
+    from_date, to_date = determine_partition_period(time_period, execution_date)
+
     for tbl in tbl_names:
         # Nom de la partition : parenttable_YYYY_MM
-        partition_name = f"{tbl}_y{execution_date.year}m{execution_date.month:02d}"
-
-        # Calcul des bornes de la partition
-        from_date = execution_date.replace(day=1)
-        if execution_date.month == 12:
-            to_date = execution_date.replace(
-                year=execution_date.year + 1, month=1, day=1
-            )
-        else:
-            to_date = execution_date.replace(month=execution_date.month + 1, day=1)
+        partition_name = (
+            f"{tbl}_{from_date.strftime('%Y%m%d')}_{to_date.strftime('%Y%m%d')}"
+        )
 
         try:
             logging.info(f"Creating partition {partition_name} for {tbl}.")
