@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Optional
 
 
 def is_file_to_delete(s3_object_date, date_to_compare) -> bool:
@@ -26,7 +27,7 @@ def check_hour_format(s3_hour: str) -> bool:
     return False
 
 
-def safe_parse_date(date_str: str, is_date_format: bool) -> datetime:
+def safe_parse_date(date_str: str, is_date_format: bool) -> Optional[datetime]:
     if is_date_format:
         return datetime.strptime(date_str, "%Y%m%d")
     return None

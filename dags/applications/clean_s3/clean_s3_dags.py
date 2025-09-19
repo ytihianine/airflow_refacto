@@ -5,12 +5,8 @@ from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 
-from dags.applications.clean_s3.task import list_keys, process_keys, delete_old_keys
+from dags.applications.clean_s3.task import validate_params, clean_s3_task_group
 
-
-# Mails
-To = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
 
 # Liens
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/catalogue?ref_type=heads"  # noqa
@@ -43,8 +39,8 @@ default_args = {
         "nom_projet": "Clean old S3 objects",
         "mail": {
             "enable": False,
-            "To": To,
-            "CC": CC,
+            "to": ["yanis.tihianine@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr"],
         },
         "docs": {
             "lien_pipeline": LINK_DOC_PIPELINE,
@@ -60,7 +56,7 @@ def clean_logs_tasks():
     # nom_projet = "Clean tasks and logs"
 
     """Task definitions"""
-    chain(list_keys(), process_keys(), delete_old_keys())
+    chain(validate_params(), clean_s3_task_group())
 
 
 clean_logs_tasks()
