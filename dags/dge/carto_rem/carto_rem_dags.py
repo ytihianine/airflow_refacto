@@ -11,6 +11,7 @@ from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db,
+    delete_tmp_tables,
     # set_dataset_last_update_date,
 )
 
@@ -107,6 +108,7 @@ def cartographie_remuneration():
         copy_tmp_table_to_real_table(),
         copy_s3_files(bucket="dsci"),
         del_s3_files(bucket="dsci"),
+        delete_tmp_tables(),
     )
 
 

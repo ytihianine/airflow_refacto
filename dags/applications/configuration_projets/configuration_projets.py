@@ -7,8 +7,10 @@ from utils.tasks.sql import (
     create_tmp_tables,
     import_files_to_db,
     copy_tmp_table_to_real_table,
+    delete_tmp_tables,
 )
 from utils.tasks.grist import download_grist_doc_to_s3
+from utils.config.vars import DEFAULT_PG_CONFIG_CONN_ID
 
 from dags.applications.configuration_projets.tasks import (
     validate_params,
@@ -65,10 +67,11 @@ def configuration_projets():
             workspace_id="dsci",
             doc_id_key="grist_doc_id_gestion_interne",
         ),
-        create_tmp_tables(),
         process_data(),
-        import_files_to_db(keep_file_id_col=True),
-        copy_tmp_table_to_real_table(),
+        create_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
+        import_files_to_db(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID, keep_file_id_col=True),
+        copy_tmp_table_to_real_table(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
+        delete_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
     )
 
 
