@@ -241,23 +241,33 @@ def create_multi_files_input_etl_task(
 def create_action_etl_task(
     task_id: str,
     action_func: Callable[P, R],
+    action_args: Optional[tuple] = None,
+    action_kwargs: Optional[dict[str, Any]] = None,
 ) -> Callable[..., XComArg]:
-    """Create an ETL task for extracting, transforming and loading data from a file.
+    """Create an ETL task that executes a given action function with parameters.
 
     Args:
-        selecteur: The identifier for this ETL task
-        file_format: Optional format of the source file (csv, excel, parquet)
-        process_func: Optional function to process the DataFrame
-        read_options: Optional options for reading the source file
+        task_id: The Airflow task identifier
+        action_func: The function to execute
+        action_args: Positional arguments to pass to the action function
+        action_kwargs: Keyword arguments to pass to the action function
 
     Returns:
-        An Airflow task that performs the ETL operation
+        An Airflow task that executes the action function
     """
+    if action_args is None:
+        action_args = ()
+
+    if action_kwargs is None:
+        action_kwargs = {}
 
     @task(task_id=task_id)
-    def _task(*args: P.args, **kwargs: P.kwargs) -> R:
+    def _task(**context) -> R:
         """The actual ETL task function."""
-        # Execute the provided action function
-        return action_func(*args, **kwargs)
+        # Merge context kwargs with provided kwargs
+        merged_kwargs = {**action_kwargs, **context}
+
+        # Execute the provided action function with args and kwargs
+        return action_func(*action_args, **merged_kwargs)
 
     return _task
