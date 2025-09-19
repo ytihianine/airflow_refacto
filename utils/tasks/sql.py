@@ -239,8 +239,8 @@ def create_tmp_tables(
             db.execute(query=alter_query)
 
 
-@task(task_id="create_tmp_tables")
-def deletetmp_tables(
+@task(task_id="delete_tmp_tables")
+def delete_tmp_tables(
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     **context,
 ) -> None:
