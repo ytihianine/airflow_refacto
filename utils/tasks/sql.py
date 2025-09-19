@@ -239,6 +239,39 @@ def create_tmp_tables(
             db.execute(query=alter_query)
 
 
+@task(task_id="create_tmp_tables")
+def deletetmp_tables(
+    pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
+    **context,
+) -> None:
+    """
+    Used to delete temporary tables in the database.
+    """
+    params = context.get("params", {})
+    nom_projet = params.get("nom_projet")
+    if not nom_projet:
+        raise ValueError("Project name must be provided in DAG parameters!")
+
+    db_info = params.get("db", {})
+    prod_schema = db_info.get("prod_schema", None)
+    tmp_schema = db_info.get("tmp_schema", None)
+
+    if not prod_schema:
+        raise ValueError("Database schema must be provided in DAG parameters!")
+    if not tmp_schema:
+        raise ValueError(
+            "Temporary database schema must be provided in DAG parameters!"
+        )
+
+    # Hook
+    db = create_db_handler(pg_conn_id)
+
+    tbl_names = get_tbl_names(nom_projet=nom_projet)
+
+    for tbl in tbl_names:
+        db.execute(query=f"DROP TABLE IF EXISTS {tmp_schema}.tmp_{tbl};")
+
+
 @task(task_id="copy_tmp_table_to_real_table")
 def copy_tmp_table_to_real_table(
     load_strategy: LoadStrategy = LoadStrategy.FULL_LOAD,  # Either "FULL_LOAD" or "INCREMENTAL"
