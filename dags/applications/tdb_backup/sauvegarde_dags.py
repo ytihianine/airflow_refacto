@@ -6,16 +6,13 @@ from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 
-from dags.applications.sauvegarde.tasks import (
-    bearer_token,
-    get_dashboard_ids_and_titles,
-    get_dashboard_export,
-    # export_user_roles,
+from dags.applications.tdb_backup.tasks import (
+    validate_params,
+    tdb_backup_task_group,
 )
 
 
-link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/transverse/sauvegarde?ref_type=heads"  # noqa
-link_documentation_donnees = ""  # noqa
+LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/transverse/sauvegarde?ref_type=heads"  # noqa
 
 
 default_args = {
@@ -41,14 +38,11 @@ default_args = {
     params={
         "nom_projet": "Sauvegarde tableaux de bords",
         "mail": {
-            "enable": True,
-            "To": ["yanis.tihianine@finances.gouv.fr"],
-            "CC": ["labo-data@finances.gouv.fr"],
+            "enable": False,
+            "to": ["yanis.tihianine@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr"],
         },
-        "docs": {
-            "lien_pipeline": link_documentation_pipeline,
-            "lien_donnees": link_documentation_donnees,
-        },
+        "docs": {"lien_pipeline": LINK_DOC_PIPELINE},
     },
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
@@ -57,16 +51,10 @@ default_args = {
     default_args=default_args,
 )
 def sauvegarde_pipeline():
-    dashboard_ids_and_titles = get_dashboard_ids_and_titles()
-    dashboard_export = get_dashboard_export.expand(
-        dashboard_id_title=dashboard_ids_and_titles
-    )
-
     # Ordre des tâches
     chain(
-        bearer_token(),
-        dashboard_ids_and_titles,
-        dashboard_export,
+        validate_params(),
+        tdb_backup_task_group(),
         # export_user_roles(
         #     s3_file_handler=MINIO_FILE_HANDLER
         # )
