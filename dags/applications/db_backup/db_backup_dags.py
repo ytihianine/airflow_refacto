@@ -2,15 +2,13 @@ from datetime import timedelta
 from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
-from airflow.models import Variable
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 
-from dags.applications.db_backup.tasks import create_dump_files
+from dags.applications.db_backup.tasks import validate_params, create_dump_files
 
 
-To = ["yanis.tihianine@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
+LINK_DOC_PIPELINE = "TO COMPLETE"
 
 default_args = {
     "owner": "airflow",
@@ -36,13 +34,10 @@ default_args = {
         "nom_projet": "Sauvegarde databases",
         "mail": {
             "enable": False,
-            "To": To,
-            "CC": CC,
+            "to": ["yanis.tihianine@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr"],
         },
-        "docs": {
-            "lien_pipeline": "",
-            "lien_donnees": "",
-        },
+        "docs": {"lien_pipeline": LINK_DOC_PIPELINE},
     },
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
@@ -50,19 +45,8 @@ default_args = {
     on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
 )
 def sauvegarde_database():
-    # Variables
-    # Database
-    databases = Variable.get("db_main_databases")  # Must be parsed
-
-    # databases = "airflow_config;chartsgouv_mef_sg_config;data_store"
-    db_names = [db_name.strip() for db_name in databases.split(";")]
-
-    """ Task order """
-    chain(
-        create_dump_files.partial().expand(
-            db_name=db_names,
-        )
-    )
+    """Task order"""
+    chain(validate_params(), create_dump_files())
 
 
 sauvegarde_database()
