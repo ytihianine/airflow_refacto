@@ -38,6 +38,31 @@ class PartitionTimePeriod(str, Enum):
     YEAR = "year"
 
 
+class LoadStrategy(str, Enum):
+    FULL_LOAD = "FULL_LOAD"
+    INCREMENTAL = "INCREMENTAL"
+
+
+def get_primary_keys(
+    schema: str, table: str, pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID
+) -> list[str]:
+    """Get primary key columns of a table."""
+    db = cast(PostgresDBHandler, create_db_handler(pg_conn_id))
+    query = """
+        SELECT kcu.column_name
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+            ON tc.constraint_name = kcu.constraint_name
+                AND tc.constraint_schema = kcu.constraint_schema
+        WHERE tc.table_schema = %s
+            AND tc.table_name = %s
+            AND tc.constraint_type = 'PRIMARY KEY'
+        ORDER BY kcu.ordinal_position;
+    """
+    df = db.fetch_df(query, (schema, table))
+    return df["column_name"].tolist()
+
+
 @task(task_id="get_tbl_names_from_postgresql")
 def get_tbl_names_from_postgresql(**context) -> list[str]:
     params = context.get("params", {})
@@ -216,10 +241,17 @@ def create_tmp_tables(
 
 @task(task_id="copy_tmp_table_to_real_table")
 def copy_tmp_table_to_real_table(
+    load_strategy: LoadStrategy = LoadStrategy.FULL_LOAD,  # Either "FULL_LOAD" or "INCREMENTAL"
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     **context,
 ) -> None:
-    """Permet de copier les tables temporaires dans les tables réelles."""
+    """
+    Permet de copier les tables temporaires dans les tables réelles.
+
+    strategy:
+        FULL_LOAD      -> delete all prod rows, insert everything from tmp
+        INCREMENTAL    -> UPSERT + delete missing rows based on primary key
+    """
     params = context.get("params", {})
     nom_projet = params.get("nom_projet")
     if not nom_projet:
@@ -240,21 +272,51 @@ def copy_tmp_table_to_real_table(
     db = create_db_handler(pg_conn_id)
 
     tbl_names = get_tbl_names(nom_projet=nom_projet, order_tbl=True)
+    print(f"Tables to copy: {', '.join(tbl_names)}")
 
-    print(f"Tmp tables will be copied to the following tables: {', '.join(tbl_names)}")
-    sql_queries = []
     for table in reversed(tbl_names):
-        sql_queries.append(f"DELETE FROM {prod_schema}.{table};")
+        prod_table = f"{prod_schema}.{table}"
+        tmp_table = f"{tmp_schema}.tmp_{table}"
 
-    for table in tbl_names:
-        sql_queries.append(
-            f"INSERT INTO {prod_schema}.{table} (SELECT * FROM {tmp_schema}.tmp_{table});"
-        )
+        if load_strategy == LoadStrategy.FULL_LOAD:
+            queries = [
+                f"DELETE FROM {prod_table};",
+                f"INSERT INTO {prod_table} SELECT * FROM {tmp_table};",
+            ]
+        elif load_strategy == LoadStrategy.INCREMENTAL:
+            pk_cols = get_primary_keys(
+                schema=prod_schema, table=table, pg_conn_id=pg_conn_id
+            )
+            col_list = sort_db_colnames(schema=prod_schema, tbl_name=table)
+            set_list = ", ".join(
+                [f"{col}=EXCLUDED.{col}" for col in col_list if col not in pk_cols]
+            )
 
-    str_queries = "\n".join(sql_queries)
-    print(f"The following queries will be run: \n{str_queries}")
-    for sql_query in sql_queries:
-        db.execute(query=sql_query)
+            # UPSERT
+            merge_query = f"""
+                MERGE INTO {prod_table} ({', '.join(col_list)})
+                USING {tmp_table} ON ({' AND '.join([f'{tmp_table}.{col} = {prod_table}.{col}' for col in pk_cols])})
+                WHEN MATCHED THEN
+                    UPDATE SET {set_list}
+                WHEN NOT MATCHED THEN
+                    INSERT ({', '.join(col_list)}) VALUES ({', '.join([f'{tmp_table}.{col}' for col in col_list])});
+            """
+
+            # DELETE rows not in staging
+            delete_query = f"""
+                DELETE FROM {prod_table} p
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM {tmp_table} t
+                    WHERE {" AND ".join([f"t.{col} = p.{col}" for col in pk_cols])}
+                );
+            """
+            queries = [merge_query, delete_query]
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}")
+
+        for q in queries:
+            print(f"Executing query on {table}:\n{q}")
+            db.execute(query=q)
 
 
 def sort_db_colnames(
