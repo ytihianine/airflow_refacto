@@ -1,15 +1,14 @@
 """HTTP client implementations."""
 
 import time
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import httpx
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
-from .base import AbstractHTTPClient, ResponseType
+from .base import AbstractHTTPClient
 from .config import ClientConfig
+from .types import HTTPResponse
 from .exceptions import (
     APIError,
     AuthenticationError,
@@ -32,62 +31,50 @@ class HttpxClient(AbstractHTTPClient):
         self._setup_client()
 
     def _setup_client(self):
-        """Initialize the HTTPX client with configuration."""
         limits = httpx.Limits(
-            max_keepalive_connections=5, max_connections=10, keepalive_expiry=5.0
+            max_keepalive_connections=5,
+            max_connections=10,
+            keepalive_expiry=5.0,
         )
         self._session = httpx.Client(
             headers=self.config.default_headers,
             timeout=self.config.timeout,
             verify=self.config.verify_ssl,
-            # proxies=self.config.proxies if self.config.proxy else None,
             limits=limits,
         )
 
-    def _handle_response(self, response: httpx.Response) -> ResponseType:
-        """Handle the response and raise appropriate exceptions."""
+    def _handle_response(self, response: httpx.Response) -> HTTPResponse:
         try:
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
-            if e.response.status_code == 401:
+            status = e.response.status_code
+            if status == 401:
                 raise AuthenticationError(
-                    "Authentication failed", status_code=401, response=e.response
+                    "Authentication failed", status_code=401, response=response
                 )
-            elif e.response.status_code == 403:
+            if status == 403:
                 raise AuthorizationError(
-                    "Authorization failed", status_code=403, response=e.response
+                    "Authorization failed", status_code=403, response=response
                 )
-            elif e.response.status_code == 429:
+            if status == 429:
                 raise RateLimitError(
-                    "Rate limit exceeded", status_code=429, response=e.response
+                    "Rate limit exceeded", status_code=429, response=response
                 )
-            elif 400 <= e.response.status_code < 500:
+            if 400 <= status < 500:
                 raise RequestError(
-                    f"Client error: {e}",
-                    status_code=e.response.status_code,
-                    response=e.response,
+                    f"Client error: {e}", status_code=status, response=response
                 )
-            elif 500 <= e.response.status_code < 600:
+            if 500 <= status < 600:
                 raise APIError(
-                    f"Server error: {e}",
-                    status_code=e.response.status_code,
-                    response=e.response,
+                    f"Server error: {e}", status_code=status, response=response
                 )
-            else:
-                raise ResponseError(
-                    f"HTTP error occurred: {e}",
-                    status_code=e.response.status_code,
-                    response=e.response,
-                )
+            raise ResponseError(
+                f"HTTP error occurred: {e}", status_code=status, response=response
+            )
 
-        # Try to parse JSON response
-        try:
-            return response.json()
-        except ValueError:
-            return response.text
+        return HTTPResponse(response)
 
     def _handle_rate_limit(self):
-        """Handle rate limiting between requests."""
         if self.config.rate_limit:
             current_time = time.time()
             time_since_last = current_time - self._last_request_time
@@ -105,8 +92,7 @@ class HttpxClient(AbstractHTTPClient):
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[int] = None,
         **kwargs,
-    ) -> ResponseType:
-        """Make an HTTP request using HTTPX."""
+    ) -> HTTPResponse:
         url = self._build_url(endpoint)
         self._handle_rate_limit()
 
@@ -133,7 +119,6 @@ class HttpxClient(AbstractHTTPClient):
             raise HTTPClientError(f"An unexpected error occurred: {e}")
 
     def close(self) -> None:
-        """Close the client session."""
         if self._session:
             self._session.close()
 
@@ -146,7 +131,6 @@ class RequestsClient(AbstractHTTPClient):
         self._setup_client()
 
     def _setup_client(self) -> None:
-        """Initialize the Requests session with configuration."""
         self._session = requests.Session()
         if self.config.default_headers:
             self._session.headers.update(self.config.default_headers)
@@ -155,8 +139,7 @@ class RequestsClient(AbstractHTTPClient):
             proxies = {"http": self.config.proxy, "https": self.config.proxy}
             self._session.proxies.update(proxies)
 
-    def _handle_response(self, response: requests.Response) -> ResponseType:
-        """Handle the response and raise appropriate exceptions."""
+    def _handle_response(self, response: requests.Response) -> HTTPResponse:
         try:
             response.raise_for_status()
         except requests.HTTPError as e:
@@ -181,16 +164,11 @@ class RequestsClient(AbstractHTTPClient):
                 raise APIError(
                     f"Server error: {e}", status_code=status, response=response
                 )
-
             raise ResponseError(
                 f"HTTP error occurred: {e}", status_code=status, response=response
             )
 
-        # Try JSON, fallback to text
-        try:
-            return response.json()
-        except ValueError:
-            return response.text
+        return HTTPResponse(response)
 
     def request(
         self,
@@ -201,9 +179,8 @@ class RequestsClient(AbstractHTTPClient):
         json: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[int] = None,
-        **kwargs: Any,
-    ) -> ResponseType:
-        """Make an HTTP request using Requests."""
+        **kwargs,
+    ) -> HTTPResponse:
         url = self._build_url(endpoint)
 
         try:
@@ -230,6 +207,5 @@ class RequestsClient(AbstractHTTPClient):
             raise HTTPClientError(f"An unexpected error occurred: {e}") from e
 
     def close(self) -> None:
-        """Close the client session."""
         if self._session:
             self._session.close()

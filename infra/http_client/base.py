@@ -1,12 +1,9 @@
-"""Base interface for HTTP clients."""
-
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
 from .config import ClientConfig
-
-ResponseType = Union[Dict[str, Any], str, bytes]
+from .types import HTTPResponse  # <- new wrapper
 
 
 class AbstractHTTPClient(ABC):
@@ -33,48 +30,31 @@ class AbstractHTTPClient(ABC):
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[int] = None,
         **kwargs
-    ) -> ResponseType:
+    ) -> HTTPResponse:  # 👈 always return wrapper
         """Make an HTTP request."""
         raise NotImplementedError
 
     def get(
         self, endpoint: str, params: Optional[Dict[str, Any]] = None, **kwargs
-    ) -> ResponseType:
-        """Make a GET request."""
+    ) -> HTTPResponse:
         return self.request("GET", endpoint, params=params, **kwargs)
 
     def post(
-        self,
-        endpoint: str,
-        data: Optional[Any] = None,
-        json: Optional[Dict[str, Any]] = None,
-        **kwargs
-    ) -> ResponseType:
-        """Make a POST request."""
+        self, endpoint: str, data: Any = None, json: Dict[str, Any] = {}, **kwargs
+    ) -> HTTPResponse:
         return self.request("POST", endpoint, data=data, json=json, **kwargs)
 
     def put(
-        self,
-        endpoint: str,
-        data: Optional[Any] = None,
-        json: Optional[Dict[str, Any]] = None,
-        **kwargs
-    ) -> ResponseType:
-        """Make a PUT request."""
+        self, endpoint: str, data: Any = None, json: Dict[str, Any] = {}, **kwargs
+    ) -> HTTPResponse:
         return self.request("PUT", endpoint, data=data, json=json, **kwargs)
 
     def patch(
-        self,
-        endpoint: str,
-        data: Optional[Any] = None,
-        json: Optional[Dict[str, Any]] = None,
-        **kwargs
-    ) -> ResponseType:
-        """Make a PATCH request."""
+        self, endpoint: str, data: Any = None, json: Dict[str, Any] = {}, **kwargs
+    ) -> HTTPResponse:
         return self.request("PATCH", endpoint, data=data, json=json, **kwargs)
 
-    def delete(self, endpoint: str, **kwargs) -> ResponseType:
-        """Make a DELETE request."""
+    def delete(self, endpoint: str, **kwargs) -> HTTPResponse:
         return self.request("DELETE", endpoint, **kwargs)
 
     @abstractmethod
