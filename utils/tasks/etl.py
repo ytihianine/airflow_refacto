@@ -2,6 +2,9 @@
 
 from typing import Callable, Optional, Any
 from airflow import XComArg
+from airflow.operators.python import PythonOperator
+from airflow.models.baseoperator import BaseOperator
+from airflow.models.xcom import XCom
 import pandas as pd
 
 from airflow.decorators import task
@@ -243,31 +246,17 @@ def create_action_etl_task(
     action_func: Callable[P, R],
     action_args: Optional[tuple] = None,
     action_kwargs: Optional[dict[str, Any]] = None,
-) -> Callable[..., XComArg]:
-    """Create an ETL task that executes a given action function with parameters.
+):
+    """Create an ETL task that executes a given action function with parameters."""
 
-    Args:
-        task_id: The Airflow task identifier
-        action_func: The function to execute
-        action_args: Positional arguments to pass to the action function
-        action_kwargs: Keyword arguments to pass to the action function
-
-    Returns:
-        An Airflow task that executes the action function
-    """
     if action_args is None:
         action_args = ()
-
     if action_kwargs is None:
         action_kwargs = {}
 
     @task(task_id=task_id)
-    def _task(**context) -> R:
-        """The actual ETL task function."""
-        # Merge context kwargs with provided kwargs
+    def _task(**context):
         merged_kwargs = {**action_kwargs, **context}
-
-        # Execute the provided action function with args and kwargs
-        return action_func(*action_args, **merged_kwargs)
+        action_func(*action_args, **merged_kwargs)
 
     return _task
