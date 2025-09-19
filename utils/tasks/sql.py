@@ -1,22 +1,18 @@
 """SQL task utilities using infrastructure handlers."""
 
 import logging
-import sqlite3
-import tempfile
 from typing import cast
 from datetime import datetime
 
 import psycopg2
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
-import pandas as pd
 
 from infra.database.factory import create_db_handler
 from infra.database.postgres import PostgresDBHandler
 
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.factory import FileHandlerFactory
-from infra.file_handling.local import LocalFileHandler
 
 from infra.file_handling.s3 import S3FileHandler
 from utils.config.tasks import get_projet_config, get_tbl_names
@@ -32,55 +28,6 @@ from utils.config.vars import (
 
 
 CONF_SCHEMA = "conf_projets"
-
-
-def get_conn_from_s3_sqlite(sqlite_file_s3_filepath: str) -> sqlite3.Connection:
-    """Create a SQLite connection from a S3 remote SQLite file.
-
-    Args:
-        sqlite_file_s3_filepath: Path to SQLite file in S3
-
-    Returns:
-        SQLite database connection
-    """
-    s3_handler = FileHandlerFactory.create_handler(
-        handler_type="s3",
-        base_path=None,
-        connection_id=DEFAULT_S3_CONN_ID,
-        bucket=DEFAULT_S3_BUCKET,
-    )
-    local_handler = FileHandlerFactory.create_handler(handler_type="local")
-
-    # Copy s3 file to local system
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp_file:
-        local_handler.write(
-            file_path=tmp_file.name, content=s3_handler.read(sqlite_file_s3_filepath)
-        )
-        return sqlite3.connect(tmp_file.name)
-
-    return conn
-
-
-def get_data_from_s3_sqlite_file(
-    table_name: str,
-    sqlite_s3_filepath: str,
-    sqlite_conn: sqlite3.Connection,
-) -> pd.DataFrame:
-    """Read data from SQLite table in S3.
-
-    Args:
-        table_name: Name of the table to read
-        sqlite_s3_filepath: S3 path to SQLite file
-        sqlite_conn: SQLite connection
-
-    Returns:
-        DataFrame with table contents, excluding internal columns
-    """
-    df = pd.read_sql_query("SELECT * FROM ?", params=(table_name,), con=sqlite_conn)
-
-    # Remove internal columns (e.g., grist_*, manual_*)
-    internal_cols = df.filter(regex="^(grist|manual)").columns
-    return df.drop(columns=internal_cols)
 
 
 @task(task_id="get_tbl_names_from_postgresql")
