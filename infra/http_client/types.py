@@ -7,12 +7,12 @@ class HTTPResponse:
     def __init__(self, raw: Any):
         self._raw = raw
 
-    def json(self) -> Optional[Dict[str, Any]]:
+    def json(self) -> Dict[str, Any]:
         """Return response body as JSON (if possible)."""
         try:
             return self._raw.json()
         except Exception:
-            return None
+            raise ValueError("Response content is not valid JSON")
 
     @property
     def text(self) -> str:
