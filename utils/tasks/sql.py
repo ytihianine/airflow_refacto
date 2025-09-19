@@ -471,7 +471,7 @@ def _process_and_import_file(
 
 @task(task_id="import_files_to_db")
 def import_files_to_db(
-    pg_data_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
+    pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     s3_conn_id: str = DEFAULT_S3_CONN_ID,
     keep_file_id_col: bool = False,
     **context,
@@ -498,7 +498,7 @@ def import_files_to_db(
                 s3_filepath=s3_filepath,
                 local_filepath=local_filepath,
                 tbl_name=tbl_name,
-                pg_conn_id=pg_data_conn_id,
+                pg_conn_id=pg_conn_id,
                 s3_conn_id=s3_conn_id,
                 keep_file_id_col=keep_file_id_col,
             )
