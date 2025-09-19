@@ -299,18 +299,20 @@ def copy_tmp_table_to_real_table(
                 WHEN MATCHED THEN
                     UPDATE SET {set_list}
                 WHEN NOT MATCHED THEN
-                    INSERT ({', '.join(col_list)}) VALUES ({', '.join([f'{tmp_table}.{col}' for col in col_list])});
+                    INSERT ({', '.join(col_list)}) VALUES ({', '.join([f'{tmp_table}.{col}' for col in col_list])})
+                WHEN NOT MATCHED BY SOURCE THEN
+                    DELETE;
             """
 
             # DELETE rows not in staging
-            delete_query = f"""
-                DELETE FROM {prod_table} p
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM {tmp_table} t
-                    WHERE {" AND ".join([f"t.{col} = p.{col}" for col in pk_cols])}
-                );
-            """
-            queries = [merge_query, delete_query]
+            # delete_query = f"""
+            #     DELETE FROM {prod_table} p
+            #     WHERE NOT EXISTS (
+            #         SELECT 1 FROM {tmp_table} t
+            #         WHERE {" AND ".join([f"t.{col} = p.{col}" for col in pk_cols])}
+            #     );
+            # """
+            queries = [merge_query]  # , delete_query]
         else:
             raise ValueError(f"Unknown strategy: {strategy}")
 
