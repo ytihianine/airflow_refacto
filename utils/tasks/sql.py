@@ -4,7 +4,7 @@ import logging
 from typing import cast
 from datetime import datetime, timedelta
 
-from enum import Enum
+from enum import Enum, auto
 import psycopg2
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
@@ -38,9 +38,9 @@ class PartitionTimePeriod(str, Enum):
     YEAR = "year"
 
 
-class LoadStrategy(str, Enum):
-    FULL_LOAD = "FULL_LOAD"
-    INCREMENTAL = "INCREMENTAL"
+class LoadStrategy(Enum):
+    FULL_LOAD = auto()
+    INCREMENTAL = auto()
 
 
 def get_primary_keys(
@@ -306,6 +306,7 @@ def copy_tmp_table_to_real_table(
 
     tbl_names = get_tbl_names(nom_projet=nom_projet, order_tbl=True)
     print(f"Tables to copy: {', '.join(tbl_names)}")
+    print(f"Load strategy : {load_strategy}")
 
     for table in reversed(tbl_names):
         prod_table = f"{prod_schema}.{table}"
@@ -320,34 +321,33 @@ def copy_tmp_table_to_real_table(
             pk_cols = get_primary_keys(
                 schema=prod_schema, table=table, pg_conn_id=pg_conn_id
             )
-            col_list = sort_db_colnames(schema=prod_schema, tbl_name=table)
-            set_list = ", ".join(
-                [f"{col}=EXCLUDED.{col}" for col in col_list if col not in pk_cols]
-            )
+            col_list = sort_db_colnames(tbl_name=table)
 
-            # UPSERT
+            # UPSERT -- ({', '.join(col_list)})
             merge_query = f"""
-                MERGE INTO {prod_table} ({', '.join(col_list)})
-                USING {tmp_table} ON ({' AND '.join([f'{tmp_table}.{col} = {prod_table}.{col}' for col in pk_cols])})
+                MERGE INTO {prod_table} tbl_target
+                USING {tmp_table} tbl_source ON ({' AND '.join([f'tbl_source.{col} = tbl_target.{col}' for col in pk_cols])})
                 WHEN MATCHED THEN
-                    UPDATE SET {set_list}
+                    UPDATE SET {", ".join([f"{col}=tbl_source.{col}" for col in col_list if col not in pk_cols])}
                 WHEN NOT MATCHED THEN
-                    INSERT ({', '.join(col_list)}) VALUES ({', '.join([f'{tmp_table}.{col}' for col in col_list])})
+                    INSERT ({', '.join(col_list)}) VALUES ({', '.join([f'tbl_source.{col}' for col in col_list])})
+                /* Only for PG v17+
                 WHEN NOT MATCHED BY SOURCE THEN
                     DELETE;
+                */
             """
 
             # DELETE rows not in staging
-            # delete_query = f"""
-            #     DELETE FROM {prod_table} p
-            #     WHERE NOT EXISTS (
-            #         SELECT 1 FROM {tmp_table} t
-            #         WHERE {" AND ".join([f"t.{col} = p.{col}" for col in pk_cols])}
-            #     );
-            # """
-            queries = [merge_query]  # , delete_query]
+            delete_query = f"""
+                DELETE FROM {prod_table} tbl_target
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM {tmp_table} tbl_source
+                    WHERE {" AND ".join([f"tbl_source.{col} = tbl_target.{col}" for col in pk_cols])}
+                );
+            """
+            queries = [merge_query, delete_query]
         else:
-            raise ValueError(f"Unknown strategy: {strategy}")
+            raise ValueError(f"Unknown strategy: {load_strategy}")
 
         for q in queries:
             print(f"Executing query on {table}:\n{q}")

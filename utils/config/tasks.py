@@ -34,13 +34,19 @@ def get_config(nom_projet: str, selecteur: Optional[str] = None) -> pd.DataFrame
                filepath_source_s3, filepath_local, filepath_s3,
                filepath_tmp_s3, tbl_name, tbl_order
         FROM {CONF_SCHEMA}.vue_conf_projets
-        WHERE nom_projet = %s;
+        WHERE nom_projet = %s
     """
+
+    params = [nom_projet]
 
     if selecteur:
         query += " AND selecteur = %s"
+        params.append(selecteur)
 
-    df = db.fetch_df(query, (nom_projet, selecteur))
+    # remove trailing semicolon to avoid DB API issues
+    query = query.strip() + ";"
+
+    df = db.fetch_df(query, tuple(params))
 
     if df.empty:
         raise ConfigError(
@@ -174,20 +180,21 @@ def get_tbl_names(nom_projet: str, order_tbl: bool = False) -> List[str]:
     """
     db = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_CONFIG_CONN_ID))
 
-    query = """
-        SELECT DISTINCT nom_tbl
-        FROM conf_projets.relations_colonnes
-        WHERE nom_projet = %s
-    """
-    if order_tbl:
-        query += " ORDER BY tbl_order ASC"
+    query = f"""SELECT vcp.tbl_name
+            FROM {CONF_SCHEMA}.vue_conf_projets vcp
+            WHERE vcp.tbl_name IS NOT NULL
+                AND vcp.tbl_name <> ''
+                AND vcp.nom_projet=%s
+            ORDER BY vcp.tbl_order;
+            ;
+        """
 
     df = db.fetch_df(query, (nom_projet,))
 
     if df.empty:
         return []
 
-    return df["nom_tbl"].tolist()
+    return df["tbl_name"].tolist()
 
 
 def get_s3_keys_source(nom_projet: str) -> List[str]:
