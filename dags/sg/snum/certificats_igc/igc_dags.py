@@ -52,7 +52,7 @@ default_args = {
     params={
         "nom_projet": nom_projet,
         "db": {
-            "prod_schema": "siep",
+            "prod_schema": "snum",
             "tmp_schema": "temporaire",
         },
         "mail": {
