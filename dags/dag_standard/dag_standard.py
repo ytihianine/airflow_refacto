@@ -8,14 +8,12 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from infra.mails.sender import create_airflow_callback, MailStatus
 
 from utils.tasks.sql import (
-    get_project_config,
-    get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     set_dataset_last_update_date,
 )
 
-from utils.tasks.s3 import copy_files_to_s3, del_files_from_s3
+from utils.tasks.s3 import copy_s3_files, del_s3_files
 from utils.config.tasks import get_s3_keys_source
 
 
@@ -84,22 +82,12 @@ def consommation_des_batiments():
 
     # Ordre des tâches
     chain(
-        get_project_config(),
         looking_for_files,
-        get_tbl_names_from_postgresql(),
-        create_tmp_tables(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-        ),
-        copy_tmp_table_to_real_table(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-        ),
-        set_dataset_last_update_date(
-            dataset_ids=[894651, 7451],
-        ),
-        copy_files_to_s3(bucket="dsci"),
-        del_files_from_s3(bucket="dsci"),
+        create_tmp_tables(),
+        copy_tmp_table_to_real_table(),
+        # set_dataset_last_update_date(
+        #     dataset_ids=[894651, 7451],
+        # ),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
     )
