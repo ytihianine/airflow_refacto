@@ -5,7 +5,6 @@ from datetime import timedelta
 from pprint import pprint
 import pytz
 
-from utils.tasks.sql import get_project_config
 from infra.mails.sender import create_airflow_callback, MailStatus
 
 default_args = {
@@ -92,10 +91,7 @@ def liste_contexte_var():
         )
         mail_func_error(context=context)
 
-    projet_config = get_project_config()
-
     chain(
-        projet_config,
         print_context(),
         my_task(),
         print_conf_var(),
