@@ -6,6 +6,7 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 from utils.tasks.sql import (
+    LoadStrategy,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db,
@@ -94,12 +95,14 @@ def oad_referentiel():
 
     """ Task order """
     chain(
-        validate_params(),
+        # validate_params(),
         looking_for_files,
         bien_typologie(),
         create_tmp_tables(),
-        import_file_to_db.expand(storage_row=get_projet_config(nom_projet=nom_projet)),
-        copy_tmp_table_to_real_table(),
+        import_file_to_db.expand(
+            selecteur_config=get_projet_config(nom_projet=nom_projet)
+        ),
+        copy_tmp_table_to_real_table(load_strategy=LoadStrategy.INCREMENTAL),
         copy_s3_files(
             bucket="dsci",
         ),

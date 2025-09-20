@@ -5,8 +5,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-from infra.smtp.config import MailStatus
-from infra.smtp.sender import create_airflow_callback
+from infra.mails.sender import create_airflow_callback, MailStatus
 
 from utils.tasks.sql import (
     get_project_config,

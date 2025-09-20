@@ -13,6 +13,6 @@ validate_params = create_validate_params_task(
 
 
 bien_typologie = create_file_etl_task(
-    selecteur="bien_typologie",
+    selecteur="ref_typologie",
     process_func=process.process_typologie_bien,
 )

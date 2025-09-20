@@ -1,7 +1,7 @@
 import pandas as pd
 
 from utils.control.structures import convert_str_of_list_to_list
-from utils.common.vars import NO_PROCESS_MSG
+from utils.config.vars import NO_PROCESS_MSG
 
 
 def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
