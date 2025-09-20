@@ -1,6 +1,5 @@
 """Mail sending functionality."""
 
-import os
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Union, Callable
 from email.mime.application import MIMEApplication
@@ -9,9 +8,9 @@ from email.mime.text import MIMEText
 
 from airflow.providers.smtp.hooks.smtp import SmtpHook
 
-from .config import MailConfig, MailMessage, MailStatus, MailPriority
-from .template import TemplateManager
-from .exceptions import SendError, ConfigError
+from infra.mails.config import MailConfig, MailMessage, MailStatus, MailPriority
+from infra.mails.template import TemplateManager
+from infra.mails.exceptions import SendError
 
 
 class MailSender:

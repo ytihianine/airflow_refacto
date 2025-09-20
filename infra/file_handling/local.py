@@ -5,7 +5,7 @@ import shutil
 import mimetypes
 from datetime import datetime
 from pathlib import Path
-from typing import Any, BinaryIO, List, Optional, Union
+from typing import BinaryIO, List, Optional, Union
 
 from .base import BaseFileHandler, FileMetadata
 from .exceptions import FileHandlerError, FileNotFoundError, FilePermissionError
@@ -50,9 +50,12 @@ class LocalFileHandler(BaseFileHandler):
         """Delete file from local filesystem."""
         abs_path = self.get_absolute_path(file_path)
         try:
-            if not abs_path.exists():
-                raise FileNotFoundError(f"File not found: {abs_path}")
-            abs_path.unlink()
+            if abs_path.exists():
+                print(f"Deleting file at : {abs_path}")
+                os.remove(abs_path)
+            else:
+                print(f"File does not exists at : {abs_path}")
+
         except PermissionError as e:
             raise FilePermissionError(f"Permission denied: {abs_path}") from e
         except OSError as e:

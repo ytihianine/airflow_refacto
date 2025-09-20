@@ -13,6 +13,7 @@ def read_dataframe(
     file_handler: BaseFileHandler,
     file_path: Union[str, Path],
     file_format: str = "auto",
+    read_options: Optional[dict] = None,
     **kwargs
 ) -> pd.DataFrame:
     """
@@ -54,24 +55,29 @@ def read_dataframe(
             ".json": "json",
         }
         file_format = format_map.get(ext, "csv")  # Default to CSV if unknown
-
+    if read_options is None:
+        read_options = {}
     # Read the file content
     with file_handler.read(file_path) as file_obj:
         # Different handling based on format
         if file_format == "parquet":
             # For parquet, we need to write to a temporary BytesIO first
             buffer = io.BytesIO(file_obj.read())
-            return pd.read_parquet(buffer, **kwargs)
+            return pd.read_parquet(buffer, **read_options, **kwargs)
 
         elif file_format == "excel":
             buffer = io.BytesIO(file_obj.read())
-            return pd.read_excel(buffer, **kwargs)
+            return pd.read_excel(buffer, **read_options, **kwargs)
 
         elif file_format == "json":
-            return pd.read_json(io.StringIO(file_obj.read().decode("utf-8")), **kwargs)
+            return pd.read_json(
+                io.StringIO(file_obj.read().decode("utf-8")), **read_options, **kwargs
+            )
 
         else:  # csv
-            return pd.read_csv(io.StringIO(file_obj.read().decode("utf-8")), **kwargs)
+            return pd.read_csv(
+                io.StringIO(file_obj.read().decode("utf-8")), **read_options, **kwargs
+            )
 
 
 def write_dataframe(

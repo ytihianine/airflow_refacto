@@ -1,6 +1,7 @@
 from typing import Optional, Any
 import pandas as pd
-from infra.http_client.base import AbstractHTTPClient, ResponseType
+from infra.http_client.base import AbstractHTTPClient
+from infra.http_client.types import HTTPResponse
 
 
 class GristAPI:
@@ -120,7 +121,7 @@ class GristAPI:
         tbl_name: Optional[str] = None,
         query_params: Optional[list[str]] = None,
         api_token: Optional[str] = None,
-    ) -> ResponseType:
+    ) -> HTTPResponse:
         """_summary_
 
         Args:
@@ -150,7 +151,7 @@ class GristAPI:
         data: Optional[dict[str, Any]] = None,
         json: Optional[dict[str, Any]] = None,
         api_token: Optional[str] = None,
-    ) -> ResponseType:
+    ) -> HTTPResponse:
         """_summary_
 
         Args:
@@ -186,7 +187,7 @@ class GristAPI:
         data: Optional[dict[str, Any]] = None,
         json: Optional[dict[str, Any]] = None,
         api_token: Optional[str] = None,
-    ) -> ResponseType:
+    ) -> HTTPResponse:
         """_summary_
 
         Args:
