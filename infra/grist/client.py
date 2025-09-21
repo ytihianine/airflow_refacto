@@ -279,6 +279,6 @@ class GristAPI:
             raise ValueError("The response from Grist is None!")
 
         if not isinstance(grist_response, HTTPResponse):
-            raise ValueError("The response from Grist is not HTTPResponse!")
+            raise ValueError("The response from Grist is not a valid HTTPResponse!")
 
         return grist_response.content
