@@ -260,3 +260,60 @@ def create_action_etl_task(
         action_func(*action_args, **merged_kwargs)
 
     return _task
+
+
+def create_action_to_file_etl_task(
+    output_selecteur: str,
+    task_id: str,
+    action_func: Callable[P, pd.DataFrame],
+    action_args: Optional[tuple] = None,
+    action_kwargs: Optional[dict[str, Any]] = None,
+):
+    """
+    Create an ETL task that executes a given action function with parameters. The action function must return a DataFrame
+    that will be saved to a file in S3 according to the output_selecteur configuration.
+
+    Args:
+        output_selecteur: The config selector key for the output dataset
+        task_id: The identifier for this ETL task
+        action_func: A function that returns a DataFrame
+        action_args: Optional positional arguments for the action function
+        action_kwargs: Optional keyword arguments for the action function
+    Returns:
+        An Airflow task that performs the action and saves the result to S3
+    """
+
+    if action_args is None:
+        action_args = ()
+    if action_kwargs is None:
+        action_kwargs = {}
+
+    @task(task_id=task_id)
+    def _task(**context):
+        # Get project name from context
+        params = context.get("params", {})
+        nom_projet = params.get("nom_projet")
+        if not nom_projet:
+            raise ValueError("nom_projet must be defined in DAG parameters")
+
+        # Initialize handler
+        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+
+        # Resolve configs
+        output_config = get_selecteur_config(
+            nom_projet=nom_projet, selecteur=output_selecteur
+        )
+        # Initialize hooks
+        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+
+        # Execute action
+        merged_kwargs = {**action_kwargs, **context}
+        df = action_func(*action_args, **merged_kwargs)
+
+        # Export
+        s3_handler.write(
+            file_path=str(output_config.filepath_tmp_s3),
+            content=df.to_parquet(path=None, index=False),
+        )
+
+    return _task
