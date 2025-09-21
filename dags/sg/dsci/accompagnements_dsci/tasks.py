@@ -1,7 +1,7 @@
 from airflow.decorators import task_group
 from airflow.models.baseoperator import chain
 
-from utils.config.types import ALL_KEYS
+from utils.config.types import ALL_PARAM_PATHS
 from utils.tasks.etl import create_grist_etl_task
 
 from dags.sg.dsci.accompagnements_dsci import process
@@ -9,7 +9,7 @@ from utils.tasks.validation import create_validate_params_task
 
 
 validate_params = create_validate_params_task(
-    required_paths=ALL_KEYS,
+    required_paths=ALL_PARAM_PATHS,
     require_truthy=None,
     task_id="validate_dag_params",
 )

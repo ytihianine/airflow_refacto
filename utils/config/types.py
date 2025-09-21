@@ -63,29 +63,25 @@ class DagParams(TypedDict):
     docs: DocsParams
 
 
-# Common keys (use these constants to avoid hard-coded strings in checks)
+# Top level keys
 KEY_NOM_PROJET = "nom_projet"
 KEY_DB = "db"
-KEY_DB_PROD_SCHEMA = "prod_schema"
-KEY_DB_TMP_SCHEMA = "tmp_schema"
 KEY_MAIL = "mail"
-KEY_MAIL_ENABLE = "enable"
-KEY_MAIL_TO = "to"
-KEY_MAIL_CC = "cc"
 KEY_DOCS = "docs"
-KEY_DOCS_LIEN_PIPELINE = "lien_pipeline"
-KEY_DOCS_LIEN_DONNEES = "lien_donnees"
 
-ALL_KEYS = [
+# Nested keys with their paths
+ALL_PARAM_PATHS = [
     KEY_NOM_PROJET,
-    KEY_DB,
-    KEY_DB_PROD_SCHEMA,
-    KEY_DB_TMP_SCHEMA,
-    KEY_MAIL,
-    KEY_MAIL_ENABLE,
-    KEY_MAIL_TO,
-    KEY_MAIL_CC,
-    KEY_DOCS,
-    KEY_DOCS_LIEN_PIPELINE,
-    KEY_DOCS_LIEN_DONNEES,
+    f"{KEY_DB}.prod_schema",
+    f"{KEY_DB}.tmp_schema",
+    f"{KEY_MAIL}.enable",
+    f"{KEY_MAIL}.to",
+    f"{KEY_MAIL}.cc",
+    f"{KEY_DOCS}.lien_pipeline",
+    f"{KEY_DOCS}.lien_donnees",
+]
+
+# Optional keys that don't need validation
+OPTIONAL_PATHS = [
+    f"{KEY_MAIL}.bcc",
 ]
