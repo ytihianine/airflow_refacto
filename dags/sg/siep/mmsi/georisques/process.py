@@ -1,7 +1,5 @@
 import pandas as pd
 
-from utils.api_client.base import AbstractApiClient
-
 
 def clean_rename(df: pd.DataFrame) -> pd.DataFrame:
     return df
@@ -44,31 +42,3 @@ def format_query_param(adresse: str, latitude: float, longitude: float) -> str:
         return f"adresse={adresse}"
 
     return "no geo data"
-
-
-def get_risque(
-    api_client: AbstractApiClient, url: str, query_param: str
-) -> dict[str, str]:
-    result_json = {}
-
-    if query_param == "no geo data":
-        result_json["statut"] = "Echec"
-        result_json["statut_code"] = None
-        result_json["raison"] = "no geo data"
-        return result_json
-
-    full_url = f"{url}?{query_param}"
-
-    response = api_client.get(full_url, timeout=180)
-
-    if response.status_code == 200:
-        result_json["statut"] = "Succès"
-        result_json["statut_code"] = response.status_code
-        result_json["raison"] = None
-        result_json.update(response.json())
-        return result_json
-    else:
-        result_json["statut"] = "Echec"
-        result_json["statut_code"] = response.status_code
-        result_json["raison"] = response.content
-        return result_json
