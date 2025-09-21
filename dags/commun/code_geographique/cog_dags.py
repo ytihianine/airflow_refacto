@@ -13,7 +13,6 @@ from utils.tasks.sql import (
     # set_dataset_last_update_date,
 )
 
-
 from dags.commun.code_geographique.tasks import code_geographique, geojson, code_iso
 
 nom_projet = "Code géographique"
