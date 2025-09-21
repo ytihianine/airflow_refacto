@@ -1,11 +1,9 @@
-import json
 import pandas as pd
 import numpy as np
-from datetime import datetime
-from typing import Union
+from typing import Any
 
 
-def split_declaration_and_adresse_efa(declarations: list) -> Union[list, list]:
+def split_declaration_and_adresse_efa(declarations: list) -> tuple[list, list]:
     rows_declaration = []
     rows_adresse_efa = []
 
@@ -31,7 +29,6 @@ def process_declarations(df: pd.DataFrame) -> pd.DataFrame:
         "idImportConsommations": "id_import_consommations",
         "statut": "statut",
     }
-    df = df.fillna(np.nan).replace([np.nan], [None])
     df = df.rename(columns=colnames_mapping)
     return df
 
@@ -43,13 +40,12 @@ def process_adresse_efa(df: pd.DataFrame) -> pd.DataFrame:
         "codePostal": "code_postal",
         "commune": "commune",
     }
-    df = df.fillna(np.nan).replace([np.nan], [None])
     df = df.drop_duplicates(subset=["idOccupantEfa"])
     df = df.rename(columns=colnames_mapping)
     return df
 
 
-def process_detail_conso(raw_data: list[dict[str, any]]) -> pd.DataFrame:
+def process_detail_conso(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
     colnames_mapping = {
         "consoId": "id_consommation_api",
         "refOperatEfa": "ref_operat_efa",
@@ -200,7 +196,6 @@ def process_detail_conso(raw_data: list[dict[str, any]]) -> pd.DataFrame:
 
     df = pd.DataFrame(data=raw_data)
     df = df.rename(columns=colnames_mapping)
-    df = df.fillna(np.nan).replace([np.nan], [None])
 
     # Convertir les données au bon format
     df["date_debut_conso_reference"] = pd.to_datetime(
@@ -226,13 +221,12 @@ def process_detail_conso(raw_data: list[dict[str, any]]) -> pd.DataFrame:
         df[col] = df[col].str.replace(",", ".")
         df[col] = df[col].replace("", np.nan)
         print(f"Après: {df[col].unique()}")
-        df[col] = pd.to_numeric(df[col], downcast="float", errors="ignore")
-    df = df.fillna(np.nan).replace([np.nan], [None])
+        df[col] = pd.to_numeric(df[col], downcast="float", errors="ignore")  # type: ignore
 
     return df
 
 
-def process_detail_conso_activite(raw_data: list[dict[str, any]]) -> pd.DataFrame:
+def process_detail_conso_activite(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
     colnames_mapping = {
         "sousCategorieActivite": "sous_categorie_activite",
         "surfacePlancherM2": "surface_plancher_m2",
@@ -279,7 +273,6 @@ def process_detail_conso_activite(raw_data: list[dict[str, any]]) -> pd.DataFram
         elem = elem | nb_jours_occupes
 
     df = pd.DataFrame(data=raw_data)
-    df = df.fillna(np.nan).replace([np.nan], [None])
 
     # Conversion des colonnes au data type attendu
     df["dateDebutActivite"] = pd.to_datetime(df["dateFinActivite"], format="%d/%m/%Y")
@@ -288,13 +281,12 @@ def process_detail_conso_activite(raw_data: list[dict[str, any]]) -> pd.DataFram
     df["surfacePlancherM2"] = pd.to_numeric(
         df["surfacePlancherM2"], downcast="float", errors="coerce"
     )
-    df = df.fillna(np.nan).replace([np.nan], [None])
     df = df.rename(columns=colnames_mapping)
 
     return df
 
 
-def process_detail_conso_indicateur(raw_data: list[dict[str, any]]) -> pd.DataFrame:
+def process_detail_conso_indicateur(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
     max_num = max(
         [
             int(key.replace("nomIndicateur", ""))
@@ -325,6 +317,5 @@ def process_detail_conso_indicateur(raw_data: list[dict[str, any]]) -> pd.DataFr
                 )
 
     df = pd.DataFrame(data=raw_data_formated)
-    df = df.fillna(np.nan).replace([np.nan], [None])
 
     return df

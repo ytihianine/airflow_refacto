@@ -4,20 +4,20 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
-from utils.config.tasks import get_storage_rows
+from utils.config.tasks import get_projet_config
 from utils.tasks.sql import (
-    get_project_config,
-    get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db,
 )
 
-# from utils.tasks.s3 import (
-#     copy_s3_files,
-#     del_s3_files,
-# )
-from dags.sg.siep.mmsi.api_operat.task import liste_declaration, consommation_by_id
+from utils.tasks.s3 import (
+    copy_s3_files,
+    del_s3_files,
+)
+
+from dags.sg.siep.mmsi.api_operat.task import taches
+
 
 needs_debug = False
 if needs_debug:
@@ -25,11 +25,10 @@ if needs_debug:
 
     HTTPConnection.debuglevel = 1
 
-# Mails
-To = ["mmsi.siep@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
-link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/api_operat?ref_type=heads"  # noqa
-link_documentation_donnees = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
+
+nom_projet = "API Opera"
+LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/api_operat?ref_type=heads"  # noqa
+LINK_DOC_DONNEE = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
 default_args = {
     "owner": "airflow",
@@ -53,15 +52,19 @@ default_args = {
     max_consecutive_failed_dag_runs=1,
     default_args=default_args,
     params={
-        "nom_projet": "API Opera",
+        "nom_projet": nom_projet,
+        "db": {
+            "prod_schema": "siep",
+            "tmp_schema": "temporaire",
+        },
         "mail": {
             "enable": False,
-            "To": To,
-            "CC": CC,
+            "to": ["mmsi.siep@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"],
         },
         "docs": {
-            "lien_pipeline": link_documentation_pipeline,
-            "lien_donnees": link_documentation_donnees,
+            "lien_pipeline": LINK_DOC_PIPELINE,
+            "lien_donnees": LINK_DOC_DONNEE,
         },
     },
     on_failure_callback=create_airflow_callback(
@@ -70,32 +73,17 @@ default_args = {
     on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
 )
 def api_operat_ademe():
-    nom_projet = "API Opera"
-    tmp_schema = "temporaire"
-    prod_schema = "siep"
-    url = "https://prd-x-ademe-externe-api.de-c1.eu1.cloudhub.io"
 
     # Ordre des tâches
-    projet_config = get_project_config()
-
     chain(
-        projet_config,
-        get_tbl_names_from_postgresql(),
-        create_tmp_tables(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-        ),
-        liste_declaration(nom_projet=nom_projet, url=url),
-        consommation_by_id(nom_projet=nom_projet, url=url),
+        taches(),
+        create_tmp_tables(),
         import_file_to_db.expand(
-            storage_row=get_storage_rows(nom_projet=nom_projet).to_dict("records")
+            selecteur_config=get_projet_config(nom_projet=nom_projet)
         ),
-        copy_tmp_table_to_real_table(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-        ),
+        copy_tmp_table_to_real_table(),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
     )
 
 
