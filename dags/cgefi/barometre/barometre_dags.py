@@ -9,8 +9,7 @@ from infra.mails.sender import create_airflow_callback, MailStatus
 from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
-    import_file_to_db_at_once,
-    get_tbl_names_from_postgresql,
+    import_files_to_db,
     # set_dataset_last_update_date,
 )
 
@@ -23,21 +22,13 @@ from utils.config.tasks import (
 )
 
 from dags.cgefi.barometre.tasks import (
-    organisme,
-    cartographie,
-    efc,
-    recommandation,
-    fiche_signaletique,
-    # rapport_hors_corpus,
-    rapport_annuel,
+    source_files,
 )
 
 
-# Mails
-To = ["corpus.cgefi@finances.gouv.fr"]
-CC = ["labo-data@finances.gouv.fr"]
-link_documentation_pipeline = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
-link_documentation_donnees = ""  # noqa
+nom_projet = "Baromètre"
+LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
+LINK_DOC_DATA = ""  # noqa
 
 
 default_args = {
@@ -62,24 +53,25 @@ default_args = {
     description="""Pipeline de traitement des données pour le Baromètre""",
     default_args=default_args,
     params={
-        "nom_projet": "Baromètre",
+        "nom_projet": nom_projet,
+        "db": {
+            "prod_schema": "cgefi",
+            "tmp_schema": "temporaire",
+        },
         "mail": {
             "enable": False,
-            "To": To,
-            "CC": CC,
+            "to": ["corpus.cgefi@finances.gouv.fr"],
+            "cc": ["labo-data@finances.gouv.fr"],
         },
         "docs": {
-            "lien_pipeline": link_documentation_pipeline,
-            "lien_donnees": link_documentation_donnees,
+            "lien_pipeline": LINK_DOC_PIPELINE,
+            "lien_donnees": LINK_DOC_DATA,
         },
     },
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def barometre():
-    nom_projet = "Baromètre"
-    prod_schema = "cgefi"
-    tmp_schema = "temporaire"
-
+    """Tasks definition"""
     looking_for_files = S3KeySensor(
         task_id="looking_for_files",
         aws_conn_id="minio_bucket_dsci",
@@ -101,32 +93,10 @@ def barometre():
     """ Task order """
     chain(
         looking_for_files,
-        get_tbl_names_from_postgresql(),
-        create_tmp_tables(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-        ),
-        organisme(
-            nom_projet=nom_projet, selecteur="organisme", selecteur_organisme_hc=""
-        ),
-        [
-            recommandation(nom_projet=nom_projet, selecteur="recommandations"),
-            fiche_signaletique(nom_projet=nom_projet, selecteur="fiches_signaletiques"),
-            cartographie(nom_projet=nom_projet, selecteur="cartographie"),
-            efc(nom_projet=nom_projet, selecteur="efc"),
-            rapport_annuel(
-                nom_projet=nom_projet,
-                selecteur_rapport_annuel="rapports_annuels",
-                selecteur_date_retour_attendue="date_retour_attendue",
-            ),
-        ],
-        import_file_to_db_at_once(pg_conn_id="db_data_store"),
-        copy_tmp_table_to_real_table(
-            prod_schema=prod_schema,
-            tmp_schema=tmp_schema,
-            tbl_names_task_id="get_tbl_names_from_postgresql",
-        ),
+        source_files(),
+        create_tmp_tables(),
+        import_files_to_db(pg_conn_id="db_data_store"),
+        copy_tmp_table_to_real_table(),
         # set_dataset_last_update_date(db_hook=POSTGRE_HOOK, dataset_ids=[3]),
         copy_s3_files(bucket="dsci"),
         del_s3_files(bucket="dsci"),

@@ -17,7 +17,7 @@ def concat_df(list_df: list[pd.DataFrame]) -> pd.DataFrame:
     return pd.concat(list_df)
 
 
-def split_df_organisme(df_orga: pd.DataFrame) -> [pd.DataFrame, pd.DataFrame]:
+def split_df_organisme(df_orga: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     col_id = ["denomination", "sigle", "siren"]
     cols_df_orga_merge = [
         "cartographie_attendue",
