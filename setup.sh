@@ -19,3 +19,6 @@ pip install -r requirements.txt
 
 # Installer les pre-commits
 pre-commit install
+
+echo Init git config
+git config --global credential.helper 'cache --timeout=360000'
