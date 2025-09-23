@@ -36,7 +36,7 @@ from dags.sg.siep.mmsi.oad.indicateurs.tasks import (
 # Mails
 nom_projet = "Outil aide diagnostic"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
-LINK_DOC_DONNEE = ""  # noqa
+LINK_DOC_DONNEE = "Non-défini"  # noqa
 
 
 default_args = {
@@ -113,7 +113,7 @@ def oad():
     chain(
         validate_params(),
         looking_for_files,
-        convert_file_to_parquet(),
+        # convert_file_to_parquet(),
         tasks_oad_caracteristiques(),
         tasks_oad_indicateurs(),
         create_tmp_tables(),

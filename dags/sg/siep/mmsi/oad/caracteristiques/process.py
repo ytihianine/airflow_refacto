@@ -21,14 +21,12 @@ def merge_old_df_to_new_df(
     return df
 
 
-def process_oad_file(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping, errors="raise").replace("NC", None)
+def process_oad_file(df: pd.DataFrame) -> pd.DataFrame:
     df = df.loc[
         (df["presence_mef_bat"] == "Avec MEF")
         & (df["filtre_manuel_a_conserver"] == True)
     ]
-    df = df.drop(columns=list(set(df.columns) - set(cols_mapping.values())))
-
+    df = df.replace("NC", None)
     return df
 
 

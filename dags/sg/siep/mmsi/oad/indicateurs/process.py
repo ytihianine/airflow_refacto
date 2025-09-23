@@ -3,7 +3,7 @@ from typing import cast
 import pandas as pd
 
 from infra.database.postgres import PostgresDBHandler
-from utils.config.vars import DEFAULT_PG_CONFIG_CONN_ID
+from utils.config.vars import DEFAULT_PG_DATA_CONN_ID
 from infra.database.factory import create_db_handler
 
 
@@ -16,18 +16,9 @@ def filter_bien(df: pd.DataFrame, df_bien: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_oad_indic(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
-    db_handler = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_CONFIG_CONN_ID))
-    # Renommer les colonnes selon la correspondance
-    df = df.rename(columns=cols_mapping)
-    df = (
-        df.set_axis(
-            [" ".join(colname.split()) for colname in df.columns],
-            axis="columns",
-        )
-        .rename(columns=cols_mapping, errors="raise")
-        .dropna(subset=["code_bat_ter"])
-    )
+def process_oad_indic(df: pd.DataFrame) -> pd.DataFrame:
+    db_handler = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_DATA_CONN_ID))
+    df = df.dropna(subset=["code_bat_ter"])
     df = df.drop_duplicates(subset=["code_bat_ter"], ignore_index=True)
 
     # Removing biens which are not presents in table bien
@@ -297,7 +288,17 @@ def process_localisation(
     df = pd.merge(left=df_oad_carac, right=df_oad_indic, on="code_bat_ter", how="left")
     cols_to_keep = [
         "code_bat_ter",
-        # TODO: Add other columns from oad_carac and oad_indic
+        "latitude",
+        "longitude",
+        "adresse_normalisee",
+        "adresse_source",
+        "code_insee_normalise",
+        "commune_mef_hmef",
+        "commune_normalisee",
+        "commune_source",
+        "france_etranger",
+        "num_departement_normalisee",
+        "num_departement_source",
     ]
     df = df[cols_to_keep]
 
@@ -377,7 +378,7 @@ def process_reglementation(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_strategie(
-    df_oad_carac: pd.DataFrame, df_oad_indic: pd.DataFrame
+    df_oad_carac: pd.DataFrame, df_oad_indic: pd.DataFrame, df_biens: pd.DataFrame
 ) -> pd.DataFrame:
     df = pd.merge(left=df_oad_carac, right=df_oad_indic, on="code_bat_ter", how="left")
     df = df.drop_duplicates(
@@ -389,9 +390,12 @@ def process_strategie(
         "code_bat_ter",
         "perimetre_spsi_initial",
         "perimetre_spsi_maj",
-        # TODO: add columns from oad_indic
+        "segmentation_sdir_spsi",
+        "segmentation_theorique_sdir_spsi",
+        "statut_osc",
     ]
     df = df[cols_to_keep]
+    df = filter_bien(df=df, df_bien=df_biens)
 
     return df
 

@@ -2,9 +2,6 @@
 
 from typing import Callable, Optional, Any
 from airflow import XComArg
-from airflow.operators.python import PythonOperator
-from airflow.models.baseoperator import BaseOperator
-from airflow.models.xcom import XCom
 import pandas as pd
 
 from airflow.decorators import task
@@ -18,6 +15,7 @@ from utils.config.tasks import (
     get_selecteur_config,
     get_cols_mapping,
     format_cols_mapping,
+    get_required_cols,
 )
 from utils.config.types import P, R
 
@@ -73,12 +71,12 @@ def create_grist_etl_task(
         )
 
         # Download Grist doc from S3 to local temp file
-        grist_doc = s3_handler.read(file_path=str(doc_config.filepath_source_s3))
+        grist_doc = s3_handler.read(file_path=doc_config.filepath_tmp_s3)
         local_handler.write(file_path=str(doc_config.filepath_local), content=grist_doc)
 
         # Get data of table
         df = sqlite_handler.fetch_df(
-            query=f"SELECT * FROM ?", parameters=(task_config.nom_source,)
+            query=f"SELECT * FROM {task_config.nom_source}"  # , parameters=(task_config.nom_source,)
         )
 
         if normalisation_process_func is not None:
@@ -150,6 +148,10 @@ def create_file_etl_task(
             if cols_mapping.empty:
                 print(f"No column mapping found for selecteur {selecteur}")
             else:
+                df = df.set_axis(
+                    [" ".join(colname.split()) for colname in df.columns],
+                    axis="columns",
+                )
                 df = df.rename(columns=format_cols_mapping(cols_mapping))
 
         if process_func is None:
@@ -213,15 +215,18 @@ def create_multi_files_input_etl_task(
 
         # Load all input datasets
         dfs: list[pd.DataFrame] = []
+        if use_required_cols:
+            required_cols = get_required_cols(
+                nom_projet=nom_projet, selecteur=output_selecteur
+            )
+            print(required_cols)
+            if not required_cols.empty:
+                read_options["columns"] = required_cols["colname_dest"].to_list()
         for sel in input_selecteurs:
             cfg = get_selecteur_config(nom_projet=nom_projet, selecteur=sel)
-            if use_required_cols:
-                required_cols = get_cols_mapping(nom_projet=nom_projet, selecteur=sel)
-                if not required_cols.empty:
-                    read_options["columns"] = required_cols["colname_dest"].to_list()
             df = read_dataframe(
                 file_handler=s3_handler,
-                file_path=cfg.filepath_source_s3,
+                file_path=cfg.filepath_tmp_s3,
                 read_options=read_options,
             )
             df_info(df=df, df_name=f"{sel} - Source normalisée")
@@ -256,7 +261,7 @@ def create_action_etl_task(
 
     @task(task_id=task_id)
     def _task(**context):
-        merged_kwargs = {**action_kwargs, **context}
+        merged_kwargs = {**action_kwargs}
         action_func(*action_args, **merged_kwargs)
 
     return _task

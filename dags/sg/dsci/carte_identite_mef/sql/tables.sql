@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS dsci.budget_pilotable (
     id SERIAL PRIMARY KEY,
     source TEXT,
     ministere TEXT,
-    montant_pde BIGINT
+    montant_pde FLOAT
 );
 
 DROP TABLE IF EXISTS dsci.masse_salariale;

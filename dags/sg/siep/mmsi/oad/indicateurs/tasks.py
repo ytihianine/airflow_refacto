@@ -110,13 +110,13 @@ def tasks_oad_indicateurs():
         output_selecteur="localisation",
         input_selecteurs=["oad_carac", "oad_indic", "biens"],
         process_func=process.process_localisation,
-        use_required_cols=True,
+        use_required_cols=False,
     )
     strategie = create_multi_files_input_etl_task(
         output_selecteur="strategie",
         input_selecteurs=["oad_carac", "oad_indic", "biens"],
         process_func=process.process_strategie,
-        use_required_cols=True,
+        use_required_cols=False,
     )
     chain(
         [

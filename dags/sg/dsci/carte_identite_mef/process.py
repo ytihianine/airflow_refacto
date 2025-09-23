@@ -15,6 +15,7 @@ def clean_and_normalize_df(df: pd.DataFrame) -> pd.DataFrame:
     df.columns = map(str.lower, df.columns)
     # Drop des colonnes que si elles existent
     df = df.drop(columns=["id", "commentaire_archive"], errors="ignore")
+    df = df.drop(df.filter(regex="^(grist|manual)").columns, axis=1)
     df = df.fillna(np.nan).replace([np.nan], [None])
     return df
 
@@ -244,6 +245,9 @@ def process_plafond_etpt(df: pd.DataFrame) -> pd.DataFrame:
             "Part_du_total": "part_du_total",
         }
     )
+    df["source"] = df["source"].str.split()
+    df["annee"] = df["source"].str.get(1)
+    df["source"] = df["source"].str.get(0)
     print("Traitement de la table plafond_etpt effectué.")
     return df
 

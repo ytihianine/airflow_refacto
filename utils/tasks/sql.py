@@ -308,20 +308,31 @@ def copy_tmp_table_to_real_table(
     print(f"Tables to copy: {', '.join(tbl_names)}")
     print(f"Load strategy : {load_strategy}")
 
-    for table in reversed(tbl_names):
-        prod_table = f"{prod_schema}.{table}"
-        tmp_table = f"{tmp_schema}.tmp_{table}"
+    queries = []
+    if load_strategy == LoadStrategy.FULL_LOAD:
+        del_queries = []
+        insert_queries = []
+        for table in reversed(tbl_names):
+            prod_table = f"{prod_schema}.{table}"
+            del_queries.append(f"DELETE FROM {prod_table};")
 
-        if load_strategy == LoadStrategy.FULL_LOAD:
-            queries = [
-                f"DELETE FROM {prod_table};",
-                f"INSERT INTO {prod_table} SELECT * FROM {tmp_table};",
-            ]
-        elif load_strategy == LoadStrategy.INCREMENTAL:
+        for table in tbl_names:
+            prod_table = f"{prod_schema}.{table}"
+            tmp_table = f"{tmp_schema}.tmp_{table}"
+            insert_queries.append(
+                f"INSERT INTO {prod_table} SELECT * FROM {tmp_table};"
+            )
+
+        queries = del_queries + insert_queries
+    elif load_strategy == LoadStrategy.INCREMENTAL:
+        for table in reversed(tbl_names):
+            prod_table = f"{prod_schema}.{table}"
+            tmp_table = f"{tmp_schema}.tmp_{table}"
+
             pk_cols = get_primary_keys(
                 schema=prod_schema, table=table, pg_conn_id=pg_conn_id
             )
-            col_list = sort_db_colnames(tbl_name=table)
+            col_list = sort_db_colnames(tbl_name=table, pg_conn_id=pg_conn_id)
 
             # UPSERT -- ({', '.join(col_list)})
             merge_query = f"""
@@ -349,13 +360,18 @@ def copy_tmp_table_to_real_table(
         else:
             raise ValueError(f"Unknown strategy: {load_strategy}")
 
+    if queries:
         for q in queries:
-            print(f"Executing query on {table}:\n{q}")
             db.execute(query=q)
+    else:
+        print("No query to execute")
 
 
 def sort_db_colnames(
-    tbl_name: str, keep_file_id_col: bool = False, schema: str = DEFAULT_TMP_SCHEMA
+    tbl_name: str,
+    keep_file_id_col: bool = False,
+    pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
+    schema: str = DEFAULT_TMP_SCHEMA,
 ) -> list[str]:
     """Get sorted column names from a table.
 
@@ -367,7 +383,7 @@ def sort_db_colnames(
     Returns:
         Sorted list of column names
     """
-    db = create_db_handler(DEFAULT_PG_DATA_CONN_ID)
+    db = create_db_handler(pg_conn_id)
     df = db.fetch_df(f"SELECT * FROM {schema}.tmp_{tbl_name} LIMIT 0")
 
     cols = df.columns.tolist()
@@ -383,6 +399,7 @@ def bulk_load_local_tsv_file_to_db(
     local_filepath: str,
     tbl_name: str,
     column_names: list[str],
+    pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     schema: str = DEFAULT_TMP_SCHEMA,
 ) -> None:
     """Bulk load TSV file into database using COPY.
@@ -393,7 +410,7 @@ def bulk_load_local_tsv_file_to_db(
         column_names: List of column names in order
         schema: Target schema
     """
-    db = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_DATA_CONN_ID))
+    db = cast(PostgresDBHandler, create_db_handler(pg_conn_id))
     logging.info(f"Bulk importing {local_filepath} to {schema}.tmp_{tbl_name}")
 
     copy_sql = f"""
@@ -451,7 +468,7 @@ def _process_and_import_file(
     )
 
     sorted_db_colnames = sort_db_colnames(
-        tbl_name=tbl_name, keep_file_id_col=keep_file_id_col
+        tbl_name=tbl_name, keep_file_id_col=keep_file_id_col, pg_conn_id=pg_conn_id
     )
     # Loading file to db
     if are_lists_egal(list_A=sorted_df_cols, list_B=sorted_db_colnames):
@@ -459,6 +476,7 @@ def _process_and_import_file(
             local_filepath=local_filepath,
             tbl_name=tbl_name,
             column_names=sorted_db_colnames,
+            pg_conn_id=pg_conn_id,
         )
     else:
         raise ValueError(
@@ -594,7 +612,10 @@ def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
     if len(views) == 0:
         print(f"No materialized views found for schema {prod_schema}. Skipping ...")
     else:
-        sql_queries = [f"REFRESH MATERIALIZED VIEW {view_name};" for view_name in views]
+        sql_queries = [
+            f"REFRESH MATERIALIZED VIEW {prod_schema}.{view_name};"
+            for view_name in views
+        ]
         for query in sql_queries:
             db.execute(query=query)
 

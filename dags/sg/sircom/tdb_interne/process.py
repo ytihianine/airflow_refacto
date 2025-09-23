@@ -19,6 +19,7 @@ def clean_and_normalize_df(df: pd.DataFrame) -> pd.DataFrame:
     df.columns = map(str.lower, df.columns)
     # Drop des colonnes que si elles existent
     df = df.drop(columns=["id", "commentaire_archive"], errors="ignore")
+    df = df.drop(df.filter(regex="^(grist|manual)").columns, axis=1)
 
     df = df.fillna(np.nan).replace([np.nan], [None])
     return df
@@ -414,6 +415,7 @@ def process_enquete_360(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["unite"])
     df = df.replace("", None)
     df = df.dropna(subset=["valeur"])
+    df = tag_last_value_rows(df=df, colname_max_value="annee")
 
     return df
 

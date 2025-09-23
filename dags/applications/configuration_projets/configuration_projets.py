@@ -19,8 +19,8 @@ from dags.applications.configuration_projets.tasks import (
 
 
 nom_projet = "Configuration des projets"
-LINK_DOC_PIPELINE = ""
-LINK_DOC_DONNEE = ""
+LINK_DOC_PIPELINE = "Non-défini"
+LINK_DOC_DONNEE = "Non-défini"
 
 default_args = {
     "owner": "airflow",

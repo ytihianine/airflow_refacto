@@ -7,6 +7,7 @@ from utils.config.vars import NO_PROCESS_MSG
 def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     print("Normalizing dataframe")
     df.columns = map(str.lower, df.columns)
+    df = df.drop(df.filter(regex="^(grist|manual)").columns, axis=1)
     return df
 
 

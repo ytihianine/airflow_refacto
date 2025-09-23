@@ -277,23 +277,20 @@ def determiner_version_serveur(profile: str) -> str:
 """
 
 
-def process_agents(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping)
+def process_agents(df: pd.DataFrame) -> pd.DataFrame:
     df["ou_sigle"] = df["ou_sigle"].str.strip()
     df["mail_agent"] = df["mail_agent"].str.strip()
     df["mail_grid"] = df["mail_grid"].str.strip()
     return df
 
 
-def process_aip(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping)
+def process_aip(df: pd.DataFrame) -> pd.DataFrame:
     df["aip_direction"] = list(map(determiner_aip_direction, df["groupe"]))
     df["mail"] = df["mail"].str.strip()
     return df
 
 
-def process_certificats(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping)
+def process_certificats(df: pd.DataFrame) -> pd.DataFrame:
     date_cols = ["a_partir_du", "jusqu_au", "date_revocation"]
     for date_col in date_cols:
         df[date_col] = pd.to_datetime(
@@ -310,8 +307,7 @@ def process_certificats(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.Da
     return df
 
 
-def process_igc(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping)
+def process_igc(df: pd.DataFrame) -> pd.DataFrame:
     df["mail"] = df["mail"].str.strip()
     df["aip_balf_mail"] = df["aip_balf_mail"].str.strip()
     return df
@@ -322,13 +318,11 @@ def process_igc(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
 """
 
 
-def liste_aip(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping)
+def liste_aip(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
 
-def liste_certificats(df: pd.DataFrame, cols_mapping: dict[str, str]) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping)
+def liste_certificats(df: pd.DataFrame) -> pd.DataFrame:
 
     return df

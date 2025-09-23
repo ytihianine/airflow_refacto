@@ -5,7 +5,12 @@ from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 
-from dags.applications.db_backup.tasks import validate_params, create_dump_files
+from utils.tasks.s3 import (
+    copy_s3_files,
+    del_s3_files,
+)
+
+from dags.applications.db_backup.tasks import validate_params, dump_databases
 
 
 LINK_DOC_PIPELINE = "TO COMPLETE"
@@ -46,7 +51,12 @@ default_args = {
 )
 def sauvegarde_database():
     """Task order"""
-    chain(validate_params(), create_dump_files())
+    chain(
+        validate_params(),
+        dump_databases(),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
+    )
 
 
 sauvegarde_database()

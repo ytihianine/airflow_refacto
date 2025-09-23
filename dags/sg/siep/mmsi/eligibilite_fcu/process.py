@@ -1,5 +1,5 @@
 import pandas as pd
-from utils.api_client.base import AbstractApiClient
+from infra.http_client.base import AbstractHTTPClient
 
 
 def can_perform_api_call(lat: float, lon: float) -> bool:
@@ -40,7 +40,7 @@ def process_result(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_eligibilite_fcu(
-    api_client: AbstractApiClient, url: str, latitude: float, longitude: float
+    api_client: AbstractHTTPClient, url: str, latitude: float, longitude: float
 ) -> dict[str, str]:
     result_json = {
         "api_status": None,

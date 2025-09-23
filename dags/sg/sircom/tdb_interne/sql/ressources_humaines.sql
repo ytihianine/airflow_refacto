@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS sircom.rh_contractuel (
     annee INTEGER,
     semestre TEXT,
     date DATE,
-    taux_agents_contractuels INTEGER,
+    taux_agents_contractuels FLOAT,
     unite TEXT,
     is_last_value BOOLEAN
 );

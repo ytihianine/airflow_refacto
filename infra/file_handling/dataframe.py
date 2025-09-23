@@ -14,7 +14,7 @@ def read_dataframe(
     file_path: Union[str, Path],
     file_format: str = "auto",
     read_options: Optional[dict] = None,
-    **kwargs
+    **kwargs,
 ) -> pd.DataFrame:
     """
     Read a file into a pandas DataFrame using the provided file handler.
@@ -58,6 +58,9 @@ def read_dataframe(
     if read_options is None:
         read_options = {}
     # Read the file content
+
+    print(f"Read data from {file_path}")
+    print(f"read_options: \n{read_options}")
     with file_handler.read(file_path) as file_obj:
         # Different handling based on format
         if file_format == "parquet":
@@ -85,7 +88,7 @@ def write_dataframe(
     df: pd.DataFrame,
     file_path: Union[str, Path],
     file_format: str = "auto",
-    **kwargs
+    **kwargs,
 ) -> None:
     """
     Write a pandas DataFrame to a file using the provided file handler.

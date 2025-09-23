@@ -12,11 +12,12 @@ def source_files() -> None:
         selecteur="agents", process_func=process.process_agents
     )
     aip = create_file_etl_task(
-        selecteur="aip",
-        process_func=process.process_aip,
+        selecteur="aip", process_func=process.process_aip, read_options={"sep": ";"}
     )
     certificats = create_file_etl_task(
-        selecteur="certificats", process_func=process.process_certificats
+        selecteur="certificats",
+        process_func=process.process_certificats,
+        read_options={"sep": ";"},
     )
     igc = create_file_etl_task(selecteur="igc", process_func=process.process_igc)
 

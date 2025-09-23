@@ -67,18 +67,24 @@ class DagParams(TypedDict):
 KEY_NOM_PROJET = "nom_projet"
 KEY_DB = "db"
 KEY_MAIL = "mail"
+KEY_MAIL_ENABLE = f"{KEY_MAIL}.enable"
+KEY_MAIL_TO = f"{KEY_MAIL}.to"
+KEY_MAIL_CC = f"{KEY_MAIL}.cc"
 KEY_DOCS = "docs"
+KEY_DOCS_LIEN_PIPELINE = f"{KEY_DOCS}.lien_pipeline"
+KEY_DOCS_LIEN_DONNEES = f"{KEY_DOCS}.lien_donnees"
+
 
 # Nested keys with their paths
 ALL_PARAM_PATHS = [
     KEY_NOM_PROJET,
     f"{KEY_DB}.prod_schema",
     f"{KEY_DB}.tmp_schema",
-    f"{KEY_MAIL}.enable",
-    f"{KEY_MAIL}.to",
-    f"{KEY_MAIL}.cc",
-    f"{KEY_DOCS}.lien_pipeline",
-    f"{KEY_DOCS}.lien_donnees",
+    KEY_MAIL_ENABLE,
+    KEY_MAIL_TO,
+    KEY_MAIL_CC,
+    KEY_DOCS_LIEN_PIPELINE,
+    KEY_DOCS_LIEN_DONNEES,
 ]
 
 # Optional keys that don't need validation

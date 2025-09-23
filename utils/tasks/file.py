@@ -27,6 +27,7 @@ def create_parquet_converter_task(
         Callable[[pd.DataFrame, dict[str, str]], pd.DataFrame]
     ] = None,
     read_options: Optional[dict[str, Any]] = None,
+    apply_cols_mapping: bool = True,
 ) -> Callable:
     """Create a task that converts files to Parquet format.
 
@@ -75,13 +76,23 @@ def create_parquet_converter_task(
 
         df_info(df, f"{task_params['task_id']} - Initial state")
 
-        # Apply column mapping
-        cols_map = get_cols_mapping(nom_projet=selecteur, selecteur=selecteur)
-        cols_map = format_cols_mapping(df_cols_map=cols_map.copy())
+        if apply_cols_mapping:
+            # Apply column mapping if available
+            cols_mapping = get_cols_mapping(nom_projet=nom_projet, selecteur=selecteur)
+            if cols_mapping.empty:
+                print(f"No column mapping found for selecteur {selecteur}")
+            else:
+                cols_mapping = format_cols_mapping(cols_mapping)
+                df = df.set_axis(
+                    [" ".join(colname.split()) for colname in df.columns],
+                    axis="columns",
+                )
+                df = df.rename(columns=cols_mapping)
+                df = df.drop(columns=list(set(df.columns) - set(cols_mapping.values())))
 
         # Apply custom processing
         if process_func:
-            df = process_func(df, cols_map)
+            df = process_func(df)
             df_info(df, f"{task_params['task_id']} - After processing")
 
         # Convert to parquet and save

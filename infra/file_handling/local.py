@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import tempfile
 import mimetypes
 from datetime import datetime
 from pathlib import Path
@@ -35,12 +36,27 @@ class LocalFileHandler(BaseFileHandler):
             # Create directory if it doesn't exist
             abs_path.parent.mkdir(parents=True, exist_ok=True)
 
-            mode = "wb" if isinstance(content, (bytes, BinaryIO)) else "w"
-            with open(abs_path, mode) as f:
-                if isinstance(content, (str, bytes)):
-                    f.write(content)
-                else:
-                    shutil.copyfileobj(content, f)
+            # Temporary file in the same directory
+            with tempfile.NamedTemporaryFile(delete=False, dir=abs_path.parent) as tmp:
+                tmp_path = Path(tmp.name)
+
+                try:
+                    if isinstance(content, str):
+                        tmp.write(content.encode("utf-8"))
+                    elif isinstance(content, bytes):
+                        tmp.write(content)
+                    else:
+                        shutil.copyfileobj(content, tmp)
+
+                    tmp.flush()
+                    os.fsync(tmp.fileno())
+                except Exception:
+                    tmp_path.unlink(missing_ok=True)
+                    raise
+
+            # Atomic replace (guaranteed on POSIX)
+            os.replace(tmp_path, abs_path)
+
         except PermissionError as e:
             raise FilePermissionError(f"Permission denied: {abs_path}") from e
         except OSError as e:
