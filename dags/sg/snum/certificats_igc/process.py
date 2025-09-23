@@ -2,6 +2,7 @@ from typing import Union
 from functools import partial
 from datetime import datetime
 import pandas as pd
+import numpy as np
 
 
 def determiner_aip_direction(aip_group: str) -> str:
@@ -24,6 +25,8 @@ def determiner_aip_direction(aip_group: str) -> str:
 
 
 def find_certificat_dir_in_profile(profile: str) -> str:
+    if profile is None:
+        return ""
     profile = profile.upper()
     mapping = {
         # Autres structures
@@ -40,6 +43,8 @@ def find_certificat_dir_in_profile(profile: str) -> str:
 
 
 def find_certificat_dir_in_dn(dn: str) -> str:
+    if dn is None:
+        return ""
     dn = dn.upper()
     mapping = {
         # Autres structures
@@ -59,6 +64,8 @@ def find_certificat_dir_in_dn(dn: str) -> str:
 
 
 def find_certificat_dir_in_subjectid(subjectid: str) -> str:
+    if subjectid is None:
+        return ""
     subjectid = subjectid.upper()
     mapping = {
         # Autres structures
@@ -76,6 +83,8 @@ def find_certificat_dir_in_subjectid(subjectid: str) -> str:
 
 
 def find_certificat_dir_in_contact(contact: str) -> str:
+    if contact is None:
+        return ""
     contact = contact.upper()
     mapping = {
         # Autres structures
@@ -107,6 +116,8 @@ def find_certificat_dir_in_contact(contact: str) -> str:
 
 
 def find_certificat_dir_in_mail(mail: str) -> str:
+    if mail is None:
+        return ""
     mail = mail.upper()
     mapping = {
         # Autres structures
@@ -131,13 +142,13 @@ def determiner_certificat_direction(row: pd.Series) -> str:
     certif_dir = find_certificat_dir_in_profile(profile=row.profile)
     if certif_dir != "":
         return certif_dir
-    certif_dir = find_certificat_dir_in_dn(profile=row.dn)
+    certif_dir = find_certificat_dir_in_dn(dn=row.dn)
     if certif_dir != "":
         return certif_dir
-    certif_dir = find_certificat_dir_in_subjectid(profile=row.subjectid)
+    certif_dir = find_certificat_dir_in_subjectid(subjectid=row.subjectid)
     if certif_dir != "":
         return certif_dir
-    certif_dir = find_certificat_dir_in_contact(profile=row.contact)
+    certif_dir = find_certificat_dir_in_contact(contact=row.contact)
     if certif_dir != "":
         return certif_dir
     certif_dir = find_certificat_dir_in_mail(mail=row.contact)
@@ -158,6 +169,9 @@ def _match_mapping(
     Keys can be a string (single condition) or a tuple (all substrings required).
     Returns the mapped value or `default`.
     """
+    if text is None:
+        return default
+
     text = text.upper()
 
     for keys, value in mapping.items():
@@ -169,7 +183,6 @@ def _match_mapping(
 
 
 def determiner_ac(profile: str) -> str:
-    profile = profile.upper()
     mapping = {
         "SERVICE": "SERVICE",
         "SERVEUR": "SERVEURS",
@@ -187,7 +200,6 @@ def determiner_ac(profile: str) -> str:
 
 
 def determiner_type_offre(profile: str) -> str:
-    profile = profile.upper()
     # Key order is important
     mapping = {
         # Autres structures
@@ -212,7 +224,6 @@ def determiner_type_offre(profile: str) -> str:
 
 
 def determiner_support(profile: str) -> str:
-    profile = profile.upper()
     # Key order is important
     mapping = {
         # Autres structures
@@ -246,7 +257,6 @@ def determiner_etat(row: pd.Series, date_ajd: datetime) -> str:
 
 
 def determiner_version(profile: str) -> str:
-    profile = profile.upper()
     # Key order is important
     mapping = {
         ("SERVEURS", "_3"): "SERVEUR3",
@@ -261,7 +271,6 @@ def determiner_version(profile: str) -> str:
 
 
 def determiner_version_serveur(profile: str) -> str:
-    profile = profile.upper()
     # Key order is important
     mapping = {
         ("3072",): "3072",
@@ -291,17 +300,22 @@ def process_aip(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_certificats(df: pd.DataFrame) -> pd.DataFrame:
-    date_cols = ["a_partir_du", "jusqu_au", "date_revocation"]
+    df = df.fillna(np.nan).replace([np.nan], [None])
+    date_cols = ["date_debut_validite", "date_fin_validite", "date_revocation"]
     for date_col in date_cols:
         df[date_col] = pd.to_datetime(
             df[date_col], format="%d/%m/%Y %H:%M:%S", errors="coerce"
         )
-    df["certificat_direction"] = list(map(determiner_certificat_direction, df))
+    df["certificat_direction"] = list(
+        map(determiner_certificat_direction, df.itertuples(index=False))
+    )
     date_ajd = datetime.now()
     df["ac"] = list(map(determiner_ac, df["profile"]))
     df["type_offre"] = list(map(determiner_type_offre, df["profile"]))
     df["supports"] = list(map(determiner_support, df["profile"]))
-    df["etat"] = list(map(partial(determiner_etat, date_ajd=date_ajd), df))
+    df["etat"] = list(
+        map(partial(determiner_etat, date_ajd=date_ajd), df.itertuples(index=False))
+    )
     df["version"] = list(map(determiner_version, df["profile"]))
     df["version_serveur"] = list(map(determiner_version_serveur, df["profile"]))
     return df
