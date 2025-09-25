@@ -515,7 +515,7 @@ def process_liste_aip(df_aip: pd.DataFrame, df_agents: pd.DataFrame) -> pd.DataF
         right_on=["agent_direction"],
     )
 
-    cols_to_keep = ["mail", "aip_direction", "mail_grid"]
+    cols_to_keep = ["mail", "aip_direction", "grid_mail"]
     df = df[cols_to_keep]
 
     return df
