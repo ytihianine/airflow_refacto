@@ -73,7 +73,7 @@ mapping_direction = {
     },
     "DIRECTIONS ET SERVICES": {
         "AFT": "AFT",
-        "APIE/": "APIE",
+        "APIE": "APIE",
         "AFA": "AFA",
         "AIFE": "AIFE",
         "APE": "APE",
