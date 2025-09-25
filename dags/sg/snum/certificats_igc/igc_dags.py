@@ -11,6 +11,7 @@ from utils.tasks.sql import (
     copy_tmp_table_to_real_table,
     import_file_to_db,
     get_tbl_names_from_postgresql,
+    ensure_partition,
     # set_dataset_last_update_date,
 )
 
@@ -85,22 +86,15 @@ def certificats_igc():
     """ Task order """
     chain(
         looking_for_files,
-        # download_grist_doc_to_s3(
-        #     workspace_id="dsci",
-        #     doc_id_key="grist_doc_id_carto_rem",
-        #     s3_filepath=sqlite_file_s3_filepath,
-        # ),
-        # get_tbl_names_from_postgresql(),
         # create_tmp_tables(
-        #     prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
         # ),
         source_files(),
         output_files(),
+        ensure_partition(),
         # import_file_to_db.partial(keep_file_id_col=True).expand(
         #     storage_row=get_storage_rows(nom_projet=nom_projet).to_dict("records")
         # ),
         # copy_tmp_table_to_real_table(
-        #     prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
         # ),
         # copy_s3_files(
         #     bucket="dsci",
