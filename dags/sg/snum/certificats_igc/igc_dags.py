@@ -102,12 +102,12 @@ def certificats_igc():
         # copy_tmp_table_to_real_table(
         #     prod_schema=prod_schema, tbl_names_task_id="get_tbl_names_from_postgresql"
         # ),
-        copy_s3_files(
-            bucket="dsci",
-        ),
-        del_s3_files(
-            bucket="dsci",
-        ),
+        # copy_s3_files(
+        #     bucket="dsci",
+        # ),
+        # del_s3_files(
+        #     bucket="dsci",
+        # ),
     )
 
 
