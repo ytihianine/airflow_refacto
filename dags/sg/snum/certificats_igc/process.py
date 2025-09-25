@@ -17,8 +17,13 @@ mapping_direction = {
         "ATSCAF": "ATSCAF",
         "CLUB SPORT": "CLUB SPORTIF",
         "EPAF": "EPAF",
+        "ASFV": "ASFV",
+        "ASFL": "ASFL",
+        "ASFR": "ASFR",
+        "FASF": "FASF",
+        "FEMMES BER": "FEMMES BER",
     },
-    "AUTORITE": {
+    "AUTORITES": {
         "ANAFE": "ANAFE",
         "AC": "AC",
         "ACPR": "ACPR",
@@ -47,7 +52,7 @@ mapping_direction = {
         "CNS": "CNS",
         "CSNP": "CCSNP",
     },
-    "MISSION": {
+    "MISSIONS": {
         "AMLA": "AMLA",
         "BER": "BER",
         "DIAMMS": "DIAMMS",
@@ -87,12 +92,13 @@ mapping_direction = {
         "MICAF": "MICAF",
         "SGAE": "SGAE",
         "TRACFIN": "TRACFIN",
+        "DG TRESOR": "DG TRESOR",
     },
     "DIVERS": {
         "COOP": "COOP",
         "INC": "INC",
     },
-    "ETABLISSEMENT": {
+    "ETABLISSEMENTS PUBLICS": {
         "ANFR": "ANFR",
         "CADES": "CADES",
         "AFII": "AFII",
