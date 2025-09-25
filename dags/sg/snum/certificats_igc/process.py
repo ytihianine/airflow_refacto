@@ -507,6 +507,8 @@ def process_igc(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_liste_aip(df_aip: pd.DataFrame, df_agents: pd.DataFrame) -> pd.DataFrame:
+    df_agents = df_agents[["agent_direction", "grid_mail"]].drop_duplicates()
+
     df = pd.merge(
         left=df_aip,
         right=df_agents,
