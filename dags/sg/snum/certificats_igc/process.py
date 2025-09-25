@@ -42,7 +42,7 @@ mapping_direction = {
         "CNN": "CNN",
         "CNOCP": "CNOCP",
     },
-    "COMMISSION": {
+    "COMMISSIONS": {
         "ANAFE": "ANAFE",
         "CECP": "CECP",
         "CICC": "ANAFE",
@@ -93,6 +93,8 @@ mapping_direction = {
         "SGAE": "SGAE",
         "TRACFIN": "TRACFIN",
         "DG TRESOR": "DG TRESOR",
+        "BC": "BC",
+        "EXT": "EXT",
     },
     "DIVERS": {
         "COOP": "COOP",
