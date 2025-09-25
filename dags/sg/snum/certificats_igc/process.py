@@ -478,7 +478,7 @@ def process_certificats(df: pd.DataFrame) -> pd.DataFrame:
     date_cols = ["date_debut_validite", "date_fin_validite", "date_revocation"]
     for date_col in date_cols:
         df[date_col] = pd.to_datetime(
-            df[date_col], format="%d-%m-%Y %H:%M:%S", errors="raise"
+            df[date_col], format="%Y-%m-%d %H:%M:%S", errors="raise"
         )
     df["certificat_direction"] = list(
         map(determiner_certificat_direction, df.itertuples(index=False))
