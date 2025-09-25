@@ -474,7 +474,7 @@ def process_aip(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_certificats(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.fillna(np.nan).replace([np.nan], [None])
+    # df = df.fillna(np.nan).replace([np.nan], [None])
     date_cols = ["date_debut_validite", "date_fin_validite", "date_revocation"]
     for date_col in date_cols:
         df[date_col] = pd.to_datetime(
