@@ -6,11 +6,9 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 from utils.tasks.sql import (
-    get_tbl_names_from_postgresql,
     create_tmp_tables,
     copy_tmp_table_to_real_table,
     import_file_to_db,
-    get_tbl_names_from_postgresql,
     ensure_partition,
     # set_dataset_last_update_date,
 )
@@ -19,7 +17,7 @@ from utils.tasks.s3 import (
     copy_s3_files,
     del_s3_files,
 )
-from utils.config.tasks import get_s3_keys_source
+from utils.config.tasks import get_s3_keys_source, get_projet_config
 
 from dags.sg.snum.certificats_igc.tasks import source_files, output_files
 
@@ -86,16 +84,14 @@ def certificats_igc():
     """ Task order """
     chain(
         looking_for_files,
-        # create_tmp_tables(
-        # ),
         source_files(),
         output_files(),
-        ensure_partition(),
-        # import_file_to_db.partial(keep_file_id_col=True).expand(
-        #     storage_row=get_storage_rows(nom_projet=nom_projet).to_dict("records")
-        # ),
-        # copy_tmp_table_to_real_table(
-        # ),
+        # ensure_partition(),
+        create_tmp_tables(),
+        import_file_to_db.partial(keep_file_id_col=True).expand(
+            selecteur_config=get_projet_config(nom_projet=nom_projet)
+        ),
+        copy_tmp_table_to_real_table(),
         # copy_s3_files(
         #     bucket="dsci",
         # ),
