@@ -53,7 +53,7 @@ default_args = {
     params={
         "nom_projet": nom_projet,
         "db": {
-            "prod_schema": "snum",
+            "prod_schema": "certificat_igc",
             "tmp_schema": "temporaire",
         },
         "mail": {
