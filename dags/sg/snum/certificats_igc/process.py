@@ -33,6 +33,8 @@ mapping_direction = {
         "APCR": "APCR",
         "ARCEP": "ARCEP",
         "CPT": "CPT",
+        "CIF": "CIF",
+        "CRE": "CRE",
     },
     "CONSEIL": {
         "CHAI": "CHAI",
@@ -44,7 +46,7 @@ mapping_direction = {
     },
     "COMMISSIONS": {
         "ANAFE": "ANAFE",
-        "CECP": "CECP",
+        "CEPC": "CEPC",
         "CICC": "ANAFE",
         "CIF": "CIF",
         "CCLP": "CCLP",
@@ -65,6 +67,9 @@ mapping_direction = {
         "RDM": "RDM",
         "OFGL": "OFGL",
         "PRO": "MISSION-PRO",
+        "DTI": "DTI",
+        "SIMP": "SIMP",
+        "PRODVAC": "PRODVAC",
     },
     "DIRECTIONS ET SERVICES": {
         "AFT": "AFT",
@@ -104,6 +109,8 @@ mapping_direction = {
         "ANFR": "ANFR",
         "CADES": "CADES",
         "AFII": "AFII",
+        "GENES": "GENES",
+        "IMT": "IMT",
     },
     "SEC GEN": {
         "BDS": "BDS",
