@@ -410,6 +410,10 @@ def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
         return "Indéterminée"
 
     affectation = affectation.strip().upper()
+
+    if affectation.startswith("DGTRESOR"):
+        return "DG TRESOR"
+
     affectation_split = affectation.split("/")
 
     direction = mapping.get(affectation_split[-1], None)
