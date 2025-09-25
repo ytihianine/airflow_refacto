@@ -5,6 +5,129 @@ import pandas as pd
 import numpy as np
 
 
+mapping_direction = {
+    "ASSOCIATION": {
+        "AAF": "AAF",
+        "AEB": "AEB",
+        "AGRAF": "AGRAF",
+        "ALPAF": "ALPAF",
+        "ANC COMB": "ANC COMB",
+        "APAHF": "APAHF",
+        "ARTS": "ARTS",
+        "ATSCAF": "ATSCAF",
+        "CLUB SPORT": "CLUB SPORTIF",
+        "EPAF": "EPAF",
+    },
+    "AUTORITE": {
+        "ANAFE": "ANAFE",
+        "AC": "AC",
+        "ACPR": "ACPR",
+        "ANC": "ANC",
+        "ANJ": "ANJ",
+        "ASN": "ASN",
+        "APCR": "APCR",
+        "ARCEP": "ARCEP",
+        "CPT": "CPT",
+    },
+    "CONSEIL": {
+        "CHAI": "CHAI",
+        "CICAI": "CICAI",
+        "CIE": "CIE",
+        "CNC": "CNC",
+        "CNN": "CNN",
+        "CNOCP": "CNOCP",
+    },
+    "COMMISSION": {
+        "ANAFE": "ANAFE",
+        "CECP": "CECP",
+        "CICC": "ANAFE",
+        "CIF": "CIF",
+        "CCLP": "CCLP",
+        "CCCOP": "CCCOP",
+        "CNS": "CNS",
+        "CSNP": "CCSNP",
+    },
+    "MISSION": {
+        "AMLA": "AMLA",
+        "BER": "BER",
+        "DIAMMS": "DIAMMS",
+        "GIP-GEN": "GIP-GEN",
+        "MAI": "MISSION-MAI",
+        "MEA": "MISSION-MEA",
+        "MGE": "MISSION-MGE",
+        "ML": "ML",
+        "MRP": "MRP",
+        "RDM": "RDM",
+        "OFGL": "OFGL",
+        "PRO": "MISSION-PRO",
+    },
+    "DIRECTIONS ET SERVICES": {
+        "AFT": "AFT",
+        "APIE/": "APIE",
+        "AFA": "AFA",
+        "AIFE": "AIFE",
+        "APE": "APE",
+        "CBCM": "CBCM",
+        "CGE": "CGE",
+        "CGEFI": "CGEFI",
+        "CGEIET": "CGE",
+        "CISIRH": "CISIRH",
+        "DAE": "DAE",
+        "DAJ": "DAJ",
+        "DB": "DB",
+        "DGAFP": "DGAFP",
+        "DGE": "DGE",
+        "DINSIC": "DINSIC",
+        "DINUM": "DINUM",
+        "DIRE": "DIRE",
+        "DITP": "DITP",
+        "DNLF": "DNLF",
+        "IGF": "IGF",
+        "MEDIASUP": "MEDIASUP",
+        "MICAF": "MICAF",
+        "SGAE": "SGAE",
+        "TRACFIN": "TRACFIN",
+    },
+    "DIVERS": {
+        "COOP": "COOP",
+        "INC": "INC",
+    },
+    "ETABLISSEMENT": {
+        "ANFR": "ANFR",
+        "CADES": "CADES",
+        "AFII": "AFII",
+    },
+    "SEC GEN": {
+        "BDS": "BDS",
+        "CAB": "SG",
+        "DES": "SG-DES",
+        "DSCI": "SG-DSCI",
+        "DSI": "SG-DSI",
+        "HFTLF": "SG-HFTLF",
+        "IGPDE": "SG-IGPDE",
+        "MFR": "SG-MFR",
+        "MRC": "SG-MRC",
+        "SAFI": "SG-SAFI",
+        "SHFDS": "SHFDS",
+        "SEP2": "SIEP",
+        "SIEP": "SIEP",
+        "SIRCOM": "SIRCOM",
+        "SEP1": "SNUM",
+        "SNUM": "SNUM",
+        "SRH1/": "SG SRH1",
+        "SRH2/": "SG SRH2",
+        "SRH3/": "SG SRH3",
+        "SRH": "SG SRH",
+        "SEC GEN": "SG",
+    },
+    "MEDIATEUR": "MEDIATEUR",
+    "MINISTRES": "CABINETS",
+    "DGTRESOR": "DG TRESOR",
+    "SYNDICATS": "SYNDICATS",
+    "AUT MIN": "Autres ministères",
+}
+
+
 def determiner_aip_direction(aip_group: str) -> str:
     aip_dir = "Indéterminée"
     if aip_group is None or aip_group == "":
@@ -281,6 +404,30 @@ def determiner_version_serveur(profile: str) -> str:
     return _match_mapping(text=profile, mapping=mapping)
 
 
+def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
+    affectation = row.ou_sigle
+    if affectation is None:
+        return "Indéterminée"
+
+    affectation = affectation.strip().upper()
+    affectation_split = affectation.split("/")
+
+    direction = mapping.get(affectation_split[-1], None)
+
+    if direction is None:
+        return "Indéterminée"
+
+    if isinstance(direction, str):
+        return direction.upper()
+
+    if isinstance(direction, dict):
+        for k, v in direction.items():
+            if k in affectation_split:
+                return v
+
+    return "Indéterminé"
+
+
 """
     Fonctions de processing des fichiers sources
 """
@@ -288,8 +435,14 @@ def determiner_version_serveur(profile: str) -> str:
 
 def process_agents(df: pd.DataFrame) -> pd.DataFrame:
     df["ou_sigle"] = df["ou_sigle"].str.strip()
-    df["mail_agent"] = df["mail_agent"].str.strip()
-    df["mail_grid"] = df["mail_grid"].str.strip()
+    df["agent_mail"] = df["agent_mail"].str.strip()
+    df["grid_mail"] = df["grid_mail"].str.strip()
+    df["agent_direction"] = list(
+        map(
+            partial(map_agent_direction, mapping=mapping_direction),
+            df.itertuples(index=False),
+        )
+    )
     return df
 
 
@@ -332,11 +485,21 @@ def process_igc(df: pd.DataFrame) -> pd.DataFrame:
 """
 
 
-def liste_aip(df: pd.DataFrame) -> pd.DataFrame:
+def process_liste_aip(df_aip: pd.DataFrame, df_agents: pd.DataFrame) -> pd.DataFrame:
+    df = pd.merge(
+        left=df_aip,
+        right=df_agents,
+        how="left",
+        left_on=["aip_direction"],
+        right_on=["agent_direction"],
+    )
+
+    cols_to_keep = ["mail", "aip_direction", "mail_grid"]
+    df = df[cols_to_keep]
 
     return df
 
 
-def liste_certificats(df: pd.DataFrame) -> pd.DataFrame:
-
+def process_liste_certificats(df_certificats: pd.DataFrame) -> pd.DataFrame:
+    df = df_certificats
     return df

@@ -1,7 +1,7 @@
 from airflow.decorators import task_group
 from airflow.models.baseoperator import chain
 
-from utils.tasks.etl import create_file_etl_task
+from utils.tasks.etl import create_file_etl_task, create_multi_files_input_etl_task
 
 from dags.sg.snum.certificats_igc import process
 
@@ -27,4 +27,16 @@ def source_files() -> None:
 
 @task_group
 def output_files() -> None:
-    pass
+    liste_aip = create_multi_files_input_etl_task(
+        output_selecteur="liste_aip",
+        input_selecteurs=[""],
+        process_func=process.process_liste_aip,
+    )
+    liste_certificats = create_multi_files_input_etl_task(
+        output_selecteur="liste_certificats",
+        input_selecteurs=["certificats"],
+        process_func=process.process_liste_certificats,
+    )
+
+    # ordre des tâches
+    chain([liste_aip(), liste_certificats()])
