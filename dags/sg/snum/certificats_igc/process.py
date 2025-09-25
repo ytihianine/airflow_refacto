@@ -147,7 +147,7 @@ mapping_direction = {
 
 def determiner_aip_direction(aip_group: str) -> str:
     aip_dir = valeur_indeterminee
-    if aip_group is None or aip_group == "":
+    if pd.isna(aip_group) or aip_group == "":
         return aip_dir
 
     aip_dir_split = aip_group.split("_")
@@ -165,8 +165,8 @@ def determiner_aip_direction(aip_group: str) -> str:
 
 
 def find_certificat_dir_in_profile(profile: str) -> str:
-    if profile is None:
-        return ""
+    if pd.isna(profile):
+        return valeur_indeterminee
     profile = profile.upper()
     mapping = {
         # Autres structures
@@ -179,12 +179,12 @@ def find_certificat_dir_in_profile(profile: str) -> str:
         if key in profile:
             return value
 
-    return ""
+    return valeur_indeterminee
 
 
 def find_certificat_dir_in_dn(dn: str) -> str:
-    if dn is None:
-        return ""
+    if pd.isna(dn):
+        return valeur_indeterminee
     dn = dn.upper()
     mapping = {
         # Autres structures
@@ -200,12 +200,12 @@ def find_certificat_dir_in_dn(dn: str) -> str:
         if key in dn:
             return value
 
-    return ""
+    return valeur_indeterminee
 
 
 def find_certificat_dir_in_subjectid(subjectid: str) -> str:
-    if subjectid is None:
-        return ""
+    if pd.isna(subjectid):
+        return valeur_indeterminee
     subjectid = subjectid.upper()
     mapping = {
         # Autres structures
@@ -219,12 +219,12 @@ def find_certificat_dir_in_subjectid(subjectid: str) -> str:
         if key in subjectid:
             return value
 
-    return ""
+    return valeur_indeterminee
 
 
 def find_certificat_dir_in_contact(contact: str) -> str:
-    if contact is None:
-        return ""
+    if pd.isna(contact):
+        return valeur_indeterminee
     contact = contact.upper()
     mapping = {
         # Autres structures
@@ -252,12 +252,12 @@ def find_certificat_dir_in_contact(contact: str) -> str:
         if key in contact:
             return value
 
-    return ""
+    return valeur_indeterminee
 
 
 def find_certificat_dir_in_mail(mail: str) -> str:
-    if mail is None:
-        return ""
+    if pd.isna(mail):
+        return valeur_indeterminee
     mail = mail.upper()
     mapping = {
         # Autres structures
@@ -275,24 +275,24 @@ def find_certificat_dir_in_mail(mail: str) -> str:
         if key in mail:
             return value
 
-    return ""
+    return valeur_indeterminee
 
 
 def determiner_certificat_direction(row: pd.Series) -> str:
     certif_dir = find_certificat_dir_in_profile(profile=row.profile)
-    if certif_dir != "":
+    if certif_dir != valeur_indeterminee:
         return certif_dir
     certif_dir = find_certificat_dir_in_dn(dn=row.dn)
-    if certif_dir != "":
+    if certif_dir != valeur_indeterminee:
         return certif_dir
     certif_dir = find_certificat_dir_in_subjectid(subjectid=row.subjectid)
-    if certif_dir != "":
+    if certif_dir != valeur_indeterminee:
         return certif_dir
     certif_dir = find_certificat_dir_in_contact(contact=row.contact)
-    if certif_dir != "":
+    if certif_dir != valeur_indeterminee:
         return certif_dir
     certif_dir = find_certificat_dir_in_mail(mail=row.contact)
-    if certif_dir != "":
+    if certif_dir != valeur_indeterminee:
         return certif_dir
 
     certif_dir = valeur_indeterminee
@@ -309,7 +309,7 @@ def _match_mapping(
     Keys can be a string (single condition) or a tuple (all substrings required).
     Returns the mapped value or `default`.
     """
-    if text is None:
+    if text is None or pd.isna(text):
         return default
 
     text = text.upper()
@@ -423,7 +423,7 @@ def determiner_version_serveur(profile: str) -> str:
 
 def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
     affectation = row.ou_sigle
-    if affectation is None:
+    if pd.isna(affectation):
         return valeur_indeterminee
 
     affectation = affectation.strip().upper()
