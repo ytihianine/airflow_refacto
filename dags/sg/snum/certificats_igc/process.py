@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 
 
+valeur_indeterminee = "N/D"
+
 mapping_direction = {
     "ASSOCIATION": {
         "AAF": "AAF",
@@ -144,7 +146,7 @@ mapping_direction = {
 
 
 def determiner_aip_direction(aip_group: str) -> str:
-    aip_dir = "Indéterminée"
+    aip_dir = valeur_indeterminee
     if aip_group is None or aip_group == "":
         return aip_dir
 
@@ -293,14 +295,14 @@ def determiner_certificat_direction(row: pd.Series) -> str:
     if certif_dir != "":
         return certif_dir
 
-    certif_dir = "Indéterminé"
+    certif_dir = valeur_indeterminee
     return certif_dir
 
 
 def _match_mapping(
     text: str,
     mapping: dict[Union[str, tuple[str, ...]], str],
-    default: str = "Indéterminé",
+    default: str = valeur_indeterminee,
 ) -> str:
     """
     Matches `text` against keys in mapping.
@@ -422,7 +424,7 @@ def determiner_version_serveur(profile: str) -> str:
 def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
     affectation = row.ou_sigle
     if affectation is None:
-        return "Indéterminée"
+        return valeur_indeterminee
 
     affectation = affectation.strip().upper()
 
@@ -434,7 +436,7 @@ def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
     direction = mapping.get(affectation_split[-1], None)
 
     if direction is None:
-        return "Indéterminée"
+        return valeur_indeterminee
 
     if isinstance(direction, str):
         return direction.upper()
@@ -444,7 +446,7 @@ def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
             if k in affectation_split:
                 return v
 
-    return "Indéterminé"
+    return valeur_indeterminee
 
 
 """
