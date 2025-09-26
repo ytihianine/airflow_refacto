@@ -61,9 +61,7 @@ def copy_s3_files(
             continue
 
         # Build destination path
-        target_key = f"{dst_key}/{curr_day}/{curr_time}"
-        if filename:
-            target_key = f"{target_key}/{filename}"
+        target_key = f"{dst_key}/{curr_day}/{curr_time}/{filename}"
 
         try:
             # Copy file
