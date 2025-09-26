@@ -183,7 +183,7 @@ def create_multi_files_input_etl_task(
     process_func: Callable[..., pd.DataFrame],
     read_options: dict[str, Any] | None = None,
     use_required_cols: bool = False,
-    add_import_date: book = True,
+    add_import_date: bool = True,
 ) -> Callable[..., XComArg]:
     """
     Create an ETL task that:
