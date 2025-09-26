@@ -164,7 +164,7 @@ def create_file_etl_task(
             execution_date = context.get("execution_date")
             if not execution_date or not isinstance(execution_date, datetime):
                 raise ValueError("Invalid execution date in Airflow context")
-            df["import_date"] = execution_date
+            df["import_date"] = execution_date.date()
 
         df_info(df=df, df_name=f"{selecteur} - After processing")
 
@@ -247,7 +247,7 @@ def create_multi_files_input_etl_task(
             execution_date = context.get("execution_date")
             if not execution_date or not isinstance(execution_date, datetime):
                 raise ValueError("Invalid execution date in Airflow context")
-            df["import_date"] = execution_date
+            merged_df["import_date"] = execution_date.date()
 
         df_info(df=merged_df, df_name=f"{output_selecteur} - After processing")
 
