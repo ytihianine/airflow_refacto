@@ -41,6 +41,7 @@ class PartitionTimePeriod(str, Enum):
 class LoadStrategy(Enum):
     FULL_LOAD = auto()
     INCREMENTAL = auto()
+    APPEND = auto()
 
 
 def get_primary_keys(
@@ -359,6 +360,17 @@ def copy_tmp_table_to_real_table(
             queries = [merge_query, delete_query]
         else:
             raise ValueError(f"Unknown strategy: {load_strategy}")
+    elif load_strategy == LoadStrategy.APPEND:
+        insert_queries = []
+        for table in tbl_names:
+            prod_table = f"{prod_schema}.{table}"
+            tmp_table = f"{tmp_schema}.tmp_{table}"
+
+            insert_queries.append(
+                f"INSERT INTO {prod_table} SELECT * FROM {tmp_table};"
+            )
+
+        queries = insert_queries
 
     if queries:
         for q in queries:
