@@ -60,23 +60,28 @@ def copy_s3_files(
         if not src_key or not dst_key:
             continue
 
-        # Build destination path
-        target_key = f"{dst_key}/{curr_day}/{curr_time}/{filename}"
-
-        try:
-            # Copy file
-            logging.info(f"Copying {src_key} to {target_key}")
-            s3_handler.copy(source=src_key, destination=target_key)
-            logging.info("Copy successful")
-
-        except (FileHandlerError, FileNotFoundError) as e:
-            logging.error(f"Failed to copy {src_key} to {target_key}: {str(e)}")
-            raise FileHandlerError(f"Failed to copy file: {e}") from e
-        except Exception as e:
-            logging.error(
-                f"Unexpected error copying {src_key} to {target_key}: {str(e)}"
+        if filename is None or filename == "":
+            logging.info(
+                f"Config filename is empty for project <{nom_projet}> and selecteur <{config.selecteur}>. \n Skipping s3 copy ..."
             )
-            raise
+        else:
+            # Build destination path
+            target_key = f"{dst_key}/{curr_day}/{curr_time}/{filename}"
+
+            try:
+                # Copy file
+                logging.info(f"Copying {src_key} to {target_key}")
+                s3_handler.copy(source=src_key, destination=target_key)
+                logging.info("Copy successful")
+
+            except (FileHandlerError, FileNotFoundError) as e:
+                logging.error(f"Failed to copy {src_key} to {target_key}: {str(e)}")
+                raise FileHandlerError(f"Failed to copy file: {e}") from e
+            except Exception as e:
+                logging.error(
+                    f"Unexpected error copying {src_key} to {target_key}: {str(e)}"
+                )
+                raise
 
 
 @task
