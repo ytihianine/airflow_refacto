@@ -2,6 +2,7 @@ DROP SCHEMA certificat_igc CASCADE;
 CREATE SCHEMA certificat_igc;
 
 CREATE TABLE certificat_igc.aip (
+    id SERIAL,
     aip_mail TEXT,
     aip_balf_mail TEXT,
     aip_direction TEXT,
@@ -10,6 +11,7 @@ CREATE TABLE certificat_igc.aip (
 
 
 CREATE TABLE certificat_igc.certificat (
+    id SERIAL,
     dn TEXT,
     subjectid TEXT,
     contact TEXT,
