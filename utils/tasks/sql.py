@@ -159,7 +159,7 @@ def ensure_partition(
             logging.info(f"Creating partition {partition_name} for {tbl}.")
             # Créer la partition
             create_sql = f"""
-                CREATE TABLE {prod_schema}.{partition_name}
+                CREATE TABLE IF NOT EXISTS {prod_schema}.{partition_name}
                 PARTITION OF {prod_schema}.{tbl}
                 FOR VALUES FROM ('{from_date}') TO ('{to_date}');
             """
