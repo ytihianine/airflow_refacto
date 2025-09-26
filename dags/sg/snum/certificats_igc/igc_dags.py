@@ -11,6 +11,7 @@ from utils.tasks.sql import (
     import_file_to_db,
     ensure_partition,
     # set_dataset_last_update_date,
+    LoadStrategy,
 )
 
 from utils.tasks.s3 import (
@@ -91,7 +92,7 @@ def certificats_igc():
         import_file_to_db.expand(
             selecteur_config=get_projet_config(nom_projet=nom_projet)
         ),
-        copy_tmp_table_to_real_table(),
+        copy_tmp_table_to_real_table(load_strategy=LoadStrategy.APPEND),
         copy_s3_files(
             bucket="dsci",
         ),
