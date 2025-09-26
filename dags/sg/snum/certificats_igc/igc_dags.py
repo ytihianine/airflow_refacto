@@ -86,7 +86,7 @@ def certificats_igc():
         looking_for_files,
         source_files(),
         output_files(),
-        # ensure_partition(),
+        ensure_partition(),
         create_tmp_tables(),
         import_file_to_db.expand(
             selecteur_config=get_projet_config(nom_projet=nom_projet)
