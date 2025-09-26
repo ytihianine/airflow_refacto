@@ -384,7 +384,8 @@ def determiner_etat(row: pd.Series, date_ajd: datetime) -> str:
     date_fin_validite = row.date_fin_validite
     date_revocation = row.date_revocation
 
-    if date_revocation is not None:
+    # Check s'il y a une date de révocation
+    if not pd.isna(date_revocation):
         return "REVOQUE"
 
     if date_ajd > date_fin_validite:
