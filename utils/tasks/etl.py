@@ -1,6 +1,7 @@
 """Module for ETL task creation and execution."""
 
 from typing import Callable, Optional, Any
+from datetime import datetime
 from airflow import XComArg
 import pandas as pd
 
@@ -75,9 +76,7 @@ def create_grist_etl_task(
         local_handler.write(file_path=str(doc_config.filepath_local), content=grist_doc)
 
         # Get data of table
-        df = sqlite_handler.fetch_df(
-            query=f"SELECT * FROM {task_config.nom_source}"  # , parameters=(task_config.nom_source,)
-        )
+        df = sqlite_handler.fetch_df(query=f"SELECT * FROM {task_config.nom_source}")
 
         if normalisation_process_func is not None:
             df = normalisation_process_func(df)
@@ -107,6 +106,7 @@ def create_file_etl_task(
     process_func: Optional[Callable[..., pd.DataFrame]] = None,
     read_options: Optional[dict[str, Any]] = None,
     apply_cols_mapping: bool = True,
+    add_import_date: bool = True,
 ) -> Callable[..., XComArg]:
     """Create an ETL task for extracting, transforming and loading data from a file.
 
@@ -159,6 +159,13 @@ def create_file_etl_task(
         else:
             df_info(df=df, df_name=f"{selecteur} - After column mapping")
             df = process_func(df)
+
+        if add_import_date:
+            execution_date = context.get("execution_date")
+            if not execution_date or not isinstance(execution_date, datetime):
+                raise ValueError("Invalid execution date in Airflow context")
+            df["import_date"] = execution_date
+
         df_info(df=df, df_name=f"{selecteur} - After processing")
 
         # Export
