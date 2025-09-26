@@ -183,6 +183,7 @@ def create_multi_files_input_etl_task(
     process_func: Callable[..., pd.DataFrame],
     read_options: dict[str, Any] | None = None,
     use_required_cols: bool = False,
+    add_import_date: book = True,
 ) -> Callable[..., XComArg]:
     """
     Create an ETL task that:
@@ -241,6 +242,12 @@ def create_multi_files_input_etl_task(
 
         # Process all datasets
         merged_df = process_func(*dfs)
+
+        if add_import_date:
+            execution_date = context.get("execution_date")
+            if not execution_date or not isinstance(execution_date, datetime):
+                raise ValueError("Invalid execution date in Airflow context")
+            df["import_date"] = execution_date
 
         df_info(df=merged_df, df_name=f"{output_selecteur} - After processing")
 
