@@ -295,6 +295,7 @@ def create_action_to_file_etl_task(
     action_func: Callable[P, pd.DataFrame],
     action_args: Optional[tuple] = None,
     action_kwargs: Optional[dict[str, Any]] = None,
+    use_context: bool = False,
 ):
     """
     Create an ETL task that executes a given action function with parameters. The action function must return a DataFrame
@@ -334,7 +335,10 @@ def create_action_to_file_etl_task(
         s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
 
         # Execute action
-        merged_kwargs = {**action_kwargs, **context}
+        if use_context:
+            merged_kwargs = {**action_kwargs, **context}
+        else:
+            merged_kwargs = {**action_kwargs}
         df = action_func(*action_args, **merged_kwargs)
 
         # Export
