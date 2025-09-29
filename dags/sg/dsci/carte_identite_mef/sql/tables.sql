@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS dsci.effectif_direction (
 DROP TABLE IF EXISTS dsci.effectif_direction_perimetre;
 CREATE TABLE IF NOT EXISTS dsci.effectif_direction_perimetre (
     id SERIAL PRIMARY KEY,
+    annee INT,
+    source TEXT,
     direction TEXT,
     etp INTEGER,
     etp_ac INTEGER,
