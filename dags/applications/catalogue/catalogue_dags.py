@@ -16,7 +16,7 @@ from dags.applications.catalogue.tasks import (
 )
 
 
-nom_projet = "Catalogue"
+nom_projet = "Catalogue des données"
 LINK_DOC_PIPELINE = ""  # noqa
 LINK_DOC_DATA = ""  # noqa
 
