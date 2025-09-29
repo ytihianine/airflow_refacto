@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 PYTHON_VERSION="3.12"
 AIRFLOW_VERSION="2.11.0"
