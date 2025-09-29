@@ -40,6 +40,7 @@ class S3FileHandler(BaseFileHandler):
         """Read file from S3 using Airflow's S3Hook."""
         key = str(file_path)
         try:
+            print(f"Reading file from {key}")
             if validate:
                 self.validate(key)
 
@@ -62,6 +63,7 @@ class S3FileHandler(BaseFileHandler):
         """Write content to S3 using Airflow's S3Hook."""
         key = str(file_path)
         try:
+            print(f"Writing file to {key}")
             if isinstance(content, str):
                 content = content.encode("utf-8")
             if isinstance(content, bytes):
