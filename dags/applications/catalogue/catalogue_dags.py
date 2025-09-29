@@ -75,12 +75,12 @@ def catalogue_dag():
             source_grist(),
             source_database(),
         ],
-        compare_catalogues(),
-        sync_catalogues(),
-        create_tmp_tables(),
-        copy_tmp_table_to_real_table(),
-        copy_s3_files(bucket="dsci"),
-        del_s3_files(bucket="dsci"),
+        # compare_catalogues(),
+        # sync_catalogues(),
+        # create_tmp_tables(),
+        # copy_tmp_table_to_real_table(),
+        # copy_s3_files(bucket="dsci"),
+        # del_s3_files(bucket="dsci"),
     )
 
 
