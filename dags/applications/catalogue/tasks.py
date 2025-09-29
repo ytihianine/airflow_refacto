@@ -9,9 +9,10 @@
 from airflow.decorators import task_group
 from airflow.models.baseoperator import chain
 
-from utils.tasks.etl import create_grist_etl_task
+from utils.tasks.etl import create_grist_etl_task, create_action_to_file_etl_task
 
 from dags.applications.catalogue import process
+from dags.applications.catalogue import actions
 
 
 @task_group()
@@ -86,7 +87,13 @@ def source_grist() -> None:
 
 @task_group()
 def source_database() -> None:
-    pass
+    datasets_dictionnaire = create_action_to_file_etl_task(
+        output_selecteur="db_datasets_dictionnaire",
+        action_func=actions.get_db_dataset_dictionnaire,
+    )
+
+    """ Tasks order """
+    chain(datasets_dictionnaire())
 
 
 @task_group()
