@@ -89,6 +89,7 @@ def source_grist() -> None:
 def source_database() -> None:
     datasets_dictionnaire = create_action_to_file_etl_task(
         output_selecteur="db_datasets_dictionnaire",
+        task_id="db_datasets_dictionnaire",
         action_func=actions.get_db_dataset_dictionnaire,
     )
 
