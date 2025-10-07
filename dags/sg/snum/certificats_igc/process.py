@@ -456,15 +456,12 @@ def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
 
 
 def process_agents(df: pd.DataFrame) -> pd.DataFrame:
-    df["ou_sigle"] = df["ou_sigle"].str.strip()
-    df["agent_mail"] = df["agent_mail"].str.strip()
-    df["grid_mail"] = df["grid_mail"].str.strip()
-    df["agent_direction"] = list(
-        map(
-            partial(map_agent_direction, mapping=mapping_direction),
-            df.itertuples(index=False),
-        )
-    )
+    cols_to_keep = {
+        "Entité administrative": "agent_direction",
+        "Adresse courriel": "agent_mail",
+    }
+    df = df[list(cols_to_keep.keys())]
+    df = df.rename(columns=cols_to_keep)
     return df
 
 
