@@ -246,6 +246,7 @@ def find_certificat_dir_in_contact(contact: str) -> str:
         "NIANG": "SG_SNUM",
         "DJOUNNADI": "SG_SNUM",
         "SPOT": "SG_SNUM",
+        "SDNAC": "SG_SNUM",
     }
 
     for key, value in mapping.items():
@@ -536,6 +537,11 @@ def process_liste_certificats(
         how="left",
         left_on=["contact"],
         right_on=["agent_mail"],
+    )
+    df["certificat_direction"] = np.where(
+        df["certificat_direction"] == "N/D",
+        df["agent_direction"],
+        df["certificat_direction"],
     )
 
     return df
