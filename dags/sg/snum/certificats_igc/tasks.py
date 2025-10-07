@@ -34,7 +34,7 @@ def output_files() -> None:
     )
     liste_certificats = create_multi_files_input_etl_task(
         output_selecteur="liste_certificats",
-        input_selecteurs=["certificats"],
+        input_selecteurs=["certificats", "agents"],
         process_func=process.process_liste_certificats,
     )
 

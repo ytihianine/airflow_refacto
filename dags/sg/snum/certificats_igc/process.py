@@ -523,6 +523,19 @@ def process_liste_aip(df_igc: pd.DataFrame, df_agents: pd.DataFrame) -> pd.DataF
     return df
 
 
-def process_liste_certificats(df_certificats: pd.DataFrame) -> pd.DataFrame:
-    df = df_certificats
+def process_liste_certificats(
+    df_certificats: pd.DataFrame, df_agents: pd.DataFrame
+) -> pd.DataFrame:
+    df_agents = df_agents[["agent_direction", "agent_mail"]].drop_duplicates()
+
+    df_certificats_exp = df_certificats.copy().explode("contact", ignore_index=True)
+
+    df = pd.merge(
+        left=df_certificats_exp,
+        right=df_agents,
+        how="left",
+        left_on=["contact"],
+        right_on=["agent_mail"],
+    )
+
     return df
