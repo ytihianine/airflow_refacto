@@ -29,7 +29,7 @@ def source_files() -> None:
 def output_files() -> None:
     liste_aip = create_multi_files_input_etl_task(
         output_selecteur="liste_aip",
-        input_selecteurs=["aip", "agents"],
+        input_selecteurs=["igc", "agents"],
         process_func=process.process_liste_aip,
     )
     liste_certificats = create_multi_files_input_etl_task(

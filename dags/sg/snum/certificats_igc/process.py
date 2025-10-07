@@ -500,7 +500,7 @@ def process_igc(df: pd.DataFrame) -> pd.DataFrame:
     }
     df = df[list(cols_to_keep.keys())]
     df = df.rename(columns=cols_to_keep)
-    df["mail"] = df["aip_mail"].str.strip()
+    df["aip_mail"] = df["aip_mail"].str.strip()
     df["aip_balf_mail"] = df["aip_balf_mail"].str.strip()
     return df
 
@@ -510,21 +510,21 @@ def process_igc(df: pd.DataFrame) -> pd.DataFrame:
 """
 
 
-def process_liste_aip(df_aip: pd.DataFrame, df_agents: pd.DataFrame) -> pd.DataFrame:
-    df_agents = df_agents[["agent_direction", "grid_mail"]].drop_duplicates()
+def process_liste_aip(df_igc: pd.DataFrame, df_agents: pd.DataFrame) -> pd.DataFrame:
+    df_agents = df_agents[["agent_direction", "agent_mail"]].drop_duplicates()
 
     df = pd.merge(
-        left=df_aip,
+        left=df_igc,
         right=df_agents,
         how="left",
-        left_on=["aip_direction"],
-        right_on=["agent_direction"],
+        left_on=["aip_mail"],
+        right_on=["agent_mail"],
     )
 
     cols_to_keep = {
-        "mail": "aip_mail",
-        "aip_direction": "aip_balf_mail",
-        "grid_mail": "aip_direction",
+        "aip_mail": "aip_mail",
+        "aip_balf_mail": "aip_balf_mail",
+        "agent_direction": "aip_direction",
     }
     df = df[list(cols_to_keep.keys())]
     df = df.rename(columns=cols_to_keep)
