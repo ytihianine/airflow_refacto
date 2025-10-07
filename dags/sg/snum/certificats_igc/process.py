@@ -494,12 +494,6 @@ def process_certificats(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_igc(df: pd.DataFrame) -> pd.DataFrame:
-    cols_to_keep = {
-        "Mail": "aip_mail",
-        "BalFonctionnelle": "aip_balf_mail",
-    }
-    df = df[list(cols_to_keep.keys())]
-    df = df.rename(columns=cols_to_keep)
     df["aip_mail"] = df["aip_mail"].str.strip()
     df["aip_balf_mail"] = df["aip_balf_mail"].str.strip()
     return df
