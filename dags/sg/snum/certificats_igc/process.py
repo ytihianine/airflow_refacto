@@ -518,6 +518,7 @@ def process_liste_aip(df_igc: pd.DataFrame, df_agents: pd.DataFrame) -> pd.DataF
     }
     df = df[list(cols_to_keep.keys())]
     df = df.rename(columns=cols_to_keep)
+    df = df.drop_duplicates(subset=["aip_mail", "aip_direction", "aip_balf_mail"])
 
     return df
 
