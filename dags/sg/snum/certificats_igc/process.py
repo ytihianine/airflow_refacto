@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-valeur_indeterminee = "N/D"
+valeur_indeterminee = "ABSENT"
 
 mapping_direction = {
     "ASSOCIATION": {
@@ -247,6 +247,7 @@ def find_certificat_dir_in_contact(contact: str) -> str:
         "DJOUNNADI": "SG_SNUM",
         "SPOT": "SG_SNUM",
         "SDNAC": "SG_SNUM",
+        "SHFDS": "SG_SHFDS",
     }
 
     for key, value in mapping.items():
@@ -539,7 +540,7 @@ def process_liste_certificats(
         right_on=["agent_mail"],
     )
     df["certificat_direction"] = np.where(
-        df["certificat_direction"] == "N/D",
+        df["certificat_direction"] == valeur_indeterminee,
         df["agent_direction"],
         df["certificat_direction"],
     )
