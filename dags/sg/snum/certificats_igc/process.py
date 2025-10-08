@@ -5,7 +5,8 @@ import pandas as pd
 import numpy as np
 
 
-valeur_indeterminee = "ABSENT"
+valeur_indeterminee_dir = "ABSENT"
+valeur_indeterminee_autres = None
 
 mapping_direction = {
     "ASSOCIATION": {
@@ -146,7 +147,7 @@ mapping_direction = {
 
 
 def determiner_aip_direction(aip_group: str) -> str:
-    aip_dir = valeur_indeterminee
+    aip_dir = valeur_indeterminee_dir
     if pd.isna(aip_group) or aip_group == "":
         return aip_dir
 
@@ -166,7 +167,7 @@ def determiner_aip_direction(aip_group: str) -> str:
 
 def find_certificat_dir_in_profile(profile: str) -> str:
     if pd.isna(profile):
-        return valeur_indeterminee
+        return valeur_indeterminee_dir
     profile = profile.upper()
     mapping = {
         # Autres structures
@@ -179,12 +180,12 @@ def find_certificat_dir_in_profile(profile: str) -> str:
         if key in profile:
             return value
 
-    return valeur_indeterminee
+    return valeur_indeterminee_dir
 
 
 def find_certificat_dir_in_dn(dn: str) -> str:
     if pd.isna(dn):
-        return valeur_indeterminee
+        return valeur_indeterminee_dir
     dn = dn.upper()
     mapping = {
         # Autres structures
@@ -200,12 +201,12 @@ def find_certificat_dir_in_dn(dn: str) -> str:
         if key in dn:
             return value
 
-    return valeur_indeterminee
+    return valeur_indeterminee_dir
 
 
 def find_certificat_dir_in_subjectid(subjectid: str) -> str:
     if pd.isna(subjectid):
-        return valeur_indeterminee
+        return valeur_indeterminee_dir
     subjectid = subjectid.upper()
     mapping = {
         # Autres structures
@@ -219,12 +220,12 @@ def find_certificat_dir_in_subjectid(subjectid: str) -> str:
         if key in subjectid:
             return value
 
-    return valeur_indeterminee
+    return valeur_indeterminee_dir
 
 
 def find_certificat_dir_in_contact(contact: str) -> str:
     if pd.isna(contact):
-        return valeur_indeterminee
+        return valeur_indeterminee_dir
     contact = contact.upper()
     mapping = {
         # Autres structures
@@ -254,12 +255,12 @@ def find_certificat_dir_in_contact(contact: str) -> str:
         if key in contact:
             return value
 
-    return valeur_indeterminee
+    return valeur_indeterminee_dir
 
 
 def find_certificat_dir_in_mail(mail: str) -> str:
     if pd.isna(mail):
-        return valeur_indeterminee
+        return valeur_indeterminee_dir
     mail = mail.upper()
     mapping = {
         # Autres structures
@@ -277,34 +278,34 @@ def find_certificat_dir_in_mail(mail: str) -> str:
         if key in mail:
             return value
 
-    return valeur_indeterminee
+    return valeur_indeterminee_dir
 
 
 def determiner_certificat_direction(row: pd.Series) -> str:
     certif_dir = find_certificat_dir_in_profile(profile=row.profile)
-    if certif_dir != valeur_indeterminee:
+    if certif_dir != valeur_indeterminee_dir:
         return certif_dir
     certif_dir = find_certificat_dir_in_dn(dn=row.dn)
-    if certif_dir != valeur_indeterminee:
+    if certif_dir != valeur_indeterminee_dir:
         return certif_dir
     certif_dir = find_certificat_dir_in_subjectid(subjectid=row.subjectid)
-    if certif_dir != valeur_indeterminee:
+    if certif_dir != valeur_indeterminee_dir:
         return certif_dir
     certif_dir = find_certificat_dir_in_contact(contact=row.contact)
-    if certif_dir != valeur_indeterminee:
+    if certif_dir != valeur_indeterminee_dir:
         return certif_dir
     certif_dir = find_certificat_dir_in_mail(mail=row.contact)
-    if certif_dir != valeur_indeterminee:
+    if certif_dir != valeur_indeterminee_dir:
         return certif_dir
 
-    certif_dir = valeur_indeterminee
+    certif_dir = valeur_indeterminee_dir
     return certif_dir
 
 
 def _match_mapping(
     text: str,
     mapping: dict[Union[str, tuple[str, ...]], str],
-    default: str = valeur_indeterminee,
+    default: str = valeur_indeterminee_dir,
 ) -> str:
     """
     Matches `text` against keys in mapping.
@@ -338,7 +339,9 @@ def determiner_ac(profile: str) -> str:
         "": "IGC",
     }
 
-    return _match_mapping(text=profile, mapping=mapping)
+    return _match_mapping(
+        text=profile, mapping=mapping, default=valeur_indeterminee_autres
+    )
 
 
 def determiner_type_offre(profile: str) -> str:
@@ -362,7 +365,9 @@ def determiner_type_offre(profile: str) -> str:
         # "F_SERVEURS_3": "AUTHENTIFICATION SERVEUR",
         # "serveurs": "",
     }
-    return _match_mapping(text=profile, mapping=mapping)
+    return _match_mapping(
+        text=profile, mapping=mapping, default=valeur_indeterminee_autres
+    )
 
 
 def determiner_support(profile: str) -> str:
@@ -378,7 +383,9 @@ def determiner_support(profile: str) -> str:
         "service": "SERVICE",
         "ac_adm_technique": "MATERIEL",
     }
-    return _match_mapping(text=profile, mapping=mapping)
+    return _match_mapping(
+        text=profile, mapping=mapping, default=valeur_indeterminee_autres
+    )
 
 
 def determiner_etat(row: pd.Series, date_ajd: datetime) -> str:
@@ -410,7 +417,9 @@ def determiner_version(profile: str) -> str:
         ("service",): "SERVICE",
         ("FSG_",): "AC2",
     }
-    return _match_mapping(text=profile, mapping=mapping)
+    return _match_mapping(
+        text=profile, mapping=mapping, default=valeur_indeterminee_autres
+    )
 
 
 def determiner_version_serveur(profile: str) -> str:
@@ -421,13 +430,15 @@ def determiner_version_serveur(profile: str) -> str:
         ("service", "_2"): "2048",
         ("_3",): "2048",
     }
-    return _match_mapping(text=profile, mapping=mapping)
+    return _match_mapping(
+        text=profile, mapping=mapping, default=valeur_indeterminee_autres
+    )
 
 
 def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
     affectation = row.ou_sigle
     if pd.isna(affectation):
-        return valeur_indeterminee
+        return valeur_indeterminee_dir
 
     affectation = affectation.strip().upper()
 
@@ -439,7 +450,7 @@ def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
     direction = mapping.get(affectation_split[-1], None)
 
     if direction is None:
-        return valeur_indeterminee
+        return valeur_indeterminee_dir
 
     if isinstance(direction, str):
         return direction.upper()
@@ -449,7 +460,7 @@ def map_agent_direction(row: pd.Series, mapping: dict) -> str | None:
             if k in affectation_split:
                 return v
 
-    return valeur_indeterminee
+    return valeur_indeterminee_dir
 
 
 """
@@ -540,11 +551,13 @@ def process_liste_certificats(
         right_on=["agent_mail"],
     )
     df["certificat_direction"] = np.where(
-        df["certificat_direction"] == valeur_indeterminee,
+        df["certificat_direction"] == valeur_indeterminee_dir,
         df["agent_direction"],
         df["certificat_direction"],
     )
-    df["certificat_direction"] = df["certificat_direction"].fillna(valeur_indeterminee)
+    df["certificat_direction"] = df["certificat_direction"].fillna(
+        valeur_indeterminee_dir
+    )
     df = df.drop(columns=["agent_direction", "agent_mail"])
 
     return df
