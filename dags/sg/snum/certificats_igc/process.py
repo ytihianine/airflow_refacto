@@ -544,5 +544,7 @@ def process_liste_certificats(
         df["agent_direction"],
         df["certificat_direction"],
     )
+    df["certificat_direction"] = df["certificat_direction"].fillna(valeur_indeterminee)
+    df = df.drop(columns=["agent_direction", "agent_mail"])
 
     return df
