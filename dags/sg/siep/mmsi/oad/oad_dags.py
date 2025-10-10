@@ -10,6 +10,7 @@ from infra.mails.sender import MailStatus, create_airflow_callback
 from utils.config.tasks import get_s3_keys_source, get_projet_config
 from utils.tasks.sql import (
     create_tmp_tables,
+    ensure_partition,
     copy_tmp_table_to_real_table,
     import_file_to_db,
     refresh_views,
@@ -120,6 +121,7 @@ def oad():
         import_file_to_db.expand(
             selecteur_config=get_projet_config(nom_projet=nom_projet)
         ),
+        ensure_partition(),
         copy_tmp_table_to_real_table(),
         refresh_views(),
         copy_s3_files(bucket="dsci"),
