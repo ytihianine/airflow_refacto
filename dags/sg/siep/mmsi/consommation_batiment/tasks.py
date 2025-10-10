@@ -28,6 +28,7 @@ def source_files():
     informations_batiments = create_file_etl_task(
         selecteur="bien_info_complementaire",
         process_func=process.process_source_bien_info_comp,
+        read_options={"sheet_name": 1},
     )
     conso_mensuelles = create_multi_files_input_etl_task(
         output_selecteur="conso_mens",
