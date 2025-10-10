@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle (
     facture_photovoltaique_ttc DOUBLE PRECISION,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
-    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+    PRIMARY KEY (code_bat_gestionnaire, date_conso, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
 
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle (
     facture_photovoltaique_ttc DOUBLE PRECISION,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
-    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+    PRIMARY KEY (code_bat_gestionnaire, annee, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
 
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_statut_par_fluide (
     statut_du_fluide TEXT,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
-    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+    PRIMARY KEY (code_bat_gestionnaire, type_fluide, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_avant_2019;
@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_brute_unpivot (
     conso_brute DOUBLE PRECISION,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
-    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+    PRIMARY KEY (code_bat_gestionnaire, date_conso, type_energie, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_mensuelle_corr_unpivot;
@@ -226,5 +226,5 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_corr_unpivot (
     conso_corr_dju_mmsi DOUBLE PRECISION,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
-    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+    PRIMARY KEY (code_bat_gestionnaire, date_conso, type_energie, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
