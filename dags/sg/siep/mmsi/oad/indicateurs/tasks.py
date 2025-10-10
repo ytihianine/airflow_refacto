@@ -16,6 +16,12 @@ oad_indic_to_parquet = create_parquet_converter_task(
 
 @task_group
 def tasks_oad_indicateurs():
+    oad_indic = create_multi_files_input_etl_task(
+        output_selecteur="oad_indic",
+        input_selecteurs=["oad_indic", "biens"],
+        process_func=process.filter_bien,
+        use_required_cols=False,
+    )
     accessibilite = create_multi_files_input_etl_task(
         output_selecteur="accessibilite",
         input_selecteurs=["oad_indic"],
@@ -119,6 +125,7 @@ def tasks_oad_indicateurs():
         use_required_cols=False,
     )
     chain(
+        oad_indic(),
         [
             accessibilite(),
             accessibilite_detail(),
