@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def merge_old_df_to_new_df(
@@ -91,4 +92,15 @@ def process_biens_occupants(df: pd.DataFrame) -> pd.DataFrame:
     df["code_bat_gestionnaire"] = (
         df[["code_bat_ter", "code_gestionnaire"]].astype(str).agg("_".join, axis=1)
     )
+
+    # Reset index to ensure a clean row-based id (starting from 1)
+    df = df.reset_index(drop=True)
+
+    # Fill missing or empty occupant values with "NR - <row_number>"
+    df["occupant"] = np.where(
+        df["occupant"].isna() | (df["occupant"].astype(str).str.strip() == ""),
+        "NR - " + (df.index + 1).astype(str),
+        df["occupant"],
+    )
+
     return df
