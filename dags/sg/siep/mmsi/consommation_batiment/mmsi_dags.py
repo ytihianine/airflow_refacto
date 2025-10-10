@@ -9,7 +9,7 @@ from infra.mails.sender import create_airflow_callback, MailStatus
 
 from utils.tasks.sql import (
     create_tmp_tables,
-    import_files_to_db,
+    import_file_to_db,
     copy_tmp_table_to_real_table,
     delete_tmp_tables,
     ensure_partition,
@@ -20,7 +20,7 @@ from utils.tasks.s3 import (
     copy_s3_files,
     del_s3_files,
 )
-from utils.config.tasks import get_s3_keys_source
+from utils.config.tasks import get_s3_keys_source, get_projet_config
 
 from dags.sg.siep.mmsi.consommation_batiment.tasks import (
     validate_params,
@@ -99,7 +99,9 @@ def consommation_des_batiments():
         source_files(),
         additionnal_files(),
         create_tmp_tables(),
-        import_files_to_db(),
+        import_file_to_db.expand(
+            selecteur_config=get_projet_config(nom_projet=nom_projet)
+        ),
         ensure_partition(),
         copy_tmp_table_to_real_table(
             load_strategy=LoadStrategy.APPEND,
