@@ -9,6 +9,7 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from infra.mails.sender import MailStatus, create_airflow_callback
 from utils.config.tasks import get_s3_keys_source, get_projet_config
 from utils.tasks.sql import (
+    LoadStrategy,
     create_tmp_tables,
     ensure_partition,
     copy_tmp_table_to_real_table,
@@ -105,10 +106,10 @@ def oad():
             ]
         )
 
-    end_task = EmptyOperator(
-        task_id="end_task",
-        on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
-    )
+    # end_task = EmptyOperator(
+    #     task_id="end_task",
+    #     on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
+    # )
 
     # Ordre des tâches
     chain(
@@ -122,7 +123,9 @@ def oad():
             selecteur_config=get_projet_config(nom_projet=nom_projet)
         ),
         ensure_partition(),
-        copy_tmp_table_to_real_table(),
+        copy_tmp_table_to_real_table(
+            load_strategy=LoadStrategy.APPEND,
+        ),
         # refresh_views(),
         # copy_s3_files(bucket="dsci"),
         # del_s3_files(bucket="dsci"),
