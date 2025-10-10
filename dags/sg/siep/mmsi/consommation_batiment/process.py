@@ -20,10 +20,8 @@ class TypeEnergie(str, Enum):
     reseau_froid = "réseau de froid"
 
 
-def process_source_conso_mens(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping, errors="raise").replace("NC", None)
-    df = df.drop(columns=list(set(df.columns) - set(cols_mapping.values())))
-
+def process_source_conso_mens(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.replace("NC", None)
     return df
 
 
