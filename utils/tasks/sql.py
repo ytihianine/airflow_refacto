@@ -358,8 +358,6 @@ def copy_tmp_table_to_real_table(
                 );
             """
             queries = [merge_query, delete_query]
-        else:
-            raise ValueError(f"Unknown strategy: {load_strategy}")
     elif load_strategy == LoadStrategy.APPEND:
         insert_queries = []
         for table in tbl_names:
@@ -371,6 +369,8 @@ def copy_tmp_table_to_real_table(
             )
 
         queries = insert_queries
+    else:
+        raise ValueError(f"Unknown strategy: {load_strategy}")
 
     if queries:
         for q in queries:
