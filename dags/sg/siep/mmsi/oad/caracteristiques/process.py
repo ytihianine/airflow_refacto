@@ -102,5 +102,11 @@ def process_biens_occupants(df: pd.DataFrame) -> pd.DataFrame:
         "NR - " + (df.index + 1).astype(str),
         df["occupant"],
     )
+    df["service_occupant"] = np.where(
+        df["service_occupant"].isna()
+        | (df["service_occupant"].astype(str).str.strip() == ""),
+        "NR - " + (df.index + 1).astype(str),
+        df["service_occupant"],
+    )
 
     return df
