@@ -95,7 +95,7 @@ def consommation_des_batiments():
     chain(
         validate_params(),
         looking_for_files,
-        conso_mens_parquet(),
+        # conso_mens_parquet(),
         source_files(),
         additionnal_files(),
         create_tmp_tables(),

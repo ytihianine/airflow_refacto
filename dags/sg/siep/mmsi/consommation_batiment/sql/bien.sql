@@ -7,5 +7,8 @@ CREATE TABLE IF NOT EXISTS siep.bien_information_complementaire (
     date_sortie_site DATE,
     date_derniere_renovation TEXT,
     annee_reference INT,
-    efa TEXT
-);
+    efa TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);

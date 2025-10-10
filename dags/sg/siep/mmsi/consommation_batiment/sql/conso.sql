@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS siep.conso_mensuelle;
 CREATE TABLE IF NOT EXISTS siep.conso_mensuelle (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
     date_conso DATE,
     ratio_electricite DOUBLE PRECISION,
@@ -71,13 +71,16 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle (
     conso_photovoltaique DOUBLE PRECISION,
     conso_surfacique_photovoltaique DOUBLE PRECISION,
     facture_photovoltaique_ht DOUBLE PRECISION,
-    facture_photovoltaique_ttc DOUBLE PRECISION
-);
+    facture_photovoltaique_ttc DOUBLE PRECISION,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS siep.conso_annuelle;
 CREATE TABLE IF NOT EXISTS siep.conso_annuelle (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
     annee INT,
     -- Elec
@@ -143,64 +146,85 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle (
     conso_photovoltaique DOUBLE PRECISION,
     conso_surfacique_photovoltaique DOUBLE PRECISION,
     facture_photovoltaique_ht DOUBLE PRECISION,
-    facture_photovoltaique_ttc DOUBLE PRECISION
-);
+    facture_photovoltaique_ttc DOUBLE PRECISION,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 
 
 DROP TABLE IF EXISTS siep.conso_statut_par_fluide;
 CREATE TABLE IF NOT EXISTS siep.conso_statut_par_fluide (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
     type_fluide TEXT,
     -- conso_fluide_depuis_2019 TEXT,
-    statut_du_fluide TEXT
-);
+    statut_du_fluide TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_avant_2019;
 CREATE TABLE IF NOT EXISTS siep.conso_avant_2019 (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
-    statut_conso_avant_2019 BOOLEAN
-);
+    statut_conso_avant_2019 BOOLEAN,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_statut_fluide_global;
 CREATE TABLE IF NOT EXISTS siep.conso_statut_fluide_global (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
     statut_elec TEXT,
     statut_gaz TEXT,
     statut_reseau_chaleur TEXT,
     statut_reseau_froid TEXT,
-    statut_fluide_global TEXT
-);
+    statut_fluide_global TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_statut_batiment;
 CREATE TABLE IF NOT EXISTS siep.conso_statut_batiment (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
     statut_conso_avant_2019 BOOLEAN,
     statut_fluide_global TEXT,
-    statut_batiment TEXT
-);
+    statut_batiment TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS siep.conso_mensuelle_brute_unpivot;
 CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_brute_unpivot (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
     annee_conso INT,
     date_conso DATE,
     type_energie TEXT,
-    conso_brute DOUBLE PRECISION
-);
+    conso_brute DOUBLE PRECISION,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_mensuelle_corr_unpivot;
 CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_corr_unpivot (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL,
     code_bat_gestionnaire TEXT,
     annee_conso INT,
     date_conso DATE,
     type_energie TEXT,
-    conso_corr_dju_mmsi DOUBLE PRECISION
-);
+    conso_corr_dju_mmsi DOUBLE PRECISION,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
