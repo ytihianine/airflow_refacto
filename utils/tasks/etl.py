@@ -153,6 +153,7 @@ def create_file_etl_task(
                     axis="columns",
                 )
                 df = df.rename(columns=format_cols_mapping(cols_mapping))
+                df = df[list(format_cols_mapping(cols_mapping).keys())]
 
         if process_func is None:
             print("No process function provided. Skipping the processing step ...")
