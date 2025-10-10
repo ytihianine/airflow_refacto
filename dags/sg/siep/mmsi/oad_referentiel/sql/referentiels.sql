@@ -6,5 +6,7 @@ CREATE TABLE IF NOT EXISTS siep.ref_typologie (
     famille_de_bien_simplifiee TEXT,
     famille_de_bien TEXT,
     type_de_bien TEXT,
-    usage_detaille_du_bien TEXT UNIQUE NOT NULL
+    usage_detaille_du_bien TEXT UNIQUE NOT NULL,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
 );
