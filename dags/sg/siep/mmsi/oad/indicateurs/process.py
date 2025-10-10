@@ -1,10 +1,5 @@
 from datetime import datetime
-from typing import cast
 import pandas as pd
-
-from infra.database.postgres import PostgresDBHandler
-from utils.config.vars import DEFAULT_PG_DATA_CONN_ID
-from infra.database.factory import create_db_handler
 
 
 def filter_bien(df: pd.DataFrame, df_bien: pd.DataFrame) -> pd.DataFrame:
@@ -17,14 +12,8 @@ def filter_bien(df: pd.DataFrame, df_bien: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_oad_indic(df: pd.DataFrame) -> pd.DataFrame:
-    db_handler = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_DATA_CONN_ID))
     df = df.dropna(subset=["code_bat_ter"])
     df = df.drop_duplicates(subset=["code_bat_ter"], ignore_index=True)
-
-    # Removing biens which are not presents in table bien
-    biens = db_handler.fetch_df(query="SELECT code_bat_ter FROM siep.bien;")
-    biens = biens.loc[:, "code_bat_ter"].to_list()
-    df = df[df["code_bat_ter"].isin(biens)]
     return df
 
 
