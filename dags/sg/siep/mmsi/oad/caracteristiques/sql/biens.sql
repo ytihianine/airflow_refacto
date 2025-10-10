@@ -2,9 +2,9 @@
 DROP TABLE IF EXISTS temporaire.tmp_bien;
 DROP TABLE IF EXISTS siep.bien;
 CREATE TABLE IF NOT EXISTS siep.bien (
-    id BIGSERIAL PRIMARY KEY,
-    code_bat_ter BIGINT UNIQUE NOT NULL,
-    code_site BIGINT REFERENCES siep.site(code_site),
+    id BIGSERIAL,
+    code_bat_ter BIGINT NOT NULL,
+    code_site BIGINT ,
     libelle_bat_ter TEXT,
     gestion_categorie TEXT,
     gestion_mono_multi_mef TEXT,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS siep.bien (
     groupe_autorisation TEXT,
     categorie_administrative_liste_bat TEXT,
     categorie_administrative_principale_bat TEXT,
-    gestionnaire_principal_code BIGINT REFERENCES siep.gestionnaire(code_gestionnaire),
+    gestionnaire_principal_code BIGINT,
     gestionnaire_type_simplifie_bat TEXT,
     gestionnaire_principal_libelle TEXT,
     gestionnaire_principal_libelle_simplifie TEXT,
@@ -26,33 +26,43 @@ CREATE TABLE IF NOT EXISTS siep.bien (
     gestionnaire_presents_liste_mef TEXT,
     date_construction_annee_corrigee INTEGER,
     periode TEXT,
-    presence_mef_bat TEXT
-);
+    presence_mef_bat TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_ter, import_timestamp),
+    FOREIGN KEY(code_site, import_timestamp) REFERENCES siep.site(code_site, import_timestamp),
+    FOREIGN KEY(gestionnaire_principal_code, import_timestamp) REFERENCES siep.gestionnaire(code_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS temporaire.tmp_bien_gestionnaire;
 DROP TABLE IF EXISTS siep.bien_gestionnaire;
 CREATE TABLE IF NOT EXISTS siep.bien_gestionnaire (
-    id BIGSERIAL PRIMARY KEY,
-    code_bat_ter BIGINT NOT NULL REFERENCES siep.bien(code_bat_ter),
-    code_gestionnaire BIGINT NOT NULL REFERENCES siep.gestionnaire(code_gestionnaire),
-    code_bat_gestionnaire TEXT UNIQUE NOT NULL,
+    id BIGSERIAL,
+    code_bat_ter BIGINT NOT NULL,
+    code_gestionnaire BIGINT NOT NULL,
+    code_bat_gestionnaire TEXT NOT NULL,
     indicateur_poste_gest_source FLOAT,
     indicateur_resident_gest_source FLOAT,
-    indicateur_sub_gest_source FLOAT
-);
+    indicateur_sub_gest_source FLOAT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_ter, code_gestionnaire, code_bat_gestionnaire, import_timestamp),
+    FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp),
+    FOREIGN KEY(code_gestionnaire, import_timestamp) REFERENCES siep.gestionnaire(code_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS temporaire.tmp_bien_occupant;
 DROP TABLE IF EXISTS siep.bien_occupant;
 CREATE TABLE IF NOT EXISTS siep.bien_occupant (
-    id BIGSERIAL PRIMARY KEY,
-    code_bat_ter BIGINT NOT NULL REFERENCES siep.bien(code_bat_ter),
-    code_gestionnaire BIGINT NOT NULL REFERENCES siep.gestionnaire(code_gestionnaire),
-    code_bat_gestionnaire TEXT NOT NULL REFERENCES siep.bien_gestionnaire(code_bat_gestionnaire),
-    occupant TEXT,
+    id BIGSERIAL,
+    code_bat_ter BIGINT NOT NULL,
+    code_gestionnaire BIGINT NOT NULL,
+    code_bat_gestionnaire TEXT NOT NULL,
+    occupant TEXT NOT NULL,
     direction_locale_occupante TEXT,
     comprend_service_ac TEXT,
     direction_locale_occupante_principale TEXT,
-    service_occupant TEXT,
+    service_occupant TEXT NOT NULL,
     indicateur_sub_occ_source FLOAT,
     indicateur_sub_occ FLOAT,
     indicateur_surface_mef_occ FLOAT,
@@ -69,8 +79,13 @@ CREATE TABLE IF NOT EXISTS siep.bien_occupant (
     filtre_spsi_initial BOOLEAN,
     filtre_spsi_maj BOOLEAN,
     indicateur_surface_spsi_m_sub_occ_initial FLOAT,
-    indicateur_surface_spsi_m_sub_occ_maj FLOAT
-);
+    indicateur_surface_spsi_m_sub_occ_maj FLOAT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_ter, code_gestionnaire, code_bat_gestionnaire, occupant, service_occupant, import_timestamp),
+    FOREIGN KEY(code_bat_ter, code_gestionnaire, code_bat_gestionnaire, import_timestamp)
+      REFERENCES siep.bien_gestionnaire(code_bat_ter, code_gestionnaire, code_bat_gestionnaire, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 ---=========== Vues ===========---
 CREATE MATERIALIZED VIEW siep.bien_caracteristiques_complet_gestionnaire_vw AS
@@ -102,6 +117,8 @@ CREATE MATERIALIZED VIEW siep.bien_caracteristiques_complet_gestionnaire_vw AS
     GROUP BY code_bat_gestionnaire
   )
     SELECT
+    -- commun
+    sb.import_timestamp as import_timestamp,
     -- bien_gestionnaire
     sbg.code_gestionnaire as code_gestionnaire,
     sbg.code_bat_gestionnaire as code_bat_gestionnaire,

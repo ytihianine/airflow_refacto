@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS temporaire.tmp_bien_couts;
 DROP TABLE IF EXISTS siep.bien_couts;
 CREATE TABLE IF NOT EXISTS siep.bien_couts (
-    id BIGSERIAL PRIMARY KEY,
-    code_bat_ter BIGINT NOT NULL REFERENCES siep.bien(code_bat_ter),
+    id BIGSERIAL,
+    code_bat_ter BIGINT NOT NULL,
     annee_charges_copropriete INTEGER,
     annee_charges_locatives INTEGER,
     annee_loyers_budgetaires INTEGER,
@@ -22,5 +22,9 @@ CREATE TABLE IF NOT EXISTS siep.bien_couts (
     loyer_hc_ttc_annee1 FLOAT,
     loyer_hc_ttc_annee2 FLOAT,
     loyers_budgetaires_2018 FLOAT,
-    plafond_loyer_surfacique_sub FLOAT
-);
+    plafond_loyer_surfacique_sub FLOAT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+    PRIMARY KEY (code_bat_ter, import_timestamp),
+    FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
