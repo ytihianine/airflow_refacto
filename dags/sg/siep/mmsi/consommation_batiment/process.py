@@ -41,17 +41,6 @@ def cleaning_dataFrame(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def rename_columns(
-    df: pd.DataFrame, colonnes_correspondances: dict[str, str]
-) -> pd.DataFrame:
-    columns_rename = {}
-    for correspondance in colonnes_correspondances:
-        columns_rename[correspondance[0]] = correspondance[1]
-    df = df.rename(columns=columns_rename)
-    df = df.fillna(np.nan).replace([np.nan], [None])
-    return df
-
-
 # ======================================================
 # CONSOMMATION MENSUELLE
 # ======================================================
@@ -574,35 +563,6 @@ def get_perimetre_batiments(
     )
 
     return df_info_biens
-
-
-def rename_conso_mens(
-    df_conso_mensuelles: pd.DataFrame, colonnes_conso_mens: list[str]
-) -> pd.DataFrame:
-
-    df_conso_mensuelles = rename_columns(
-        df=df_conso_mensuelles, colonnes_correspondances=colonnes_conso_mens
-    )
-    print(f"\n Colonnes après rename: {df_conso_mensuelles.columns}")
-
-    renamed_colonnes = df_conso_mensuelles.columns
-    new_colonnes = [new_colonne[1] for new_colonne in colonnes_conso_mens]
-    colonne_to_drop = [
-        old_colonne
-        for old_colonne in renamed_colonnes
-        if old_colonne not in new_colonnes
-    ]
-
-    print(f"\n Nouvelles colonnes: {new_colonnes}")
-    print(
-        f"\n Anciennes colonnes encore présentes dans le dataframe: {colonne_to_drop}"
-    )
-    df_conso_mensuelles = df_conso_mensuelles.drop(columns=colonne_to_drop)
-    print(
-        f"\n Colonnes du dataframe après drop des colonnes inutiles: {df_conso_mensuelles.columns}"
-    )
-
-    return df_conso_mensuelles
 
 
 def add_dju_moyen(df_conso_mens: pd.DataFrame) -> pd.DataFrame:
