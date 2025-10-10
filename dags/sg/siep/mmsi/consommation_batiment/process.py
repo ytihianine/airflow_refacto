@@ -211,6 +211,8 @@ def process_conso_annuelle(df: pd.DataFrame) -> pd.DataFrame:
         "degres_jours_de_refroidissement",
         "ratio_electricite",
         "ratio_autres_fluides",
+        "import_date",
+        "import_timestamp",
     ]
 
     df = df.drop(columns=cols_to_drop)
