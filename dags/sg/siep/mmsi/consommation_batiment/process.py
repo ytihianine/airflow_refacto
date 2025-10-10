@@ -25,9 +25,7 @@ def process_source_conso_mens(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_source_bien_info_comp(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
-    df = df.rename(columns=cols_mapping, errors="raise")
-    df = df.drop(columns=list(set(df.columns) - set(cols_mapping.values())))
+def process_source_bien_info_comp(df: pd.DataFrame) -> pd.DataFrame:
     df = df.fillna(np.nan).replace([np.nan], [None])
 
     return df
