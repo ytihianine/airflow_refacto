@@ -12,6 +12,8 @@ from utils.tasks.sql import (
     import_files_to_db,
     copy_tmp_table_to_real_table,
     delete_tmp_tables,
+    ensure_partition,
+    LoadStrategy,
     # set_dataset_last_update_date,
 )
 from utils.tasks.s3 import (
@@ -98,9 +100,12 @@ def consommation_des_batiments():
         additionnal_files(),
         create_tmp_tables(),
         import_files_to_db(),
-        copy_tmp_table_to_real_table(),
-        copy_s3_files(bucket="dsci"),
-        del_s3_files(bucket="dsci"),
+        ensure_partition(),
+        copy_tmp_table_to_real_table(
+            load_strategy=LoadStrategy.APPEND,
+        ),
+        # copy_s3_files(bucket="dsci"),
+        # del_s3_files(bucket="dsci"),
         delete_tmp_tables(),
         # set_dataset_last_update_date(
         #     dataset_ids=[49, 50, 51, 52, 53, 54],
