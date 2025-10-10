@@ -115,7 +115,7 @@ def oad():
     chain(
         validate_params(),
         looking_for_files,
-        convert_file_to_parquet(),
+        # convert_file_to_parquet(),
         tasks_oad_caracteristiques(),
         tasks_oad_indicateurs(),
         create_tmp_tables(),
