@@ -32,7 +32,7 @@ def source_files():
     conso_mensuelles = create_multi_files_input_etl_task(
         output_selecteur="conso_mens",
         input_selecteurs=["conso_mens_source"],
-        process_func=process.process_source_conso_mens,
+        process_func=process.process_conso_mensuelles,
     )
     chain([informations_batiments(), conso_mensuelles()])
 
