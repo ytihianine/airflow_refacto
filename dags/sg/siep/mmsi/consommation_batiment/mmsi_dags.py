@@ -95,7 +95,7 @@ def consommation_des_batiments():
     chain(
         validate_params(),
         looking_for_files,
-        # conso_mens_parquet(),
+        conso_mens_parquet(),
         source_files(),
         additionnal_files(),
         create_tmp_tables(),
@@ -106,8 +106,8 @@ def consommation_des_batiments():
         copy_tmp_table_to_real_table(
             load_strategy=LoadStrategy.APPEND,
         ),
-        # copy_s3_files(bucket="dsci"),
-        # del_s3_files(bucket="dsci"),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
         delete_tmp_tables(),
         # set_dataset_last_update_date(
         #     dataset_ids=[49, 50, 51, 52, 53, 54],
