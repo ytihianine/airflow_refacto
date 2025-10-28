@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_etat_de_sante (
     eds_constate TEXT,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
+	snapshot_id UUID,
     PRIMARY KEY (code_bat_ter, import_timestamp, composant_bien),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

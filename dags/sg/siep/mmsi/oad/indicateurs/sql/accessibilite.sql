@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite (
     presence_registre_accessibilite BOOLEAN,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
+	snapshot_id UUID,
     PRIMARY KEY (code_bat_ter, import_timestamp),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite_detail (
     niveau_reglementaire TEXT,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
+	snapshot_id UUID,
     PRIMARY KEY (code_bat_ter, composant_bien, niveau, import_timestamp),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
