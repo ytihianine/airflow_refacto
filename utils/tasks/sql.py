@@ -96,7 +96,7 @@ def create_snapshot_id(
     params = {
         "nom_projet": nom_projet,
         "snapshot_id": snapshot_id,
-        "creation_timestamp": execution_date,
+        "creation_timestamp": execution_date.naive(),
     }
 
     # Exécution de la requête
