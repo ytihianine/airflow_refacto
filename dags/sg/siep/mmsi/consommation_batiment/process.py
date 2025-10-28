@@ -225,6 +225,88 @@ def process_conso_annuelle(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def process_conso_annuelle_unpivot(df: pd.DataFrame) -> pd.DataFrame:
+    df = process_conso_annuelle(df=df)
+    correspondance_fluide = {
+        "conso_elec": "elec",
+        "conso_elec_corr_dju_mmsi": "elec",
+        "conso_gaz_pcs": "gaz_pcs",
+        "conso_gaz_pci": "gaz_pci",
+        "conso_gaz_pci_corr_dju_mmsi": "gaz_pci",
+        "conso_reseau_chaleur": "RCU",
+        "conso_reseau_chaleur_corr_dju_mmsi": "RCU",
+        "conso_reseau_froid": "RFU",
+        "conso_reseau_froid_corr_dju_mmsi": "RFU",
+        "conso_fioul_pci": "fioul",
+        "conso_fioul_pci_corr_dju_mmsi": "fioul",
+        "conso_granule_bois": "granule_bois",
+        "conso_granule_bois_corr_dju_mmsi": "granule_bois",
+        "conso_propane": "propane",
+        "conso_photovoltaique": "photovoltaique",
+    }
+    cols_id = ["code_bat_gestionnaire", "annee"]
+    cols_to_pivot = list(set(df.columns) - set(cols_id))
+
+    df = pd.melt(
+        df,
+        id_vars=cols_id,
+        value_vars=cols_to_pivot,
+        var_name="fluide",
+        value_name="conso_actuelle",
+    )
+
+    df = df[df["fluide"].isin(list(correspondance_fluide.keys()))]
+    df["type_conso"] = np.where(df["fluide"].str.contains("corr"), "CORRIGEE", "BRUTE")
+    df["fluide"] = df["fluide"].replace(correspondance_fluide)
+
+    df = df.sort_values(["code_bat_gestionnaire", "fluide", "type_conso", "annee"])
+
+    df["annee_precedente"] = df.groupby(
+        ["code_bat_gestionnaire", "fluide", "type_conso"]
+    )["annee"].shift(1)
+
+    # Calculer les consommations des années précédentes
+    df = df.sort_values(["code_bat_gestionnaire", "fluide", "type_conso", "annee"])
+
+    df["conso_precedente"] = df.groupby(
+        ["code_bat_gestionnaire", "fluide", "type_conso"]
+    )["conso_actuelle"].shift(1)
+
+    # Absolute and relative differences
+    df["diff_vs_prev"] = df["conso_actuelle"] - df["conso_precedente"]
+    valid = df["conso_precedente"].notna() & (df["conso_precedente"] != 0)
+    df["diff_vs_prev_pct"] = np.nan
+    df.loc[valid, "diff_vs_prev_pct"] = (
+        df.loc[valid, "diff_vs_prev"] / df.loc[valid, "conso_precedente"]
+    )
+
+    # Calculer les évolutions de consommations par rapport à 2019
+    ref = df.loc[
+        df["annee"] == 2019,
+        ["code_bat_gestionnaire", "fluide", "type_conso", "conso_actuelle"],
+    ].rename(columns={"conso_actuelle": "conso_ref_2019"})
+
+    df = df.merge(ref, on=["code_bat_gestionnaire", "fluide", "type_conso"], how="left")
+
+    df["diff_vs_2019"] = df["conso_actuelle"] - df["conso_ref_2019"]
+    valid = df["conso_ref_2019"].notna() & (df["conso_ref_2019"] != 0)
+    df["diff_vs_2019_pct"] = np.nan
+    df.loc[valid, "diff_vs_2019_pct"] = (
+        df.loc[valid, "diff_vs_2019"] / df.loc[valid, "conso_ref_2019"]
+    )
+
+    # Round values
+    df = df.round(
+        {
+            "diff_vs_prev": 2,
+            "diff_vs_2019": 2,
+            "diff_vs_prev_pct": 4,
+            "diff_vs_2019_pct": 4,
+        }
+    )
+    return df
+
+
 def process_conso_statut_par_fluide(df: pd.DataFrame) -> pd.DataFrame:
     colonnes_fluides = [
         "conso_elec",
