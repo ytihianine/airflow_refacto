@@ -118,7 +118,7 @@ def oad():
         # looking_for_files,
         create_projet_snapshot(),
         get_projet_snapshot(),
-        convert_file_to_parquet(),
+        # convert_file_to_parquet(),
         tasks_oad_caracteristiques(),
         tasks_oad_indicateurs(),
         create_tmp_tables(),
