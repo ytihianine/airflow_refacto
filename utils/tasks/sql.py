@@ -125,7 +125,7 @@ def get_snapshot_id(nom_projet: str, pg_conn_id: str) -> str:
 
     # Exécution de la requête
     db = create_db_handler(pg_conn_id)
-    snapshot_id = db.execute(query, params)
+    snapshot_id = db.fetch_all(query, params)
     return snapshot_id
 
 
