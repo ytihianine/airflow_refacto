@@ -75,6 +75,100 @@ def get_tbl_names_from_postgresql(**context) -> list[str]:
     return tbl_names
 
 
+def create_snapshot_id(
+    nom_projet: str, execution_date: datetime, pg_conn_id: str
+) -> None:
+    import uuid
+
+    snapshot_id = uuid.uuid4()
+    query = """
+        INSERT INTO conf_projets.projet_snapshot_id (id_projet, snapshot_id, creation_timestamp)
+        SELECT
+            p.id,
+            %(snapshot_id)s,
+            %(creation_timestamp)s
+        FROM conf_projets.projet p
+        WHERE p.nom_projet = %(nom_projet)s
+        AND EXISTS (SELECT 1 FROM conf_projets.projet WHERE nom_projet = %(nom_projet)s);
+    """
+
+    # Paramètres pour la requête
+    params = {
+        "nom_projet": nom_projet,
+        "snapshot_id": snapshot_id,
+        "creation_timestamp": execution_date,
+    }
+
+    # Exécution de la requête
+    db = create_db_handler(pg_conn_id)
+    db.execute(query, params)
+
+
+def get_snapshot_id(nom_projet: str, pg_conn_id: str) -> str:
+    query = """
+        SELECT psi.snapshot_id
+        FROM conf_projets.projet_snapshot psi
+        WHERE
+            id_projet = (
+                SELECT id
+                FROM conf_projets.projet p
+                WHERE p.nom_projet = %(nom_projet)s
+            )
+        AND psi.creation_timestamp = (
+            SELECT MAX(creation_timestamp)
+            FROM conf_projets.projet_snapshot
+        );
+    """
+
+    # Paramètres pour la requête
+    params = {"nom_projet": nom_projet}
+
+    # Exécution de la requête
+    db = create_db_handler(pg_conn_id)
+    snapshot_id = db.execute(query, params)
+    return snapshot_id
+
+
+@task
+def create_projet_snapshot(
+    pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID, **context
+) -> None:
+    """ """
+    params = context.get("params", {})
+    nom_projet = params.get("nom_projet")
+    if not nom_projet:
+        raise ValueError("Project name must be provided in DAG parameters!")
+    execution_date = context.get("execution_date")
+
+    create_snapshot_id(
+        nom_projet=nom_projet, execution_date=execution_date, pg_conn_id=pg_conn_id
+    )
+
+
+@task
+def get_projet_snapshot(pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID, **context) -> None:
+    """
+    Vérifie si une partition mensuelle existe pour une table partitionnée par date.
+    Si elle n'existe pas, la crée.
+
+    Args:
+        pg_conn_id: Connexion Postgres. Valeur par défaut
+
+    Returns:
+        None. Ajoute le snapshot_id dans le context du DAG
+    """
+    params = context.get("params", {})
+    nom_projet = params.get("nom_projet")
+    if not nom_projet:
+        raise ValueError("Project name must be provided in DAG parameters!")
+
+    snapshot_id = get_snapshot_id(nom_projet=nom_projet)
+    print(snapshot_id)
+    print(f"Adding snapshot_id {snapshot_id} to context")
+    context["ti"].xcom_push(key="snapshot_id", value=snapshot_id)
+    print("Snapshot_id added to context.")
+
+
 def determine_partition_period(
     time_period: PartitionTimePeriod, execution_date: datetime
 ) -> tuple[datetime, datetime]:
