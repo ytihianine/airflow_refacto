@@ -83,20 +83,20 @@ default_args = {
     ),
 )
 def oad():
-    # looking_for_files = S3KeySensor(
-    #     task_id="looking_for_files",
-    #     aws_conn_id="minio_bucket_dsci",
-    #     bucket_name="dsci",
-    #     bucket_key=get_s3_keys_source(nom_projet=nom_projet),
-    #     mode="reschedule",
-    #     poke_interval=timedelta(seconds=30),
-    #     timeout=timedelta(minutes=13),
-    #     soft_fail=True,
-    #     on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
-    #     on_success_callback=create_airflow_callback(
-    #         mail_status=MailStatus.START,
-    #     ),
-    # )
+    looking_for_files = S3KeySensor(
+        task_id="looking_for_files",
+        aws_conn_id="minio_bucket_dsci",
+        bucket_name="dsci",
+        bucket_key=get_s3_keys_source(nom_projet=nom_projet),
+        mode="reschedule",
+        poke_interval=timedelta(seconds=30),
+        timeout=timedelta(minutes=13),
+        soft_fail=True,
+        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+        on_success_callback=create_airflow_callback(
+            mail_status=MailStatus.START,
+        ),
+    )
 
     @task_group
     def convert_file_to_parquet():
@@ -115,10 +115,10 @@ def oad():
     # Ordre des tâches
     chain(
         validate_params(),
-        # looking_for_files,
+        looking_for_files,
         create_projet_snapshot(),
         get_projet_snapshot(),
-        # convert_file_to_parquet(),
+        convert_file_to_parquet(),
         tasks_oad_caracteristiques(),
         tasks_oad_indicateurs(),
         create_tmp_tables(),
