@@ -8,6 +8,7 @@ from utils.tasks.sql import (
     import_files_to_db,
     copy_tmp_table_to_real_table,
     delete_tmp_tables,
+    LoadStrategy,
 )
 from utils.tasks.grist import download_grist_doc_to_s3
 from utils.config.vars import DEFAULT_PG_CONFIG_CONN_ID
@@ -70,7 +71,9 @@ def configuration_projets():
         process_data(),
         create_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
         import_files_to_db(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID, keep_file_id_col=True),
-        copy_tmp_table_to_real_table(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
+        copy_tmp_table_to_real_table(
+            load_strategy=LoadStrategy.INCREMENTAL, pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID
+        ),
         delete_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
     )
 
