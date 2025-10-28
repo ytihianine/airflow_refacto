@@ -455,7 +455,7 @@ def copy_tmp_table_to_real_table(
                     WHERE {" AND ".join([f"tbl_source.{col} = tbl_target.{col}" for col in pk_cols])}
                 );
             """
-        queries = [merge_query]  # , delete_query]
+            queries = queries.append(merge_query)  # , delete_query]
     elif load_strategy == LoadStrategy.APPEND:
         insert_queries = []
         for table in tbl_names:
