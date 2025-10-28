@@ -1,6 +1,7 @@
 from datetime import timedelta
+from pprint import pprint
 
-from airflow.decorators import dag
+from airflow.decorators import dag, task
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
@@ -52,8 +53,13 @@ default_args = {
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def dag_verification():
+    @task
+    def print_context(**context):
+        pprint(context)
+        pprint(context.dag)
+
     # Ordre des tâches
-    chain(create_projet_snapshot(), get_projet_snapshot())
+    chain(create_projet_snapshot(), get_projet_snapshot(), print_context())
 
 
 dag_verification()
