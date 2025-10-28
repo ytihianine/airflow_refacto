@@ -37,6 +37,7 @@ def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
 
     dt_no_timezone = execution_date.replace(tzinfo=None)
     df["import_timestamp"] = dt_no_timezone
+    df["import_date"] = dt_no_timezone.date()
     return df
 
 
