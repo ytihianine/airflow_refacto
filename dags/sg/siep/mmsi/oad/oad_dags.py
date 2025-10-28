@@ -15,6 +15,8 @@ from utils.tasks.sql import (
     copy_tmp_table_to_real_table,
     import_file_to_db,
     delete_tmp_tables,
+    create_projet_snapshot,
+    get_projet_snapshot,
     # set_dataset_last_update_date,
 )
 
@@ -113,8 +115,10 @@ def oad():
     # Ordre des tâches
     chain(
         validate_params(),
-        looking_for_files,
-        # convert_file_to_parquet(),
+        # looking_for_files,
+        create_projet_snapshot(),
+        get_projet_snapshot(),
+        convert_file_to_parquet(),
         tasks_oad_caracteristiques(),
         tasks_oad_indicateurs(),
         create_tmp_tables(),
