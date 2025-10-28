@@ -24,6 +24,16 @@ CREATE TABLE IF NOT EXISTS conf_projets.projet(
   id_service INT NOT NULL REFERENCES conf_projets.ref_service(id)
 );
 
+DROP TABLE conf_projets.projet_snapshot;
+CREATE TABLE conf_projets.projet_snapshot (
+  id BIGSERIAL,
+  id_projet INTEGER,
+  snapshot_id UUID,
+  creation_timestamp TIMESTAMP,
+  PRIMARY KEY (id_projet, snapshot_id),
+  FOREIGN KEY(id_projet) REFERENCES conf_projets.projet(id)
+);
+
 DROP TABLE IF EXISTS conf_projets.selecteur CASCADE;
 CREATE TABLE IF NOT EXISTS conf_projets.selecteur(
   id bigserial PRIMARY KEY,
