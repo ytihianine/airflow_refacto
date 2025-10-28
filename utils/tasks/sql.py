@@ -152,8 +152,7 @@ def get_projet_snapshot(
     **context,
 ) -> None:
     """
-    Vérifie si une partition mensuelle existe pour une table partitionnée par date.
-    Si elle n'existe pas, la crée.
+    Récupérer le dernier snapshot_id d'un projet.
 
     Args:
         pg_conn_id: Connexion Postgres. Valeur par défaut
