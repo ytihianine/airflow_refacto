@@ -72,7 +72,7 @@ def configuration_projets():
         create_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
         import_files_to_db(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID, keep_file_id_col=True),
         copy_tmp_table_to_real_table(
-            load_strategy=LoadStrategy.INCREMENTAL, pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID
+            load_strategy=LoadStrategy.FULL_LOAD, pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID
         ),
         delete_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
     )
