@@ -162,7 +162,7 @@ def get_projet_snapshot(pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID, **context) 
     if not nom_projet:
         raise ValueError("Project name must be provided in DAG parameters!")
 
-    snapshot_id = get_snapshot_id(nom_projet=nom_projet)
+    snapshot_id = get_snapshot_id(nom_projet=nom_projet, pg_conn_id=pg_conn_id)
     print(snapshot_id)
     print(f"Adding snapshot_id {snapshot_id} to context")
     context["ti"].xcom_push(key="snapshot_id", value=snapshot_id)
