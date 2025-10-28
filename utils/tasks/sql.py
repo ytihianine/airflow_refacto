@@ -1,7 +1,7 @@
 """SQL task utilities using infrastructure handlers."""
 
 import logging
-from typing import cast
+from typing import cast, Optional
 from datetime import datetime, timedelta
 
 from enum import Enum, auto
@@ -146,7 +146,11 @@ def create_projet_snapshot(
 
 
 @task
-def get_projet_snapshot(pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID, **context) -> None:
+def get_projet_snapshot(
+    nom_projet: Optional[str] = None,
+    pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID,
+    **context,
+) -> None:
     """
     Vérifie si une partition mensuelle existe pour une table partitionnée par date.
     Si elle n'existe pas, la crée.
@@ -157,13 +161,13 @@ def get_projet_snapshot(pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID, **context) 
     Returns:
         None. Ajoute le snapshot_id dans le context du DAG
     """
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
+    if nom_projet is None:
+        params = context.get("params", {})
+        nom_projet = params.get("nom_projet")
+        if not nom_projet:
+            raise ValueError("Project name must be provided in DAG parameters!")
 
     snapshot_id = get_snapshot_id(nom_projet=nom_projet, pg_conn_id=pg_conn_id)
-    print(snapshot_id)
     print(f"Adding snapshot_id {snapshot_id} to context")
     context["ti"].xcom_push(key="snapshot_id", value=snapshot_id[0]["snapshot_id"])
     print("Snapshot_id added to context.")
