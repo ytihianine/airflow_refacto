@@ -56,7 +56,8 @@ def dag_verification():
     @task
     def print_context(**context):
         pprint(context)
-        pprint(context.dag)
+        pprint(context["dag"])
+        pprint(context["ti"])
 
     # Ordre des tâches
     chain(create_projet_snapshot(), get_projet_snapshot(), print_context())
