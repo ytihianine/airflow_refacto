@@ -82,7 +82,7 @@ def create_snapshot_id(
 
     snapshot_id = uuid.uuid4()
     query = """
-        INSERT INTO conf_projets.projet_snapshot_id (id_projet, snapshot_id, creation_timestamp)
+        INSERT INTO conf_projets.projet_snapshot (id_projet, snapshot_id, creation_timestamp)
         SELECT
             p.id,
             %(snapshot_id)s,
