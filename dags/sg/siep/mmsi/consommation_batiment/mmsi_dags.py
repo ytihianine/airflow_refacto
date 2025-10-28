@@ -14,6 +14,7 @@ from utils.tasks.sql import (
     delete_tmp_tables,
     ensure_partition,
     LoadStrategy,
+    get_projet_snapshot,
     # set_dataset_last_update_date,
 )
 from utils.tasks.s3 import (
@@ -78,24 +79,25 @@ default_args = {
 )
 def consommation_des_batiments():
     """Task definition"""
-    looking_for_files = S3KeySensor(
-        task_id="looking_for_files",
-        aws_conn_id="minio_bucket_dsci",
-        bucket_name="dsci",
-        bucket_key=get_s3_keys_source(nom_projet=nom_projet),
-        mode="reschedule",
-        poke_interval=timedelta(seconds=30),
-        timeout=timedelta(minutes=13),
-        soft_fail=True,
-        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
-        on_success_callback=create_airflow_callback(mail_status=MailStatus.START),
-    )
+    # looking_for_files = S3KeySensor(
+    #     task_id="looking_for_files",
+    #     aws_conn_id="minio_bucket_dsci",
+    #     bucket_name="dsci",
+    #     bucket_key=get_s3_keys_source(nom_projet=nom_projet),
+    #     mode="reschedule",
+    #     poke_interval=timedelta(seconds=30),
+    #     timeout=timedelta(minutes=13),
+    #     soft_fail=True,
+    #     on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+    #     on_success_callback=create_airflow_callback(mail_status=MailStatus.START),
+    # )
 
     # Ordre des tâches
     chain(
         validate_params(),
-        looking_for_files,
-        conso_mens_parquet(),
+        # looking_for_files,
+        get_projet_snapshot(nom_projet="Outil aide diagnostic"),
+        # conso_mens_parquet(),
         source_files(),
         additionnal_files(),
         create_tmp_tables(),
