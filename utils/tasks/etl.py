@@ -21,6 +21,37 @@ from utils.config.tasks import (
 from utils.config.types import P, R
 
 
+def _get_project_name(context: dict) -> str:
+    """Extract and validate project name from context."""
+    nom_projet = context.get("params", {}).get("nom_projet")
+    if not nom_projet:
+        raise ValueError("nom_projet must be defined in DAG parameters")
+    return nom_projet
+
+
+def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
+    """Add import timestamp and date columns."""
+    execution_date = context.get("execution_date")
+    if not execution_date or not isinstance(execution_date, datetime):
+        raise ValueError("Invalid execution date in Airflow context")
+
+    dt_no_timezone = execution_date.replace(tzinfo=None)
+    df["import_timestamp"] = dt_no_timezone
+    return df
+
+
+def _add_snapshot_id_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
+    """Add snapshot_id column."""
+    snapshot_id = context["ti"].xcom_pull(
+        key="snapshot_id", task_ids="get_projet_snapshot"
+    )
+    if not snapshot_id:
+        raise ValueError("snapshot_id is not defined")
+
+    df["snapshot_id"] = snapshot_id
+    return df
+
+
 def create_grist_etl_task(
     selecteur: str,
     doc_selecteur: Optional[str] = None,
@@ -51,10 +82,7 @@ def create_grist_etl_task(
     def _task(**context) -> None:
         """The actual ETL task function."""
         # Get project name from context
-        params = context.get("params", {})
-        nom_projet = params.get("nom_projet")
-        if not nom_projet:
-            raise ValueError("nom_projet must be defined in DAG parameters")
+        nom_projet = _get_project_name(context=context)
 
         # Get config values related to the task
         task_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
@@ -107,6 +135,7 @@ def create_file_etl_task(
     read_options: Optional[dict[str, Any]] = None,
     apply_cols_mapping: bool = True,
     add_import_date: bool = True,
+    add_snapshot_id: bool = True,
 ) -> Callable[..., XComArg]:
     """Create an ETL task for extracting, transforming and loading data from a file.
 
@@ -123,10 +152,7 @@ def create_file_etl_task(
     def _task(**context) -> None:
         """The actual ETL task function."""
         # Get project name from context
-        params = context.get("params", {})
-        nom_projet = params.get("nom_projet")
-        if not nom_projet:
-            raise ValueError("nom_projet must be defined in DAG parameters")
+        nom_projet = _get_project_name(context=context)
 
         # Initialize hooks
         s3_hook = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
@@ -162,14 +188,10 @@ def create_file_etl_task(
             df = process_func(df)
 
         if add_import_date:
-            execution_date = context.get("execution_date")
-            if not execution_date or not isinstance(execution_date, datetime):
-                raise ValueError("Invalid execution date in Airflow context")
-            # Strip timezone for both
-            dt_no_timezone = execution_date.replace(tzinfo=None)
+            df = _add_import_metadata(df=df, context=context)
 
-            df["import_timestamp"] = dt_no_timezone
-            df["import_date"] = dt_no_timezone.date()
+        if add_snapshot_id:
+            df = _add_snapshot_id_metadata(df=df, context=context)
 
         df_info(df=df, df_name=f"{selecteur} - After processing")
 
@@ -189,6 +211,7 @@ def create_multi_files_input_etl_task(
     read_options: dict[str, Any] | None = None,
     use_required_cols: bool = False,
     add_import_date: bool = True,
+    add_snapshot_id: bool = True,
 ) -> Callable[..., XComArg]:
     """
     Create an ETL task that:
@@ -213,10 +236,7 @@ def create_multi_files_input_etl_task(
     @task(task_id=output_selecteur)
     def _task(**context) -> None:
         # Get project name from context
-        params = context.get("params", {})
-        nom_projet = params.get("nom_projet")
-        if not nom_projet:
-            raise ValueError("nom_projet must be defined in DAG parameters")
+        nom_projet = _get_project_name(context=context)
 
         # Initialize handler
         s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
@@ -249,14 +269,10 @@ def create_multi_files_input_etl_task(
         merged_df = process_func(*dfs)
 
         if add_import_date:
-            execution_date = context.get("execution_date")
-            if not execution_date or not isinstance(execution_date, datetime):
-                raise ValueError("Invalid execution date in Airflow context")
-            # Strip timezone for both
-            dt_no_timezone = execution_date.replace(tzinfo=None)
+            merged_df = _add_import_metadata(df=merged_df, context=context)
 
-            merged_df["import_timestamp"] = dt_no_timezone
-            merged_df["import_date"] = dt_no_timezone.date()
+        if add_snapshot_id:
+            merged_df = _add_snapshot_id_metadata(df=merged_df, context=context)
 
         df_info(df=merged_df, df_name=f"{output_selecteur} - After processing")
 
@@ -320,10 +336,7 @@ def create_action_to_file_etl_task(
     @task(task_id=task_id)
     def _task(**context):
         # Get project name from context
-        params = context.get("params", {})
-        nom_projet = params.get("nom_projet")
-        if not nom_projet:
-            raise ValueError("nom_projet must be defined in DAG parameters")
+        nom_projet = _get_project_name(context=context)
 
         # Initialize handler
         s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
