@@ -51,6 +51,9 @@ default_args = {
     },
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
-def consommation_des_batiments():
+def dag_verification():
     # Ordre des tâches
     chain(create_projet_snapshot(), get_projet_snapshot())
+
+
+dag_verification()
