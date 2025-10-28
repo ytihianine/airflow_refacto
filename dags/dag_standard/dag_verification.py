@@ -58,6 +58,9 @@ def dag_verification():
         pprint(context)
         pprint(context["dag"].__dict__)
         pprint(context["ti"].__dict__)
+        pprint(
+            context["ti"].xcom_pull(key="snapshot_id", task_ids="get_projet_snapshot")
+        )
 
     # Ordre des tâches
     chain(create_projet_snapshot(), get_projet_snapshot(), print_context())
