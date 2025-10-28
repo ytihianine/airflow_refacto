@@ -25,12 +25,12 @@ default_args = {
 
 # Définition du DAG
 @dag(
-    "dag_standard",
+    "dag_verification",
     schedule_interval=timedelta(seconds=30),
     max_active_runs=1,
     max_consecutive_failed_dag_runs=1,
     catchup=False,
-    tags=["SG", "STANDARD"],
+    tags=["SG", "Vérification"],
     description="Dag qui sert de standard pour l'ensemble des dags.",  # noqa
     default_args=default_args,
     params={
