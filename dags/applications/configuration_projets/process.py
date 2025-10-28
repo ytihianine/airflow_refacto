@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def replace_values(
@@ -140,6 +141,7 @@ def process_storage_path(df: pd.DataFrame) -> pd.DataFrame:
         .convert_dtypes()
     )
     df = df.dropna(subset=["id_projet", "id_selecteur"])
+    df["tbl_name"] = df["tbl_name"].replace(r"^\s+$", np.nan, regex=True)
 
     # Sort columns to match db cols order
     cols = df.columns
