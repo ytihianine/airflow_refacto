@@ -155,6 +155,7 @@ def get_projet_snapshot(
     Récupérer le dernier snapshot_id d'un projet.
 
     Args:
+        nom_projet (optionnel): Le nom du projet. A spécifier lorsque le nom du projet dans le DAG est différent de celui qui génère le snapshot_id,
         pg_conn_id: Connexion Postgres. Valeur par défaut
 
     Returns:
