@@ -17,6 +17,7 @@ from utils.tasks.sql import (
     delete_tmp_tables,
     create_projet_snapshot,
     get_projet_snapshot,
+    refresh_views,
     # set_dataset_last_update_date,
 )
 
@@ -129,6 +130,7 @@ def oad():
         copy_tmp_table_to_real_table(
             load_strategy=LoadStrategy.APPEND,
         ),
+        refresh_views(),
         copy_s3_files(bucket="dsci"),
         del_s3_files(bucket="dsci"),
         delete_tmp_tables(),
