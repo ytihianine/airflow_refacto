@@ -6,7 +6,7 @@ CREATE TABLE certificat_igc.aip (
     aip_mail TEXT,
     aip_balf_mail TEXT,
     aip_direction TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL
 ) PARTITION BY RANGE (import_date);
 
@@ -29,6 +29,6 @@ CREATE TABLE certificat_igc.certificat (
     etat TEXT,
     version TEXT,
     version_serveur TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL
 ) PARTITION BY RANGE (import_date);

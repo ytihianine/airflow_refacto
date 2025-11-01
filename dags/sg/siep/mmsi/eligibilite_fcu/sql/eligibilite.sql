@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS siep.bien_eligibilite_fcu;
 CREATE TABLE IF NOT EXISTS siep.bien_eligibilite_fcu (
     id BIGSERIAL,
-    code_bat_ter BIGINT NOT NULL REFERENCES siep.bien(code_bat_ter),
+    code_bat_ter BIGINT NOT NULL,
     is_eligible BOOLEAN,
     distance INT,
     in_pdp BOOLEAN,
