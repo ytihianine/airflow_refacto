@@ -9,6 +9,7 @@ from utils.tasks.s3 import copy_s3_files, del_s3_files
 
 from dags.applications.catalogue.tasks import (
     update_referentiels,
+    pg_catalog,
     source_grist,
     source_database,
     compare_catalogues,

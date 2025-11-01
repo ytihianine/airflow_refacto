@@ -2,6 +2,41 @@ DROP SCHEMA documentation CASCADE;
 CREATE SCHEMA documentation;
 
 CREATE TABLE documentation.dataset (
+    id SERIAL,
+    is_visible BOOLEAN,
+    is_public BOOLEAN,
+    title TEXT,
+    description TEXT,
+    keyword TEXT[],
+    id_structure INTEGER REFERENCES documentation.ref_structures(id),
+    id_service INTEGER REFERENCES documentation.ref_service(id),
+    id_system_information INTEGER REFERENCES documentation.ref_systeme_info(id),
+    id_contact_point INTEGER REFERENCES documentation.ref_contact(id),
+    issued TIMESTAMP,
+    modified TIMESTAMP,
+    id_frequency INTEGER REFERENCES documentation.ref_frequence(id),
+    id_spatiale INTEGER REFERENCES documentation.ref_couverture_geographique(id),
+    landing_page TEXT,
+    id_format INTEGER REFERENCES documentation.ref_source_format(id),
+    id_licence INTEGER REFERENCES documentation.ref_licence(id),
+    id_theme INTEGER REFERENCES documentation.ref_theme(id),
+    donnees_ouvertes BOOLEAN,
+    url_open_data TEXT,
+    table_schema TEXT NOT NULL,
+    table_name TEXT NOT NULL
+);
+
+CREATE TABLE documentation.dataset_dictionnaire(
+    id SERIAL,
+    id_dataset INTEGER REFERENCES documentation.dataset(id),
+    variable TEXT,
+    unite TEXT,
+    commentaire TEXT,
+    data_type INTEGER REFERENCES documentation.ref_theme(id)
+);
+
+
+CREATE TABLE documentation.dataset (
     id SERIAL UNIQUE,
 
     -- Basic identification

@@ -4,12 +4,16 @@ import pandas as pd
 from infra.database.factory import create_db_handler
 from infra.database.postgres import PostgresDBHandler
 
+from dags.applications.catalogue import process
 
-def get_db_dataset_dictionnaire() -> pd.DataFrame:
+
+def extract_pg_catalog() -> pd.DataFrame:
     # Hook
     db_handler = cast(
         PostgresDBHandler, create_db_handler(connection_id="db_data_store")
     )
+
+    # Get postgres catalog
     df = db_handler.fetch_df(
         query="""
             SELECT
@@ -28,5 +32,8 @@ def get_db_dataset_dictionnaire() -> pd.DataFrame:
                 AND t.table_schema NOT LIKE '%_file_upload';
         """
     )
+
+    # Processing
+    df = process.process_pg_catalog(df=df)
 
     return df
