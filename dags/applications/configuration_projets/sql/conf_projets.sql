@@ -30,8 +30,8 @@ CREATE TABLE conf_projets.projet_snapshot (
   id_projet INTEGER,
   snapshot_id UUID,
   creation_timestamp TIMESTAMP,
-  PRIMARY KEY (id_projet, snapshot_id),
-  FOREIGN KEY(id_projet) REFERENCES conf_projets.projet(id)
+  PRIMARY KEY (id_projet, snapshot_id)
+  -- FOREIGN KEY(id_projet) REFERENCES conf_projets.projet(id)
 );
 
 DROP TABLE IF EXISTS conf_projets.selecteur CASCADE;
@@ -98,20 +98,29 @@ CREATE TABLE IF NOT EXISTS conf_projets.user (
 );
 
 -- View to simplify function usage !
-CREATE VIEW conf_projets.vue_conf_projets AS
-  SELECT cpp.nom_projet, cpselec.selecteur,
-      cpsource.nom_source,
-      cpstorage.filename, cpstorage.local_tmp_dir, cpstorage.s3_bucket,
-      cpstorage.s3_key, cpstorage.s3_tmp_key, cpstorage.tbl_name, cpstorage.tbl_order,
-      CONCAT(cpstorage.local_tmp_dir, '/', cpstorage.filename) as filepath_local,
-      CONCAT(cpstorage.s3_key, '/', cpstorage.filename) as filepath_s3,
-      CONCAT(cpstorage.s3_key, '/', cpsource.nom_source) as filepath_source_s3
-  FROM conf_projets.projet cpp
-  LEFT JOIN conf_projets.selecteur cpselec ON cpselec.id_projet = cpp.id
-  LEFT JOIN conf_projets.source cpsource ON cpsource.id_projet = cpp.id
-      AND cpsource.id_selecteur = cpselec.id
-  LEFT JOIN conf_projets.storage_path cpstorage ON cpstorage.id_projet = cpp.id
-      AND cpstorage.id_selecteur = cpselec.id;
+CREATE OR REPLACE VIEW conf_projets.vue_conf_projets
+AS SELECT cpp.nom_projet,
+    cpselec.selecteur,
+    cpsource.nom_source,
+    cpstorage.filename,
+    cpstorage.local_tmp_dir,
+    cpstorage.s3_bucket,
+    cpstorage.s3_key,
+    cpstorage.s3_tmp_key,
+    cpstorage.tbl_name,
+    cpstorage.tbl_order,
+    concat(cpstorage.local_tmp_dir, '/', cpstorage.filename) AS filepath_local,
+    concat(cpstorage.local_tmp_dir, '/', cpstorage.filename) AS filepath_tmp_local,
+    concat(cpstorage.s3_tmp_key, '/', cpstorage.filename) AS filepath_tmp_s3,
+    concat(cpstorage.s3_key, '/', cpstorage.filename) AS filepath_s3,
+    CASE
+      WHEN cpsource.nom_source IS NULL THEN NULL
+      ELSE concat(cpstorage.s3_key, '/', cpsource.nom_source)
+    END AS filepath_source_s3
+   FROM conf_projets.projet cpp
+     LEFT JOIN conf_projets.selecteur cpselec ON cpselec.id_projet = cpp.id
+     LEFT JOIN conf_projets.source cpsource ON cpsource.id_projet = cpp.id AND cpsource.id_selecteur = cpselec.id
+     LEFT JOIN conf_projets.storage_path cpstorage ON cpstorage.id_projet = cpp.id AND cpstorage.id_selecteur = cpselec.id
 ;
 
 CREATE VIEW conf_projets.vue_cols_mapping AS
