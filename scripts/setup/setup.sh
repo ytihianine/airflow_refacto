@@ -11,7 +11,7 @@ echo System updated !
 
 # Installation des packages
 # Pour travailler avec le projet en mode package
-pip install -e .
+pip install -e ../..
 # Être dans les même conditions que l'instance Airflow en cours
 pip install "apache-airflow==$AIRFLOW_VERSION" \
     --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-$AIRFLOW_VERSION/constraints-$PYTHON_VERSION.txt"
