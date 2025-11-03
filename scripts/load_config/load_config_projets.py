@@ -38,7 +38,7 @@ pg_cur = pg_conn.cursor()
 # for each tbl
 for tbl in tbl_ordered:
     # read data for sqlite file
-    df = df = pd.read_sql_query(
+    df = pd.read_sql_query(
         sql=f"SELECT * FROM {tbl["tbl_name"].capitalize()}", con=sqlite_conn
     )
     # apply process function
