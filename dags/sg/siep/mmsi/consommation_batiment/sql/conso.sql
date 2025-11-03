@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle (
     facture_granule_bois_ttc DOUBLE PRECISION,
     -- Propane
     conso_propane DOUBLE PRECISION,
+    conso_propane_surfacique DOUBLE PRECISION,
     -- conso_surfacique_propane DOUBLE PRECISION,
     facture_propane_htva DOUBLE PRECISION,
     facture_propane_ttc DOUBLE PRECISION,
