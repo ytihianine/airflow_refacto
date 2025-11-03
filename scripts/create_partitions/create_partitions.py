@@ -29,7 +29,6 @@ def create_partition(schema: str, tbl: str, range_start: datetime, range_end: da
 
     try:
         print(f"Creating partition {partition_name} for {tbl_name}.")
-        # Créer la partition
         create_sql = f"""
             CREATE TABLE IF NOT EXISTS {schema}.{partition_name}
             PARTITION OF {schema}.{tbl_name}
