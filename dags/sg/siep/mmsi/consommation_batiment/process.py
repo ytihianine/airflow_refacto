@@ -57,13 +57,6 @@ def process_conso_mensuelles(df: pd.DataFrame) -> pd.DataFrame:
     # Etape 2
     df = corriger_consommation(df_conso_mens=df)
 
-    # Etape 3 - Ajouter les colonnes nécessaires
-    # Les colonnes présentes dans le jeu source peuvent varier d'un export à l'autre...
-    cols_to_add = ["facture_fioul_ttc"]
-    for col in cols_to_add:
-        if col not in df.columns():
-            df[col] = np.nan
-
     return df
 
 
