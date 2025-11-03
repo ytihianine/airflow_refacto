@@ -87,7 +87,7 @@ def create_parquet_converter_task(
                     [" ".join(colname.split()) for colname in df.columns],
                     axis="columns",
                 )
-                df = df.rename(columns=cols_mapping)
+                df = df.rename(columns=cols_mapping, errors="raise")
                 df = df.drop(columns=list(set(df.columns) - set(cols_mapping.values())))
 
         # Apply custom processing
