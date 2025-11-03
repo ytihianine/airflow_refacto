@@ -26,7 +26,6 @@ def create_partition(schema: str, tbl: str, range_start: datetime, range_end: da
     partition_name = (
         f"{tbl_name}_{range_start.strftime('%Y%m%d')}_{range_end.strftime('%Y%m%d')}"
     )
-    # print(partition_name)
 
     try:
         print(f"Creating partition {partition_name} for {tbl_name}.")
