@@ -7,7 +7,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import MailStatus, create_airflow_callback
-from utils.config.dag_params import create_dag_params
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.config.tasks import get_s3_keys_source, get_projet_config
 from utils.tasks.sql import (
     LoadStrategy,
@@ -63,7 +63,7 @@ default_args = {
     catchup=False,
     tags=["DEV", "SG", "SIEP", "MMSI", "OAD"],
     description="""Traitement des données de l'immobilier. Base""",
-    default_args=default_args,
+    default_args=create_default_args(retries=0),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="siep",

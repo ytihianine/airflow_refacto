@@ -6,7 +6,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
-from utils.config.dag_params import create_dag_params
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -53,7 +53,7 @@ default_args = {
     catchup=False,
     tags=["CGEFI", "BAROMETRE"],
     description="""Pipeline de traitement des données pour le Baromètre""",
-    default_args=default_args,
+    default_args=create_default_args(retries=0),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="cgefi",

@@ -4,7 +4,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
-from utils.config.dag_params import create_dag_params
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.config.tasks import get_projet_config
 from utils.tasks.sql import (
     create_tmp_tables,
@@ -18,17 +18,6 @@ from utils.tasks.s3 import (
 )
 
 from dags.sg.siep.mmsi.eligibilite_fcu.task import eligibilite_fcu_to_file
-
-
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay": timedelta(seconds=20),
-}
 
 
 nom_projet = "France Chaleur Urbaine (FCU)"
@@ -45,7 +34,7 @@ LINK_DOC_DATA = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.
     tags=["SG", "SIEP", "PRODUCTION", "BATIMENT", "FCU"],
     description="Récupérer pour chaque bâtiment de l'OAD son éligibilité au réseau Franche Chaleur Urbaine (FCU)",  # noqa
     max_consecutive_failed_dag_runs=1,
-    default_args=default_args,
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=20)),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="siep",

@@ -4,7 +4,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
-from utils.config.dag_params import create_dag_params
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.config.tasks import get_projet_config
 from utils.tasks.sql import (
     create_tmp_tables,
@@ -31,16 +31,6 @@ nom_projet = "API Opera"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/api_operat?ref_type=heads"  # noqa
 LINK_DOC_DATA = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay": timedelta(minutes=1),
-}
-
 
 # Définition du DAG
 @dag(
@@ -51,7 +41,7 @@ default_args = {
     tags=["SG", "SIEP", "PRODUCTION", "BATIMENT", "ADEME"],
     description="Pipeline qui réalise des appels sur l'API Operat (ADEME)",
     max_consecutive_failed_dag_runs=1,
-    default_args=default_args,
+    default_args=create_default_args(retries=1, retry_delay=timedelta(minutes=1)),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="siep",

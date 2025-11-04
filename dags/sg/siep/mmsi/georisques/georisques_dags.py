@@ -5,7 +5,7 @@ from airflow.utils.dates import days_ago
 
 
 from infra.mails.sender import create_airflow_callback, MailStatus
-from utils.config.dag_params import create_dag_params
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -25,16 +25,6 @@ nom_projet = "Géorisques"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/eligibilite_fcu?ref_type=heads"  # noqa
 LINK_DOC_DATA = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-    "retry_delay": timedelta(minutes=1),
-}
-
 
 # Définition du DAG
 @dag(
@@ -45,7 +35,7 @@ default_args = {
     tags=["SG", "SIEP", "PRODUCTION", "BATIMENT", "GEORISQUES"],
     description="Pipeline qui check pour chaque bâtiment les géorisques associés",
     max_consecutive_failed_dag_runs=1,
-    default_args=default_args,
+    default_args=create_default_args(retries=0),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="siep",
