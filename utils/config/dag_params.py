@@ -24,3 +24,40 @@ def create_default_args(
         args["retry_delay"] = retry_delay
     args.update(kwargs)
     return args
+
+
+def create_dag_params(
+    nom_projet: str,
+    prod_schema: str,
+    lien_pipeline: str = "Non renseigné",
+    lien_donnees: str = "Non renseigné",
+    tmp_schema: str = DEFAULT_TMP_SCHEMA,
+    mail_enable: bool = False,
+    mail_to: Optional[list[str]] = None,
+    mail_cc: Optional[list[str]] = None,
+) -> dict:
+    """Create standard params for DAGs."""
+    if mail_to is None:
+        mail_to = DEFAULT_EMAIL_TO
+
+    if isinstance(mail_cc, list):
+        mail_cc = list(set(mail_cc + DEFAULT_EMAIL_CC))
+    if mail_cc is None:
+        mail_cc = DEFAULT_EMAIL_CC
+
+    return {
+        "nom_projet": nom_projet,
+        "db": {
+            "prod_schema": prod_schema,
+            "tmp_schema": tmp_schema,
+        },
+        "mail": {
+            "enable": mail_enable,
+            "to": mail_to,
+            "cc": mail_cc,
+        },
+        "docs": {
+            "lien_pipeline": lien_pipeline,
+            "lien_donnees": lien_donnees,
+        },
+    }

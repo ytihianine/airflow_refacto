@@ -30,12 +30,7 @@ LINK_DOC_DATA = (
 
 @dag(
     dag_id="carte_identite_mef",
-    default_args=create_default_args(
-        retries=1,
-        retry_delay=timedelta(seconds=20),
-        lien_pipeline=LINK_DOC_PIPELINE,
-        lien_donnees=LINK_DOC_DATA,
-    ),
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=20)),
     schedule_interval="*/8 8-13,14-19 * * 1-5",
     catchup=False,
     max_consecutive_failed_dag_runs=1,

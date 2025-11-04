@@ -32,12 +32,7 @@ LINK_DOC_DATA = (
 @dag(
     dag_id="accompagnements_dsci",
     schedule_interval="*/5 8-13,14-19 * * 1-5",
-    default_args=create_default_args(
-        retries=1,
-        retry_delay=timedelta(seconds=30),
-        lien_pipeline=LINK_DOC_PIPELINE,
-        lien_donnees=LINK_DOC_DATA,
-    ),
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=30)),
     catchup=False,
     params={
         "nom_projet": nom_projet,

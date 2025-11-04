@@ -40,12 +40,7 @@ LINK_DOC_DONNEE = (
     description="""Pipeline qui récupère les nouvelles données dans Grist
         pour actualiser le tableau de bord de suivi d'activité du CGEFI""",
     max_consecutive_failed_dag_runs=1,
-    default_args=create_default_args(
-        retries=1,
-        retry_delay=timedelta(seconds=30),
-        lien_pipeline=LINK_DOC_PIPELINE,
-        lien_donnees=LINK_DOC_DONNEE,
-    ),
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=30)),
     params={
         "nom_projet": nom_projet,
         "db": {

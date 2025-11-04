@@ -41,12 +41,7 @@ LINK_DOC_DATA = (
     description="""Pipeline qui scanne les nouvelles données dans Grist
         pour actualiser le tableau de bord du SIRCOM""",
     max_consecutive_failed_dag_runs=1,
-    default_args=create_default_args(
-        retries=1,
-        retry_delay=timedelta(seconds=30),
-        lien_pipeline=LINK_DOC_PIPELINE,
-        lien_donnees=LINK_DOC_DATA,
-    ),
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=30)),
     params={
         "nom_projet": nom_projet,
         "db": {
