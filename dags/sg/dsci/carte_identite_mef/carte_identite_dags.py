@@ -10,6 +10,7 @@ from utils.tasks.sql import (
     delete_tmp_tables,
 )
 from utils.config.tasks import get_projet_config
+from utils.config.dag_params import create_default_args
 from utils.tasks.grist import download_grist_doc_to_s3
 from dags.sg.dsci.carte_identite_mef.tasks import (
     validate_params,
@@ -27,20 +28,14 @@ LINK_DOC_DATA = (
 )
 
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-    "retry_delay": timedelta(seconds=20),
-}
-
-
 @dag(
     dag_id="carte_identite_mef",
-    default_args=default_args,
+    default_args=create_default_args(
+        retries=1,
+        retry_delay=timedelta(seconds=20),
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+    ),
     schedule_interval="*/8 8-13,14-19 * * 1-5",
     catchup=False,
     max_consecutive_failed_dag_runs=1,

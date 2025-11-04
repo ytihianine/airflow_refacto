@@ -1,3 +1,4 @@
+from datetime import timedelta
 from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
@@ -10,6 +11,7 @@ from utils.tasks.sql import (
 )
 from utils.tasks.grist import download_grist_doc_to_s3
 from utils.config.tasks import get_projet_config
+from utils.config.dag_params import create_default_args
 
 from dags.sg.dsci.accompagnements_dsci.tasks import (
     validate_params,
@@ -27,21 +29,16 @@ LINK_DOC_DATA = (
 )
 
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-}
-
-
 @dag(
-    default_args=default_args,
-    schedule_interval="*/5 8-13,14-19 * * 1-5",
-    catchup=False,
     dag_id="accompagnements_dsci",
+    schedule_interval="*/5 8-13,14-19 * * 1-5",
+    default_args=create_default_args(
+        retries=1,
+        retry_delay=timedelta(seconds=30),
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+    ),
+    catchup=False,
     params={
         "nom_projet": nom_projet,
         "db": {

@@ -11,6 +11,7 @@ from utils.tasks.sql import (
     delete_tmp_tables,
 )
 from utils.config.tasks import get_projet_config
+from utils.config.dag_params import create_default_args
 from utils.tasks.grist import download_grist_doc_to_s3
 from utils.tasks.s3 import del_s3_files
 
@@ -28,16 +29,6 @@ LINK_DOC_DONNEE = (
     "https://grist.numerique.gouv.fr/o/catalogue/k9LvttaYoxe6/catalogage-MEF"
 )
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-    "retry_delay": timedelta(seconds=10),
-}
-
 
 # Définition du DAG
 @dag(
@@ -49,7 +40,12 @@ default_args = {
     description="""Pipeline qui récupère les nouvelles données dans Grist
         pour actualiser le tableau de bord de suivi d'activité du CGEFI""",
     max_consecutive_failed_dag_runs=1,
-    default_args=default_args,
+    default_args=create_default_args(
+        retries=1,
+        retry_delay=timedelta(seconds=30),
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DONNEE,
+    ),
     params={
         "nom_projet": nom_projet,
         "db": {
