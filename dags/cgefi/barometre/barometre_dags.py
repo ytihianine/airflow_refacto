@@ -6,6 +6,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.config.dag_params import create_dag_params
 from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -27,6 +28,7 @@ from dags.cgefi.barometre.tasks import (
 
 
 nom_projet = "Baromètre"
+mail_to = ["corpus.cgefi@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
 LINK_DOC_DATA = ""  # noqa
 
@@ -52,22 +54,13 @@ default_args = {
     tags=["CGEFI", "BAROMETRE"],
     description="""Pipeline de traitement des données pour le Baromètre""",
     default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "cgefi",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["corpus.cgefi@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DATA,
-        },
-    },
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="cgefi",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def barometre():

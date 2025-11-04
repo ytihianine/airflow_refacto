@@ -6,6 +6,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.config.dag_params import create_dag_params
 from utils.tasks.grist import download_grist_doc_to_s3
 from utils.tasks.sql import (
     create_tmp_tables,
@@ -33,7 +34,7 @@ from dags.dge.carto_rem.tasks import (
 # Mails
 nom_projet = "Cartographie rémunération"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
-LINK_DOC_DONNEE = ""  # noqa
+LINK_DOC_DATA = ""  # noqa
 
 
 default_args = {
@@ -57,22 +58,13 @@ default_args = {
     tags=["DGE", "RH"],
     description="""DGE - Cartographie rémunération""",
     default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "cartographie_remuneration",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["yanis.tihianine@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DONNEE,
-        },
-    },
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="cartographie_remuneration",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def cartographie_remuneration():

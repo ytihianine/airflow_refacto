@@ -11,7 +11,7 @@ from utils.tasks.sql import (
     delete_tmp_tables,
 )
 from utils.config.tasks import get_projet_config
-from utils.config.dag_params import create_default_args
+from utils.config.dag_params import create_default_args, create_dag_params
 from utils.tasks.grist import download_grist_doc_to_s3
 from dags.sg.sircom.tdb_interne.tasks import (
     validate_params,
@@ -25,6 +25,7 @@ from dags.sg.sircom.tdb_interne.tasks import (
 
 # Mails
 nom_projet = "TdB interne - SIRCOM"
+mail_to = ["brigitte.lekime@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/carte_identite_mef?ref_type=heads"  # noqa
 LINK_DOC_DATA = (
     "https://grist.numerique.gouv.fr/o/catalogue/k9LvttaYoxe6/catalogage-MEF"
@@ -42,25 +43,13 @@ LINK_DOC_DATA = (
         pour actualiser le tableau de bord du SIRCOM""",
     max_consecutive_failed_dag_runs=1,
     default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=30)),
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "sircom",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": [
-                "brigitte.lekime@finances.gouv.fr",
-                "yanis.tihianine@finances.gouv.fr",
-            ],
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DATA,
-        },
-    },
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="sircom",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),

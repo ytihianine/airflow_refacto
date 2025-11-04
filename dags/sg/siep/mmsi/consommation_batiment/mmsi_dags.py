@@ -7,6 +7,7 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
 
+from utils.config.dag_params import create_dag_params
 from utils.tasks.sql import (
     create_tmp_tables,
     import_file_to_db,
@@ -57,22 +58,13 @@ default_args = {
     tags=["SG", "SIEP", "PRODUCTION", "BATIMENT", "CONSOMMATION"],
     description="Pipeline de traitement des données de consommation des bâtiments. Source des données: OSFI",  # noqa
     default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "siep",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["mmsi.siep@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DATA,
-        },
-    },
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="siep",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),

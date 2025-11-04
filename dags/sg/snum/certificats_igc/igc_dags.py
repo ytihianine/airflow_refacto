@@ -5,6 +5,7 @@ from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.config.dag_params import create_dag_params
 from utils.tasks.sql import (
     create_tmp_tables,
     copy_tmp_table_to_real_table,
@@ -49,22 +50,13 @@ default_args = {
     tags=["SG", "SNUM"],
     description="""SG - Certificat IGC""",
     default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "certificat_igc",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["yanis.tihianine@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DATA,
-        },
-    },
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="certificat_igc",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def certificats_igc():

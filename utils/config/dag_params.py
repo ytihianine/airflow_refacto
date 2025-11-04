@@ -32,7 +32,7 @@ def create_dag_params(
     lien_pipeline: str = "Non renseigné",
     lien_donnees: str = "Non renseigné",
     tmp_schema: str = DEFAULT_TMP_SCHEMA,
-    mail_enable: bool = False,
+    mail_enable: bool = True,
     mail_to: Optional[list[str]] = None,
     mail_cc: Optional[list[str]] = None,
 ) -> dict:
