@@ -156,14 +156,14 @@ def create_file_etl_task(
         nom_projet = _get_project_name(context=context)
 
         # Initialize hooks
-        s3_hook = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
 
         # Get config values related to the task
         task_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
 
         # Get data of table
         df = read_dataframe(
-            file_handler=s3_hook,
+            file_handler=s3_handler,
             file_path=task_config.filepath_source_s3,
             read_options=read_options,
         )
@@ -197,7 +197,7 @@ def create_file_etl_task(
         df_info(df=df, df_name=f"{selecteur} - After processing")
 
         # Export
-        s3_hook.write(
+        s3_handler.write(
             file_path=str(task_config.filepath_tmp_s3),
             content=df.to_parquet(path=None, index=False),
         )
