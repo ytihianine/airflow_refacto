@@ -1,5 +1,8 @@
 import pandas as pd
+from pandas._typing import DateTimeErrorChoices
 import numpy as np
+
+from utils.control.text import normalize_txt_column
 
 corr_mois = {
     "janvier": "01-janv",
@@ -15,6 +18,22 @@ corr_mois = {
     "novembre": "11-sept",
     "décembre": "12-dec",
 }
+
+corr_num_mois = {
+    1: "janvier",
+    2: "février",
+    3: "mars",
+    4: "avril",
+    5: "mai",
+    6: "juin",
+    7: "juillet",
+    8: "août",
+    9: "septembre",
+    10: "octobre",
+    11: "novembre",
+    12: "décembre",
+}
+
 
 corr_type_ej = {
     "ZBAU": "ZBAU : Baux",
@@ -53,7 +72,10 @@ corr_nature_sous_nature = {
 
 
 def convert_str_cols_to_date(
-    df: pd.DataFrame, cols: list[str], str_date_format: str, errors: str
+    df: pd.DataFrame,
+    cols: list[str],
+    str_date_format: str,
+    errors: DateTimeErrorChoices,
 ) -> pd.DataFrame:
     if isinstance(cols, str):
         cols = [cols]
@@ -63,6 +85,15 @@ def convert_str_cols_to_date(
             df[date_col], format=str_date_format, errors=errors
         )
 
+    return df
+
+
+def normalize_whitespace_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Normalize whitespace for multiple columns at once."""
+    df = df.copy()
+    for col in columns:
+        if col in df.columns:
+            df[col] = normalize_txt_column(df[col])
     return df
 
 
@@ -77,6 +108,8 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
     ].fillna("Ind")
 
     # Nettoyer les champs textuels
+    txt_cols = ["centre_financer", "centre_cout"]
+    df = normalize_whitespace_columns(df, txt_cols)
 
     # Retirer les lignes sans date de réplication
     df = df.loc[df["date_replication"].notna()]
@@ -131,6 +164,8 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     ].fillna("Ind")
 
     # Nettoyer les champs textuels
+    txt_cols = ["centre_financer", "centre_cout"]
+    df = normalize_whitespace_columns(df, txt_cols)
 
     # Ajouter les colonnes complémentaires
     df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
@@ -152,9 +187,11 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     df[["centre_financer"]] = df[["centre_financer"]].fillna("Ind")
 
     # Nettoyer les champs textuels
+    txt_cols = ["centre_financer", "societe", "statut_piece", "nature_sous_nature"]
+    df = normalize_whitespace_columns(df, txt_cols)
 
     # Filtrer les lignes
-    df = df.loc[df["date_replication"] == "Comptabiliser"]
+    df = df.loc[df["statut_piece"] == "Comptabiliser"]
 
     # Ajouter les colonnes complémentaires
     df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
@@ -171,9 +208,9 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
         df["nature_sous_nature"].map(corr_nature_sous_nature).fillna("non determine")
     )
     df["nat_snat_groupe"] = np.where(
-        df["nature_sous_nature"].isin(
-            ["2.1", "2.2", "2.3"], "Commande publique", "Hors Commande publique"
-        )
+        df["nature_sous_nature"].isin(["2.1", "2.2", "2.3"]),
+        "Commande publique",
+        "Hors Commande publique",
     )
 
     return df
@@ -181,31 +218,67 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
     """fichier INFBUD55"""
+    # Nettoyer les champs textuels
+    txt_cols = ["societe", "type_flux"]
+    df = normalize_whitespace_columns(df, txt_cols)
+
     # Filtrer les lignes
+    df = df.loc[df["type_flux"] == "Flux 3"]
+
     # Ajouter les colonnes complémentaires
+    df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
 
     return df
 
 
 def process_demande_paiement_sfp(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZSFP_SUIVI"""
+    # Nettoyer les champs textuels
+    txt_cols = ["societe", "statut_sfp", "type_flux", "automatisation_wf_cpt"]
+    df = normalize_whitespace_columns(df, txt_cols)
+
     # Ajouter les colonnes complémentaires
+    df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
+
     return df
 
 
 def process_demande_paiement_carte_achat(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZDEP61"""
+    # Nettoyer les champs textuels
+    txt_cols = ["societe", "statut_dp", "type_flux", "automatisation_wf_cpt"]
+    df = normalize_whitespace_columns(df, txt_cols)
+
     # Filtrer les lignes
+    df = df.loc[df["statut_dp"] == "Pré-enregistrée"]
+
+    # Remplacer les valeurs nulles
+    df["niveau_carte_achat"] = np.where(
+        (df["niveau_carte_achat"].isna()) & (df["automatisation_wf_cpt"].isna()),
+        "N1",
+        df["niveau_carte_achat"],
+    )
+
     # Ajouter les colonnes complémentaires
+    df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
+
     # Suppression des doublons
+    df = df.drop_duplicates(subset=["id_dp"])
     return df
 
 
 def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZJDP"""
+    # Nettoyer les champs textuels
+    txt_cols = ["societe", "statut_dp", "type_flux", "automatisation_wf_cpt"]
+    df = normalize_whitespace_columns(df, txt_cols)
+
     # Ajouter les colonnes complémentaires
+
     # Suppression des doublons
+
     # En attente de confirmation
+
     return df
 
 
@@ -214,7 +287,31 @@ def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
 # ======================================================
 def process_delai_global_paiement(df: pd.DataFrame) -> pd.DataFrame:
     """fichier INFDEP56"""
+    # Nettoyer les champs textuels
+    txt_cols = [
+        "type_piece",
+        "nature_sous_nature",
+        "centre_cout",
+        "centre_financer",
+        "service_executant",
+        "societe",
+    ]
+    df = normalize_whitespace_columns(df, txt_cols)
+
+    # Remplacer les valeurs nulles
+    df["centre_cout"] = df["centre_cout"].replace({"#": "Ind"})
+    df[["centre_financer", "centre_cout"]] = df[
+        ["centre_financer", "centre_cout"]
+    ].fillna("Ind")
+
     # Filtrer les lignes
+    df = df.loc[df["societe"].isin(["ADCE", "CSND"])]
+
     # Ajouter les colonnes complémentaires
+    df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
+    df["mois_nom"] = df["periode_comptable"].map(corr_num_mois).fillna("inconnu")
+
     # Arrondir les valeurs
+    df["delai_global_paiement"] = df["delai_global_paiement"].round(2)
+
     return df
