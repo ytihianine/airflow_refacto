@@ -215,9 +215,7 @@ def ensure_partition(
 
     db = create_db_handler(pg_conn_id)
     # Get timing information
-    execution_date = context.get("execution_date")
-    if not execution_date or not isinstance(execution_date, datetime):
-        raise ValueError("Invalid execution date in Airflow context")
+    execution_date = get_execution_date(context=context)
 
     # Get partition period range
     from_date, to_date = determine_partition_period(time_period, execution_date)

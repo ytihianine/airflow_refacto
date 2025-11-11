@@ -9,7 +9,7 @@ from airflow.decorators import task
 
 from infra.file_handling.exceptions import FileHandlerError, FileNotFoundError
 from infra.file_handling.factory import create_file_handler
-from utils.config.dag_params import get_project_name
+from utils.config.dag_params import get_execution_date, get_project_name
 from utils.config.tasks import get_projet_config
 from utils.config.types import FileHandlerType
 from utils.config.vars import (
@@ -40,9 +40,7 @@ def copy_s3_files(
     )
 
     # Get timing information
-    execution_date = context.get("execution_date")
-    if not execution_date or not isinstance(execution_date, datetime):
-        raise ValueError("Invalid execution date in Airflow context")
+    execution_date = get_execution_date(context=context)
 
     paris_tz = pytz.timezone("Europe/Paris")
     execution_date = execution_date.astimezone(paris_tz)

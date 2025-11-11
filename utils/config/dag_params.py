@@ -21,13 +21,9 @@ def get_project_name(context: dict) -> str:
 def get_execution_date(context: dict) -> datetime:
     """Extract and validate project name from context."""
     execution_date = context.get("execution_date")
-    if not execution_date:
-        raise ValueError(
-            "execution_date is not defined. Must be a dag error must be defined in DAG parameters"
-        )
 
-    if not isinstance(execution_date, datetime):
-        raise ValueError("execution_date must be a datetime object")
+    if not execution_date or not isinstance(execution_date, datetime):
+        raise ValueError("Invalid execution date in Airflow context")
 
     return execution_date
 

@@ -17,15 +17,13 @@ from utils.config.tasks import (
     format_cols_mapping,
     get_required_cols,
 )
-from utils.config.dag_params import get_project_name
+from utils.config.dag_params import get_execution_date, get_project_name
 from utils.config.types import P, R, DatabaseType
 
 
 def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
     """Add import timestamp and date columns."""
-    execution_date = context.get("execution_date")
-    if not execution_date or not isinstance(execution_date, datetime):
-        raise ValueError("Invalid execution date in Airflow context")
+    execution_date = get_execution_date(context=context)
 
     dt_no_timezone = execution_date.replace(tzinfo=None)
     df["import_timestamp"] = dt_no_timezone
