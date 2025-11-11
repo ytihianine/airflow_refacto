@@ -9,6 +9,7 @@ import pandas as pd
 from infra.file_handling.factory import create_default_s3_handler
 from infra.file_handling.dataframe import read_dataframe
 
+from utils.config.dag_params import _get_project_name
 from utils.dataframe import df_info
 from utils.config.tasks import (
     get_selecteur_config,
@@ -51,10 +52,7 @@ def create_parquet_converter_task(
         """Convert file to Parquet format and upload to S3."""
         s3_handler = create_default_s3_handler()
 
-        params = context.get("params", {})
-        nom_projet = params.get("nom_projet")
-        if not nom_projet:
-            raise ValueError("nom_projet must be defined in DAG parameters")
+        nom_projet = _get_project_name(context=context)
 
         # Get input file path
         logging.info(

@@ -17,15 +17,8 @@ from utils.config.tasks import (
     format_cols_mapping,
     get_required_cols,
 )
+from utils.config.dag_params import _get_project_name
 from utils.config.types import P, R
-
-
-def _get_project_name(context: dict) -> str:
-    """Extract and validate project name from context."""
-    nom_projet = context.get("params", {}).get("nom_projet")
-    if not nom_projet:
-        raise ValueError("nom_projet must be defined in DAG parameters")
-    return nom_projet
 
 
 def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:

@@ -8,6 +8,14 @@ DEFAULT_EMAIL_CC = ["labo-data@finances.gouv.fr"]
 DEFAULT_TMP_SCHEMA = "temporaire"
 
 
+def _get_project_name(context: dict) -> str:
+    """Extract and validate project name from context."""
+    nom_projet = context.get("params", {}).get("nom_projet")
+    if not nom_projet:
+        raise ValueError("nom_projet must be defined in DAG parameters")
+    return nom_projet
+
+
 def create_default_args(
     retries: int = 0, retry_delay: Optional[timedelta] = None, **kwargs
 ) -> dict:
