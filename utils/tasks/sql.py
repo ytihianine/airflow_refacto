@@ -15,7 +15,7 @@ from infra.database.postgres import PostgresDBHandler
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 
-from utils.config.dag_params import get_project_name
+from utils.config.dag_params import get_db_info, get_project_name
 from utils.config.tasks import get_projet_config, get_tbl_names
 from utils.config.types import SelecteurConfig
 from utils.control.structures import are_lists_egal
@@ -217,11 +217,8 @@ def ensure_partition(
     """
     nom_projet = get_project_name(context=context)
 
-    db_info = context.get("params", {}).get("db", {})
-    prod_schema = db_info.get("prod_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
+    db_info = get_db_info(context=context)
+    prod_schema = db_info.get("prod_schema")
 
     # Récupérer les informations de la table parente
     tbl_names = get_tbl_names(nom_projet=nom_projet)
@@ -271,16 +268,9 @@ def create_tmp_tables(
     """
     nom_projet = get_project_name(context=context)
 
-    db_info = context.get("params", {}).get("db", {})
+    db_info = get_db_info(context=context)
     prod_schema = db_info.get("prod_schema", None)
     tmp_schema = db_info.get("tmp_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
-    if not tmp_schema:
-        raise ValueError(
-            "Temporary database schema must be provided in DAG parameters!"
-        )
 
     # Hook
     db = create_db_handler(pg_conn_id)
@@ -332,16 +322,8 @@ def delete_tmp_tables(
     """
     nom_projet = get_project_name(context=context)
 
-    db_info = context.get("params", {}).get("db", {})
-    prod_schema = db_info.get("prod_schema", None)
+    db_info = get_db_info(context=context)
     tmp_schema = db_info.get("tmp_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
-    if not tmp_schema:
-        raise ValueError(
-            "Temporary database schema must be provided in DAG parameters!"
-        )
 
     # Hook
     db = create_db_handler(pg_conn_id)
@@ -367,16 +349,9 @@ def copy_tmp_table_to_real_table(
     """
     nom_projet = get_project_name(context=context)
 
-    db_info = context.get("params", {}).get("db", {})
+    db_info = get_db_info(context=context)
     prod_schema = db_info.get("prod_schema", None)
     tmp_schema = db_info.get("tmp_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
-    if not tmp_schema:
-        raise ValueError(
-            "Temporary database schema must be provided in DAG parameters!"
-        )
 
     # Hook
     db = create_db_handler(pg_conn_id)
@@ -671,13 +646,9 @@ def set_dataset_last_update_date(
 def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
     """Tâche pour actualiser les vues matérialisées"""
     db = create_db_handler(pg_conn_id)
-    params = context.get("params", {})
 
-    db_info = params.get("db", {})
+    db_info = get_db_info(context=context)
     prod_schema = db_info.get("prod_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
 
     get_mview_query = """
         SELECT matviewname

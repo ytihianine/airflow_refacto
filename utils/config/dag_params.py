@@ -2,6 +2,8 @@ from datetime import timedelta
 from airflow.utils.dates import days_ago
 from typing import Optional
 
+from utils.config.types import DBParams
+
 DEFAULT_OWNER = "airflow"
 DEFAULT_EMAIL_TO = ["yanis.tihianine@finances.gouv.fr"]
 DEFAULT_EMAIL_CC = ["labo-data@finances.gouv.fr"]
@@ -14,6 +16,23 @@ def get_project_name(context: dict) -> str:
     if not nom_projet:
         raise ValueError("nom_projet must be defined in DAG parameters")
     return nom_projet
+
+
+def get_db_info(context: dict) -> DBParams:
+    """Extract and validate database info from context."""
+    db_params = context.get("params", {}).get("db", {})
+    prod_schema = db_params.get("prod_schema")
+    tmp_schema = db_params.get("tmp_schema")
+
+    if not prod_schema:
+        raise ValueError("prod_schema must be defined in DAG parameters under db")
+    if not tmp_schema:
+        raise ValueError("tmp_schema must be defined in DAG parameters under db")
+
+    return {
+        "prod_schema": prod_schema,
+        "tmp_schema": tmp_schema,
+    }
 
 
 def create_default_args(
