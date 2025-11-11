@@ -13,7 +13,7 @@ from infra.database.factory import create_db_handler
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 
-from utils.config.dag_params import get_db_info, get_project_name
+from utils.config.dag_params import get_db_info, get_execution_date, get_project_name
 from utils.config.tasks import get_projet_config, get_tbl_names
 from utils.config.types import SelecteurConfig, LoadStrategy, PartitionTimePeriod
 from utils.control.structures import are_lists_egal
@@ -56,9 +56,8 @@ def get_tbl_names_from_postgresql(**context) -> list[str]:
 def create_snapshot_id(
     nom_projet: str, execution_date: datetime, pg_conn_id: str
 ) -> None:
-    import uuid
 
-    snapshot_id = uuid.uuid4()
+    snapshot_id = execution_date.strftime("%Y%m%d_%H%M%S")
     query = """
         INSERT INTO conf_projets.projet_snapshot (id_projet, snapshot_id, creation_timestamp)
         SELECT
@@ -74,7 +73,7 @@ def create_snapshot_id(
     params = {
         "nom_projet": nom_projet,
         "snapshot_id": snapshot_id,
-        "creation_timestamp": execution_date.naive(),
+        "creation_timestamp": execution_date.replace(tzinfo=None),
     }
 
     # Exécution de la requête
@@ -103,7 +102,16 @@ def get_snapshot_id(nom_projet: str, pg_conn_id: str) -> str:
 
     # Exécution de la requête
     db = create_db_handler(pg_conn_id)
-    snapshot_id = db.fetch_all(query, params)
+    db_result = db.fetch_one(query, params)
+
+    if db_result is None:
+        raise ValueError(f"No db_result found for project {nom_projet}")
+
+    snapshot_id = db_result.get("snapshot_id", None)
+
+    if snapshot_id is None:
+        raise ValueError(f"No snapshot_id found for project {nom_projet}")
+
     return snapshot_id
 
 
@@ -113,7 +121,7 @@ def create_projet_snapshot(
 ) -> None:
     """ """
     nom_projet = get_project_name(context=context)
-    execution_date = context.get("execution_date")
+    execution_date = get_execution_date(context=context)
 
     create_snapshot_id(
         nom_projet=nom_projet, execution_date=execution_date, pg_conn_id=pg_conn_id
@@ -141,7 +149,7 @@ def get_projet_snapshot(
 
     snapshot_id = get_snapshot_id(nom_projet=nom_projet, pg_conn_id=pg_conn_id)
     print(f"Adding snapshot_id {snapshot_id} to context")
-    context["ti"].xcom_push(key="snapshot_id", value=snapshot_id[0]["snapshot_id"])
+    context["ti"].xcom_push(key="snapshot_id", value=snapshot_id)
     print("Snapshot_id added to context.")
 
 

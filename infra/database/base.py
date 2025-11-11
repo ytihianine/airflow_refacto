@@ -1,7 +1,7 @@
 """Base database handler interface and types."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -15,27 +15,29 @@ class BaseDBHandler(ABC):
         pass
 
     @abstractmethod
-    def execute(self, query: str, parameters: Optional[Tuple[Any, ...]] = None) -> None:
+    def execute(
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
+    ) -> None:
         """Execute a query without returning results."""
         pass
 
     @abstractmethod
     def fetch_one(
-        self, query: str, parameters: Optional[Tuple[Any, ...]] = None
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:
         """Fetch a single row as a dictionary."""
         pass
 
     @abstractmethod
     def fetch_all(
-        self, query: str, parameters: Optional[Tuple[Any, ...]] = None
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """Fetch all rows as a list of dictionaries."""
         pass
 
     @abstractmethod
     def fetch_df(
-        self, query: str, parameters: Optional[Tuple[Any, ...]] = None
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
     ) -> pd.DataFrame:
         """Fetch results as a pandas DataFrame."""
         pass
