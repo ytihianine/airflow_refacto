@@ -1,8 +1,6 @@
-from typing import cast
 import pandas as pd
 
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
 
 
 def normalize_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -21,9 +19,7 @@ def process_pg_catalog(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_db_datasets(df: pd.DataFrame) -> pd.DataFrame:
     # Hook
-    db_handler = cast(
-        PostgresDBHandler, create_db_handler(connection_id="db_data_store")
-    )
+    db_handler = create_db_handler(connection_id="db_data_store")
 
     # Get postgres datasets
     df = db_handler.fetch_df(
@@ -42,9 +38,7 @@ def process_db_datasets(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_db_dictionnary(df: pd.DataFrame) -> pd.DataFrame:
     # Hook
-    db_handler = cast(
-        PostgresDBHandler, create_db_handler(connection_id="db_data_store")
-    )
+    db_handler = create_db_handler(connection_id="db_data_store")
 
     # Get postgres datasets
     df = db_handler.fetch_df(

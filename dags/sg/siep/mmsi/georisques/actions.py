@@ -1,8 +1,6 @@
-from typing import cast
 import pandas as pd
 
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
 from infra.file_handling.factory import create_file_handler
 from infra.http_client.adapters import HttpxClient
 from infra.http_client.config import ClientConfig
@@ -53,7 +51,7 @@ def get_georisques(
     httpx_internet_client = HttpxClient(config=http_config)
 
     # Hooks
-    db_handler = cast(PostgresDBHandler, create_db_handler("db_data_store"))
+    db_handler = create_db_handler(connection_id="db_data_store")
     s3_handler = create_file_handler(
         handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
     )

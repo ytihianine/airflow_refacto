@@ -1,7 +1,7 @@
 """SQL task utilities using infrastructure handlers."""
 
 import logging
-from typing import cast, Optional
+from typing import Optional
 from datetime import datetime, timedelta
 
 from enum import Enum, auto
@@ -10,7 +10,6 @@ from airflow.decorators import task
 from airflow.operators.python import get_current_context
 
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
 
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.factory import create_default_s3_handler, create_local_handler
@@ -48,7 +47,7 @@ def get_primary_keys(
     schema: str, table: str, pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID
 ) -> list[str]:
     """Get primary key columns of a table."""
-    db = cast(PostgresDBHandler, create_db_handler(pg_conn_id))
+    db = create_db_handler(pg_conn_id)
     query = """
         SELECT kcu.column_name
         FROM information_schema.table_constraints tc
@@ -473,7 +472,7 @@ def bulk_load_local_tsv_file_to_db(
         column_names: List of column names in order
         schema: Target schema
     """
-    db = cast(PostgresDBHandler, create_db_handler(pg_conn_id))
+    db = create_db_handler(pg_conn_id)
     logging.info(f"Bulk importing {local_filepath} to {schema}.tmp_{tbl_name}")
 
     copy_sql = f"""
@@ -505,7 +504,6 @@ def _process_and_import_file(
     # Define hooks
     s3_handler = create_default_s3_handler()
     local_handler = create_local_handler(base_path=None)
-    db = create_db_handler(pg_conn_id)
 
     # Check if old file already exists in local system
     local_handler.delete(local_filepath)

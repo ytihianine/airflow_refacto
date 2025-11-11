@@ -1,15 +1,14 @@
 """Functions for retrieving and managing project configurations."""
 
 import logging
-from typing import List, Optional, cast
+from typing import List, Optional
 
 import pandas as pd
 
 from utils.config.types import SelecteurConfig
 from utils.exceptions import ConfigError
-from utils.config.vars import DEFAULT_PG_CONFIG_CONN_ID
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
+from utils.config.vars import DEFAULT_PG_CONFIG_CONN_ID
 
 CONF_SCHEMA = "conf_projets"
 
@@ -27,7 +26,7 @@ def get_config(nom_projet: str, selecteur: Optional[str] = None) -> pd.DataFrame
     Raises:
         ValueError: If no configuration is found for the given project and selector
     """
-    db = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_CONFIG_CONN_ID))
+    db = create_db_handler(DEFAULT_PG_CONFIG_CONN_ID)
 
     query = f"""
         SELECT nom_projet, selecteur, nom_source, filename, s3_key,
@@ -119,7 +118,7 @@ def get_cols_mapping(
         Dataframe
         Columns: selecteur, colname_source, colname_dest
     """
-    db = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_CONFIG_CONN_ID))
+    db = create_db_handler(DEFAULT_PG_CONFIG_CONN_ID)
 
     df = db.fetch_df(
         f"""SELECT cpvcm.nom_projet, cpvcm.selecteur, cpvcm.colname_source, cpvcm.colname_dest
@@ -178,7 +177,7 @@ def get_tbl_names(nom_projet: str, order_tbl: bool = False) -> List[str]:
     Returns:
         List of table names
     """
-    db = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_CONFIG_CONN_ID))
+    db = create_db_handler(DEFAULT_PG_CONFIG_CONN_ID)
 
     query = f"""SELECT vcp.tbl_name
             FROM {CONF_SCHEMA}.vue_conf_projets vcp
@@ -208,7 +207,7 @@ def get_s3_keys_source(nom_projet: str) -> List[str]:
     Returns:
         List of S3 source filepaths
     """
-    db = cast(PostgresDBHandler, create_db_handler(DEFAULT_PG_CONFIG_CONN_ID))
+    db = create_db_handler(DEFAULT_PG_CONFIG_CONN_ID)
 
     query = """
         SELECT vcp.filepath_source_s3
