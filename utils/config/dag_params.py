@@ -19,7 +19,7 @@ def get_project_name(context: dict) -> str:
 
 
 def get_execution_date(context: dict) -> datetime:
-    """Extract and validate project name from context."""
+    """Extract and validate execution date from context."""
     execution_date = context.get("execution_date")
 
     if not execution_date or not isinstance(execution_date, datetime):
