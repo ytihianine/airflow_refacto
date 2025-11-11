@@ -1,7 +1,54 @@
-"""Type definitions for configuration data structures."""
+"""Type definitions and Enums for configuration data structures."""
 
+from enum import Enum, auto
 from dataclasses import dataclass
 from typing import Optional, TypedDict, List, ParamSpec, TypeVar
+
+
+# ==================
+# Enums
+# ==================
+class DatabaseType(Enum):
+    """Database types enumeration."""
+
+    POSTGRES = auto()
+    SQLITE = auto()
+
+
+class FileHandlerType(Enum):
+    """File handler types enumeration."""
+
+    S3 = auto()
+    LOCAL = auto()
+
+
+class PartitionTimePeriod(str, Enum):
+    DAY = auto()
+    WEEK = auto()
+    MONTH = auto()
+    YEAR = auto()
+
+
+class LoadStrategy(Enum):
+    """Load strategies for data ingestion."""
+
+    FULL_LOAD = auto()
+    INCREMENTAL = auto()
+    APPEND = auto()
+
+
+class FileFormat(str, Enum):
+    """Supported file formats for ETL operations."""
+
+    CSV = "csv"
+    EXCEL = "excel"
+    PARQUET = "parquet"
+    JSON = "json"
+
+
+# ==================
+# Data Classes
+# ==================
 
 
 P = ParamSpec("P")
@@ -44,11 +91,11 @@ class DBParams(TypedDict):
     tmp_schema: str
 
 
-class MailParams(TypedDict, total=False):
+class MailParams(TypedDict):
     enable: bool
     to: List[str]
-    cc: List[str]
-    bcc: List[str]
+    cc: Optional[List[str]]
+    bcc: Optional[List[str]]
 
 
 class DocsParams(TypedDict):

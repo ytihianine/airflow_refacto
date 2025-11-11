@@ -1,14 +1,12 @@
 import os
 import subprocess
-from typing import cast
 
 from airflow.models import Variable
 
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
-from infra.file_handling.s3 import S3FileHandler
-from infra.file_handling.local import LocalFileHandler
+from infra.file_handling.factory import create_file_handler
 from utils.config.tasks import get_projet_config
+from utils.config.types import FileHandlerType
 from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 
 
@@ -20,14 +18,15 @@ def create_dump_files(nom_projet: str) -> None:
     projet_config = get_projet_config(nom_projet=nom_projet)
 
     # Variables
-    db_handler = cast(
-        PostgresDBHandler, create_db_handler(connection_id="db_data_store")
-    )
+    db_handler = create_db_handler(connection_id="db_data_store")
+
     # Hooks
-    s3_handler = S3FileHandler(
-        connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
-    local_handler = LocalFileHandler()
+    local_handler = create_file_handler(handler_type=FileHandlerType.LOCAL)
     conn = db_handler.get_uri()
 
     split_conn_dsn = conn.split("://")[1].split("/")[0].split("@")

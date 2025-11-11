@@ -5,6 +5,7 @@ from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.tasks.sql import (
     LoadStrategy,
     create_tmp_tables,
@@ -32,17 +33,6 @@ LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow
 LINK_DOC_DATA = ""  # noqa
 
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-    "retry_delay": timedelta(minutes=1),
-}
-
-
 # Définition du DAG
 @dag(
     "outil_aide_diagnostic_referentiel",
@@ -52,29 +42,17 @@ default_args = {
     tags=["DEV", "SG", "SIEP", "MMSI", "OAD"],
     description="""Traitement des référentiels issus de l'OAD.""",
     max_consecutive_failed_dag_runs=1,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "siep",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": [
-                "brigitte.lekime@finances.gouv.fr",
-                "yanis.tihianine@finances.gouv.fr",
-            ],
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DATA,
-        },
-    },
+    default_args=create_default_args(retries=0),
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="siep",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),
-    default_args=default_args,
 )
 def oad_referentiel():
     """Task definition"""

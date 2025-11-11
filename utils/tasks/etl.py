@@ -8,8 +8,7 @@ import pandas as pd
 from airflow.decorators import task
 
 from infra.file_handling.dataframe import read_dataframe
-from infra.file_handling.local import LocalFileHandler
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 from infra.database.factory import create_db_handler
 from utils.dataframe import df_info
 from utils.config.tasks import (
@@ -18,22 +17,13 @@ from utils.config.tasks import (
     format_cols_mapping,
     get_required_cols,
 )
-from utils.config.types import P, R
-
-
-def _get_project_name(context: dict) -> str:
-    """Extract and validate project name from context."""
-    nom_projet = context.get("params", {}).get("nom_projet")
-    if not nom_projet:
-        raise ValueError("nom_projet must be defined in DAG parameters")
-    return nom_projet
+from utils.config.dag_params import get_execution_date, get_project_name
+from utils.config.types import P, R, DatabaseType
 
 
 def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
     """Add import timestamp and date columns."""
-    execution_date = context.get("execution_date")
-    if not execution_date or not isinstance(execution_date, datetime):
-        raise ValueError("Invalid execution date in Airflow context")
+    execution_date = get_execution_date(context=context)
 
     dt_no_timezone = execution_date.replace(tzinfo=None)
     df["import_timestamp"] = dt_no_timezone
@@ -83,7 +73,7 @@ def create_grist_etl_task(
     def _task(**context) -> None:
         """The actual ETL task function."""
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Get config values related to the task
         task_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
@@ -94,10 +84,10 @@ def create_grist_etl_task(
             raise ValueError(f"nom_source must be defined for selecteur {selecteur}")
 
         # Initialize hooks
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-        local_handler = LocalFileHandler()
+        s3_handler = create_default_s3_handler()
+        local_handler = create_local_handler()
         sqlite_handler = create_db_handler(
-            connection_id=doc_config.filepath_local, db_type="sqlite"
+            connection_id=doc_config.filepath_local, db_type=DatabaseType.SQLITE
         )
 
         # Download Grist doc from S3 to local temp file
@@ -153,17 +143,17 @@ def create_file_etl_task(
     def _task(**context) -> None:
         """The actual ETL task function."""
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Initialize hooks
-        s3_hook = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        s3_handler = create_default_s3_handler()
 
         # Get config values related to the task
         task_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
 
         # Get data of table
         df = read_dataframe(
-            file_handler=s3_hook,
+            file_handler=s3_handler,
             file_path=task_config.filepath_source_s3,
             read_options=read_options,
         )
@@ -197,7 +187,7 @@ def create_file_etl_task(
         df_info(df=df, df_name=f"{selecteur} - After processing")
 
         # Export
-        s3_hook.write(
+        s3_handler.write(
             file_path=str(task_config.filepath_tmp_s3),
             content=df.to_parquet(path=None, index=False),
         )
@@ -237,10 +227,10 @@ def create_multi_files_input_etl_task(
     @task(task_id=output_selecteur)
     def _task(**context) -> None:
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Initialize handler
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        s3_handler = create_default_s3_handler()
 
         # Resolve configs
         output_config = get_selecteur_config(
@@ -337,17 +327,15 @@ def create_action_to_file_etl_task(
     @task(task_id=task_id)
     def _task(**context):
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Initialize handler
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        s3_handler = create_default_s3_handler()
 
         # Resolve configs
         output_config = get_selecteur_config(
             nom_projet=nom_projet, selecteur=output_selecteur
         )
-        # Initialize hooks
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
 
         # Execute action
         if use_context:

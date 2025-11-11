@@ -1,17 +1,13 @@
-from typing import cast
 import pandas as pd
 
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
 
 from dags.applications.catalogue import process
 
 
 def extract_pg_catalog() -> pd.DataFrame:
     # Hook
-    db_handler = cast(
-        PostgresDBHandler, create_db_handler(connection_id="db_data_store")
-    )
+    db_handler = create_db_handler(connection_id="db_data_store")
 
     # Get postgres catalog
     df = db_handler.fetch_df(

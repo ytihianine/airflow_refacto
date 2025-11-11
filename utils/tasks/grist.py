@@ -3,12 +3,14 @@ from datetime import timedelta
 from airflow.decorators import task
 from airflow.models import Variable
 
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_file_handler
 from infra.http_client.adapters import RequestsClient
 from infra.http_client.config import ClientConfig
 from infra.grist.client import GristAPI
+from utils.config.dag_params import get_project_name
 from utils.config.tasks import get_selecteur_config
 
+from utils.config.types import FileHandlerType
 from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID, PROXY, AGENT
 
 
@@ -110,19 +112,16 @@ def download_grist_doc_to_s3(
     doc_id_key: str,
     grist_host: str = "https://grist.numerique.gouv.fr",
     api_token_key: str = "grist_secret_key",
-    http_client_over_internet: bool = True,
+    use_proxy: bool = True,
     **context,
 ) -> None:
     """Download SQLite from a specific Grist doc to S3"""
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
+    nom_projet = get_project_name(context=context)
 
     selecteur_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
 
     # Instanciate Grist client
-    if http_client_over_internet:
+    if use_proxy:
         http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
         request_client = RequestsClient(config=http_config)
     else:
@@ -138,8 +137,10 @@ def download_grist_doc_to_s3(
     )
 
     # Hooks
-    s3_handler = S3FileHandler(
-        connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
 
     # Get document data from Grist

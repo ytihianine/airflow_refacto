@@ -7,6 +7,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 from infra.mails.sender import MailStatus, create_airflow_callback
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.config.tasks import get_s3_keys_source, get_projet_config
 from utils.tasks.sql import (
     LoadStrategy,
@@ -40,7 +41,7 @@ from dags.sg.siep.mmsi.oad.indicateurs.tasks import (
 # Mails
 nom_projet = "Outil aide diagnostic"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
-LINK_DOC_DONNEE = "Non-défini"  # noqa
+LINK_DOC_DATA = "Non-défini"  # noqa
 
 
 default_args = {
@@ -62,23 +63,14 @@ default_args = {
     catchup=False,
     tags=["DEV", "SG", "SIEP", "MMSI", "OAD"],
     description="""Traitement des données de l'immobilier. Base""",
-    default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "siep",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["yanis.tihianine@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DONNEE,
-        },
-    },
+    default_args=create_default_args(retries=0),
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="siep",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),

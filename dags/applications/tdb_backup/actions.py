@@ -4,11 +4,18 @@ from typing import Any
 from airflow.models import Variable
 
 from dags.applications.tdb_backup.process import convert_str_to_ascii_str
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_file_handler
 from infra.http_client.config import ClientConfig
 from infra.http_client.adapters import RequestsClient
 from utils.config.tasks import get_selecteur_config
-from utils.config.vars import get_root_folder, AGENT, PROXY
+from utils.config.types import FileHandlerType
+from utils.config.vars import (
+    get_root_folder,
+    AGENT,
+    PROXY,
+    DEFAULT_S3_BUCKET,
+    DEFAULT_S3_CONN_ID,
+)
 
 
 CA_PATH = "/files/bercyCA.crt"
@@ -79,7 +86,11 @@ def get_dashboard_export(
     base_url = Variable.get("chartsgouv_base_url")
 
     # hooks
-    s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
+    )
 
     access_token = get_bearer_token()
 
@@ -127,7 +138,9 @@ def get_dashboard_export(
 #     bucket = "dsci"
 
 #     # hooks
-#     s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket=bucket)
+# s3_handler = create_file_handler(
+#     handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+# )
 
 #     pod_name = get_pod_name(namespace=NAMESPACE, pod_label=POD_LABEL)
 

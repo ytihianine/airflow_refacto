@@ -4,6 +4,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.config.tasks import get_projet_config
 from utils.tasks.sql import (
     create_tmp_tables,
@@ -28,17 +29,7 @@ if needs_debug:
 
 nom_projet = "API Opera"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/api_operat?ref_type=heads"  # noqa
-LINK_DOC_DONNEE = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
-
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay": timedelta(minutes=1),
-}
+LINK_DOC_DATA = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
 
 # Définition du DAG
@@ -50,23 +41,14 @@ default_args = {
     tags=["SG", "SIEP", "PRODUCTION", "BATIMENT", "ADEME"],
     description="Pipeline qui réalise des appels sur l'API Operat (ADEME)",
     max_consecutive_failed_dag_runs=1,
-    default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "siep",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["mmsi.siep@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DONNEE,
-        },
-    },
+    default_args=create_default_args(retries=1, retry_delay=timedelta(minutes=1)),
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="siep",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),

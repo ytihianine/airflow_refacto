@@ -1,23 +1,21 @@
 """SQL task utilities using infrastructure handlers."""
 
 import logging
-from typing import cast, Optional
+from typing import Optional
 from datetime import datetime, timedelta
 
-from enum import Enum, auto
 import psycopg2
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
 
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
 
 from infra.file_handling.dataframe import read_dataframe
-from infra.file_handling.factory import FileHandlerFactory
+from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 
-from infra.file_handling.s3 import S3FileHandler
+from utils.config.dag_params import get_db_info, get_execution_date, get_project_name
 from utils.config.tasks import get_projet_config, get_tbl_names
-from utils.config.types import SelecteurConfig
+from utils.config.types import SelecteurConfig, LoadStrategy, PartitionTimePeriod
 from utils.control.structures import are_lists_egal
 from utils.config.vars import (
     DEFAULT_TMP_SCHEMA,
@@ -28,27 +26,11 @@ from utils.config.vars import (
 )
 
 
-CONF_SCHEMA = "conf_projets"
-
-
-class PartitionTimePeriod(str, Enum):
-    DAY = "day"
-    WEEK = "week"
-    MONTH = "month"
-    YEAR = "year"
-
-
-class LoadStrategy(Enum):
-    FULL_LOAD = auto()
-    INCREMENTAL = auto()
-    APPEND = auto()
-
-
 def get_primary_keys(
     schema: str, table: str, pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID
 ) -> list[str]:
     """Get primary key columns of a table."""
-    db = cast(PostgresDBHandler, create_db_handler(pg_conn_id))
+    db = create_db_handler(pg_conn_id)
     query = """
         SELECT kcu.column_name
         FROM information_schema.table_constraints tc
@@ -66,11 +48,7 @@ def get_primary_keys(
 
 @task(task_id="get_tbl_names_from_postgresql")
 def get_tbl_names_from_postgresql(**context) -> list[str]:
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
-
+    nom_projet = get_project_name(context=context)
     tbl_names = get_tbl_names(nom_projet=nom_projet)
     return tbl_names
 
@@ -78,9 +56,8 @@ def get_tbl_names_from_postgresql(**context) -> list[str]:
 def create_snapshot_id(
     nom_projet: str, execution_date: datetime, pg_conn_id: str
 ) -> None:
-    import uuid
 
-    snapshot_id = uuid.uuid4()
+    snapshot_id = execution_date.strftime("%Y%m%d_%H%M%S")
     query = """
         INSERT INTO conf_projets.projet_snapshot (id_projet, snapshot_id, creation_timestamp)
         SELECT
@@ -96,7 +73,7 @@ def create_snapshot_id(
     params = {
         "nom_projet": nom_projet,
         "snapshot_id": snapshot_id,
-        "creation_timestamp": execution_date.naive(),
+        "creation_timestamp": execution_date.replace(tzinfo=None),
     }
 
     # Exécution de la requête
@@ -125,7 +102,16 @@ def get_snapshot_id(nom_projet: str, pg_conn_id: str) -> str:
 
     # Exécution de la requête
     db = create_db_handler(pg_conn_id)
-    snapshot_id = db.fetch_all(query, params)
+    db_result = db.fetch_one(query, params)
+
+    if db_result is None:
+        raise ValueError(f"No db_result found for project {nom_projet}")
+
+    snapshot_id = db_result.get("snapshot_id", None)
+
+    if snapshot_id is None:
+        raise ValueError(f"No snapshot_id found for project {nom_projet}")
+
     return snapshot_id
 
 
@@ -134,11 +120,8 @@ def create_projet_snapshot(
     pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID, **context
 ) -> None:
     """ """
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
-    execution_date = context.get("execution_date")
+    nom_projet = get_project_name(context=context)
+    execution_date = get_execution_date(context=context)
 
     create_snapshot_id(
         nom_projet=nom_projet, execution_date=execution_date, pg_conn_id=pg_conn_id
@@ -162,14 +145,11 @@ def get_projet_snapshot(
         None. Ajoute le snapshot_id dans le context du DAG
     """
     if nom_projet is None:
-        params = context.get("params", {})
-        nom_projet = params.get("nom_projet")
-        if not nom_projet:
-            raise ValueError("Project name must be provided in DAG parameters!")
+        nom_projet = get_project_name(context=context)
 
     snapshot_id = get_snapshot_id(nom_projet=nom_projet, pg_conn_id=pg_conn_id)
     print(f"Adding snapshot_id {snapshot_id} to context")
-    context["ti"].xcom_push(key="snapshot_id", value=snapshot_id[0]["snapshot_id"])
+    context["ti"].xcom_push(key="snapshot_id", value=snapshot_id)
     print("Snapshot_id added to context.")
 
 
@@ -225,25 +205,17 @@ def ensure_partition(
     Returns:
         Le nom de la partition (créée ou existante)
     """
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
+    nom_projet = get_project_name(context=context)
 
-    db_info = params.get("db", {})
-    prod_schema = db_info.get("prod_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
+    db_info = get_db_info(context=context)
+    prod_schema = db_info.get("prod_schema")
 
     # Récupérer les informations de la table parente
     tbl_names = get_tbl_names(nom_projet=nom_projet)
 
     db = create_db_handler(pg_conn_id)
     # Get timing information
-    execution_date = context.get("execution_date")
-    if not execution_date or not isinstance(execution_date, datetime):
-        raise ValueError("Invalid execution date in Airflow context")
+    execution_date = get_execution_date(context=context)
 
     # Get partition period range
     from_date, to_date = determine_partition_period(time_period, execution_date)
@@ -282,21 +254,11 @@ def create_tmp_tables(
     """
     Used to create temporary tables in the database.
     """
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
+    nom_projet = get_project_name(context=context)
 
-    db_info = params.get("db", {})
+    db_info = get_db_info(context=context)
     prod_schema = db_info.get("prod_schema", None)
     tmp_schema = db_info.get("tmp_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
-    if not tmp_schema:
-        raise ValueError(
-            "Temporary database schema must be provided in DAG parameters!"
-        )
 
     # Hook
     db = create_db_handler(pg_conn_id)
@@ -346,21 +308,10 @@ def delete_tmp_tables(
     """
     Used to delete temporary tables in the database.
     """
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
+    nom_projet = get_project_name(context=context)
 
-    db_info = params.get("db", {})
-    prod_schema = db_info.get("prod_schema", None)
+    db_info = get_db_info(context=context)
     tmp_schema = db_info.get("tmp_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
-    if not tmp_schema:
-        raise ValueError(
-            "Temporary database schema must be provided in DAG parameters!"
-        )
 
     # Hook
     db = create_db_handler(pg_conn_id)
@@ -384,21 +335,11 @@ def copy_tmp_table_to_real_table(
         FULL_LOAD      -> delete all prod rows, insert everything from tmp
         INCREMENTAL    -> UPSERT + delete missing rows based on primary key
     """
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
+    nom_projet = get_project_name(context=context)
 
-    db_info = params.get("db", {})
+    db_info = get_db_info(context=context)
     prod_schema = db_info.get("prod_schema", None)
     tmp_schema = db_info.get("tmp_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
-    if not tmp_schema:
-        raise ValueError(
-            "Temporary database schema must be provided in DAG parameters!"
-        )
 
     # Hook
     db = create_db_handler(pg_conn_id)
@@ -520,7 +461,7 @@ def bulk_load_local_tsv_file_to_db(
         column_names: List of column names in order
         schema: Target schema
     """
-    db = cast(PostgresDBHandler, create_db_handler(pg_conn_id))
+    db = create_db_handler(pg_conn_id)
     logging.info(f"Bulk importing {local_filepath} to {schema}.tmp_{tbl_name}")
 
     copy_sql = f"""
@@ -550,16 +491,8 @@ def _process_and_import_file(
     sont dans le même ordre !
     """
     # Define hooks
-    s3_handler = FileHandlerFactory.create_handler(
-        handler_type="s3",
-        base_path=None,
-        connection_id=DEFAULT_S3_CONN_ID,
-        bucket=DEFAULT_S3_BUCKET,
-    )
-    local_handler = FileHandlerFactory.create_handler(
-        handler_type="local", base_path=None, connection_id=None
-    )
-    db = create_db_handler(pg_conn_id)
+    s3_handler = create_default_s3_handler()
+    local_handler = create_local_handler(base_path=None)
 
     # Check if old file already exists in local system
     local_handler.delete(local_filepath)
@@ -604,10 +537,7 @@ def import_files_to_db(
     keep_file_id_col: bool = False,
     **context,
 ) -> None:
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
+    nom_projet = get_project_name(context=context)
 
     projet_config = get_projet_config(nom_projet=nom_projet)
 
@@ -703,13 +633,9 @@ def set_dataset_last_update_date(
 def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
     """Tâche pour actualiser les vues matérialisées"""
     db = create_db_handler(pg_conn_id)
-    params = context.get("params", {})
 
-    db_info = params.get("db", {})
+    db_info = get_db_info(context=context)
     prod_schema = db_info.get("prod_schema", None)
-
-    if not prod_schema:
-        raise ValueError("Database schema must be provided in DAG parameters!")
 
     get_mview_query = """
         SELECT matviewname
@@ -793,10 +719,8 @@ def import_sqlitefile_to_db(
     # Hooks
     db = create_db_handler(pg_conn_id)
     db_uri = db.get_uri().replace("postgresql://", "")
-    s3_handler = S3FileHandler(
-        connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
-    )
-    local_handler = FileHandlerFactory.create_handler(handler_type="local")
+    s3_handler = create_default_s3_handler()
+    local_handler = create_local_handler(base_path=None)
 
     # Copy s3 file to local system
     local_sqlite_path = "/tmp/tmp_grist.db"

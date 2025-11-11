@@ -4,6 +4,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.config.tasks import get_projet_config
 from utils.tasks.sql import (
     create_tmp_tables,
@@ -19,20 +20,9 @@ from utils.tasks.s3 import (
 from dags.sg.siep.mmsi.eligibilite_fcu.task import eligibilite_fcu_to_file
 
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay": timedelta(seconds=20),
-}
-
-
 nom_projet = "France Chaleur Urbaine (FCU)"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/siep/mmsi/eligibilite_fcu?ref_type=heads"  # noqa
-LINK_DOC_DONNEE = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
+LINK_DOC_DATA = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
 
 # Définition du DAG
@@ -44,23 +34,14 @@ LINK_DOC_DONNEE = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gou
     tags=["SG", "SIEP", "PRODUCTION", "BATIMENT", "FCU"],
     description="Récupérer pour chaque bâtiment de l'OAD son éligibilité au réseau Franche Chaleur Urbaine (FCU)",  # noqa
     max_consecutive_failed_dag_runs=1,
-    default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "siep",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["mmsi.siep@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr", "yanis.tihianine@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DONNEE,
-        },
-    },
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=20)),
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="siep",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_success_callback=create_airflow_callback(mail_status=MailStatus.SUCCESS),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,

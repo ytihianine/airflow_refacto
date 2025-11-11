@@ -11,6 +11,7 @@ from utils.tasks.sql import (
     delete_tmp_tables,
 )
 from utils.config.tasks import get_projet_config
+from utils.config.dag_params import create_dag_params, create_default_args
 from utils.tasks.grist import download_grist_doc_to_s3
 from utils.tasks.s3 import del_s3_files
 
@@ -24,19 +25,9 @@ from dags.cgefi.suivi_activite.tasks import (
 
 nom_projet = "Emploi et formation"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/carte_identite_mef?ref_type=heads"  # noqa
-LINK_DOC_DONNEE = (
+LINK_DOC_DATA = (
     "https://grist.numerique.gouv.fr/o/catalogue/k9LvttaYoxe6/catalogage-MEF"
 )
-
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-    "retry_delay": timedelta(seconds=10),
-}
 
 
 # Définition du DAG
@@ -49,23 +40,14 @@ default_args = {
     description="""Pipeline qui récupère les nouvelles données dans Grist
         pour actualiser le tableau de bord de suivi d'activité du CGEFI""",
     max_consecutive_failed_dag_runs=1,
-    default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "cgefi_poc",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": ["yanis.tihianine@finances.gouv.fr"],
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DONNEE,
-        },
-    },
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=30)),
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="cgefi_poc",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
 def suivi_activite():

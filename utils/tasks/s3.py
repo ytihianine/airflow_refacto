@@ -8,8 +8,10 @@ import pytz
 from airflow.decorators import task
 
 from infra.file_handling.exceptions import FileHandlerError, FileNotFoundError
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_file_handler
+from utils.config.dag_params import get_execution_date, get_project_name
 from utils.config.tasks import get_projet_config
+from utils.config.types import FileHandlerType
 from utils.config.vars import (
     DEFAULT_S3_CONN_ID,
 )
@@ -32,17 +34,13 @@ def copy_s3_files(
         ValueError: If project name not provided in params
         FileHandlerError: If file operations fail
     """
-    params = context.get("params", {})
-    nom_projet = params.get("nom_projet")
-    if not nom_projet:
-        raise ValueError("Project name must be provided in DAG parameters!")
-
-    s3_handler = S3FileHandler(connection_id=connection_id, bucket=bucket)
+    nom_projet = get_project_name(context=context)
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3, connection_id=connection_id, bucket=bucket
+    )
 
     # Get timing information
-    execution_date = context.get("execution_date")
-    if not execution_date or not isinstance(execution_date, datetime):
-        raise ValueError("Invalid execution date in Airflow context")
+    execution_date = get_execution_date(context=context)
 
     paris_tz = pytz.timezone("Europe/Paris")
     execution_date = execution_date.astimezone(paris_tz)
@@ -107,14 +105,13 @@ def del_s3_files(
     source_keys: List[str] = []
 
     # Initialize S3 handler
-    s3_handler = S3FileHandler(connection_id=connection_id, bucket=bucket)
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3, connection_id=connection_id, bucket=bucket
+    )
 
     if not keys_to_delete:
         # Get project name from context
-        params = context.get("params", {})
-        nom_projet = params.get("nom_projet")
-        if not nom_projet:
-            raise ValueError("Project name must be provided in DAG parameters!")
+        nom_projet = get_project_name(context=context)
 
         # Get storage configuration
         projet_config = get_projet_config(nom_projet=nom_projet)

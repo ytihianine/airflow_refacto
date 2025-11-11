@@ -39,7 +39,9 @@ class PostgresDBHandler(BaseDBHandler):
         """Get the database URI."""
         return self.hook.get_uri()
 
-    def execute(self, query: str, parameters: Optional[Tuple[Any, ...]] = None) -> None:
+    def execute(
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
+    ) -> None:
         """Execute a query without returning results."""
         try:
             start_time = time.time()
@@ -49,7 +51,7 @@ class PostgresDBHandler(BaseDBHandler):
             raise DatabaseError(f"Error executing query: {str(e)}") from e
 
     def fetch_one(
-        self, query: str, parameters: Optional[Tuple[Any, ...]] = None
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:
         """Fetch a single row as a dictionary."""
         try:
@@ -73,7 +75,7 @@ class PostgresDBHandler(BaseDBHandler):
             raise DatabaseError(f"Error fetching row: {str(e)}") from e
 
     def fetch_all(
-        self, query: str, parameters: Optional[Tuple[Any, ...]] = None
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """Fetch all rows as a list of dictionaries."""
         try:
@@ -93,7 +95,7 @@ class PostgresDBHandler(BaseDBHandler):
             raise DatabaseError(f"Error fetching rows: {str(e)}") from e
 
     def fetch_df(
-        self, query: str, parameters: Optional[Tuple[Any, ...]] = None
+        self, query: str, parameters: Optional[Tuple[Any, ...] | dict[str, Any]] = None
     ) -> pd.DataFrame:
         """Fetch results as a pandas DataFrame."""
         try:

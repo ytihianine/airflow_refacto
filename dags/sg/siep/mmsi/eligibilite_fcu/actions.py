@@ -1,10 +1,8 @@
-from typing import cast
 import pandas as pd
 
 from infra.http_client.adapters import HttpxClient, ClientConfig
 from utils.config.vars import AGENT, PROXY
 from infra.database.factory import create_db_handler
-from infra.database.postgres import PostgresDBHandler
 
 from dags.sg.siep.mmsi.eligibilite_fcu.process import (
     get_eligibilite_fcu,
@@ -19,9 +17,7 @@ def eligibilite_fcu():
     httpx_internet_client = HttpxClient(client_config)
 
     # Hooks
-    db_hook = cast(
-        PostgresDBHandler, create_db_handler(connection_id="db_depose_fichier")
-    )
+    db_hook = create_db_handler(connection_id="db_depose_fichier")
 
     # Storage paths
 
