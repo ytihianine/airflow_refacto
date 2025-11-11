@@ -17,7 +17,7 @@ from utils.config.tasks import (
     format_cols_mapping,
     get_required_cols,
 )
-from utils.config.dag_params import _get_project_name
+from utils.config.dag_params import get_project_name
 from utils.config.types import P, R
 
 
@@ -75,7 +75,7 @@ def create_grist_etl_task(
     def _task(**context) -> None:
         """The actual ETL task function."""
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Get config values related to the task
         task_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
@@ -145,7 +145,7 @@ def create_file_etl_task(
     def _task(**context) -> None:
         """The actual ETL task function."""
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Initialize hooks
         s3_handler = create_default_s3_handler()
@@ -229,7 +229,7 @@ def create_multi_files_input_etl_task(
     @task(task_id=output_selecteur)
     def _task(**context) -> None:
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Initialize handler
         s3_handler = create_default_s3_handler()
@@ -329,7 +329,7 @@ def create_action_to_file_etl_task(
     @task(task_id=task_id)
     def _task(**context):
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Initialize handler
         s3_handler = create_default_s3_handler()

@@ -15,7 +15,7 @@ from infra.database.postgres import PostgresDBHandler
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 
-from utils.config.dag_params import _get_project_name
+from utils.config.dag_params import get_project_name
 from utils.config.tasks import get_projet_config, get_tbl_names
 from utils.config.types import SelecteurConfig
 from utils.control.structures import are_lists_egal
@@ -66,7 +66,7 @@ def get_primary_keys(
 
 @task(task_id="get_tbl_names_from_postgresql")
 def get_tbl_names_from_postgresql(**context) -> list[str]:
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
     tbl_names = get_tbl_names(nom_projet=nom_projet)
     return tbl_names
 
@@ -130,7 +130,7 @@ def create_projet_snapshot(
     pg_conn_id: str = DEFAULT_PG_CONFIG_CONN_ID, **context
 ) -> None:
     """ """
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
     execution_date = context.get("execution_date")
 
     create_snapshot_id(
@@ -155,7 +155,7 @@ def get_projet_snapshot(
         None. Ajoute le snapshot_id dans le context du DAG
     """
     if nom_projet is None:
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
     snapshot_id = get_snapshot_id(nom_projet=nom_projet, pg_conn_id=pg_conn_id)
     print(f"Adding snapshot_id {snapshot_id} to context")
@@ -215,7 +215,7 @@ def ensure_partition(
     Returns:
         Le nom de la partition (créée ou existante)
     """
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
 
     db_info = context.get("params", {}).get("db", {})
     prod_schema = db_info.get("prod_schema", None)
@@ -269,7 +269,7 @@ def create_tmp_tables(
     """
     Used to create temporary tables in the database.
     """
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
 
     db_info = context.get("params", {}).get("db", {})
     prod_schema = db_info.get("prod_schema", None)
@@ -330,7 +330,7 @@ def delete_tmp_tables(
     """
     Used to delete temporary tables in the database.
     """
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
 
     db_info = context.get("params", {}).get("db", {})
     prod_schema = db_info.get("prod_schema", None)
@@ -365,7 +365,7 @@ def copy_tmp_table_to_real_table(
         FULL_LOAD      -> delete all prod rows, insert everything from tmp
         INCREMENTAL    -> UPSERT + delete missing rows based on primary key
     """
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
 
     db_info = context.get("params", {}).get("db", {})
     prod_schema = db_info.get("prod_schema", None)
@@ -575,7 +575,7 @@ def import_files_to_db(
     keep_file_id_col: bool = False,
     **context,
 ) -> None:
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
 
     projet_config = get_projet_config(nom_projet=nom_projet)
 

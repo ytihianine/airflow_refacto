@@ -9,7 +9,7 @@ from airflow.decorators import task
 
 from infra.file_handling.exceptions import FileHandlerError, FileNotFoundError
 from infra.file_handling.factory import create_file_handler
-from utils.config.dag_params import _get_project_name
+from utils.config.dag_params import get_project_name
 from utils.config.tasks import get_projet_config
 from utils.config.vars import (
     DEFAULT_S3_CONN_ID,
@@ -33,7 +33,7 @@ def copy_s3_files(
         ValueError: If project name not provided in params
         FileHandlerError: If file operations fail
     """
-    nom_projet = _get_project_name(context=context)
+    nom_projet = get_project_name(context=context)
     s3_handler = create_file_handler(
         handler_type="s3", connection_id=connection_id, bucket=bucket
     )
@@ -112,7 +112,7 @@ def del_s3_files(
 
     if not keys_to_delete:
         # Get project name from context
-        nom_projet = _get_project_name(context=context)
+        nom_projet = get_project_name(context=context)
 
         # Get storage configuration
         projet_config = get_projet_config(nom_projet=nom_projet)

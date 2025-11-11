@@ -8,7 +8,7 @@ DEFAULT_EMAIL_CC = ["labo-data@finances.gouv.fr"]
 DEFAULT_TMP_SCHEMA = "temporaire"
 
 
-def _get_project_name(context: dict) -> str:
+def get_project_name(context: dict) -> str:
     """Extract and validate project name from context."""
     nom_projet = context.get("params", {}).get("nom_projet")
     if not nom_projet:
