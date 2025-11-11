@@ -44,11 +44,11 @@ class DBParams(TypedDict):
     tmp_schema: str
 
 
-class MailParams(TypedDict, total=False):
+class MailParams(TypedDict):
     enable: bool
     to: List[str]
-    cc: List[str]
-    bcc: List[str]
+    cc: Optional[List[str]]
+    bcc: Optional[List[str]]
 
 
 class DocsParams(TypedDict):
