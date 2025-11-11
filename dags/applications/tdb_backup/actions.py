@@ -8,6 +8,7 @@ from infra.file_handling.factory import create_file_handler
 from infra.http_client.config import ClientConfig
 from infra.http_client.adapters import RequestsClient
 from utils.config.tasks import get_selecteur_config
+from utils.config.types import FileHandlerType
 from utils.config.vars import (
     get_root_folder,
     AGENT,
@@ -86,7 +87,9 @@ def get_dashboard_export(
 
     # hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
 
     access_token = get_bearer_token()

@@ -4,6 +4,7 @@ from airflow.models import Variable
 from infra.file_handling.factory import create_file_handler
 from infra.file_handling.dataframe import read_dataframe
 from infra.http_client.adapters import HttpxClient, ClientConfig
+from utils.config.types import FileHandlerType
 from utils.config.vars import AGENT, PROXY, DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 from utils.config.tasks import get_selecteur_config
 from utils.dataframe import df_info
@@ -65,7 +66,9 @@ def get_liste_declarations(api_client: HttpxClient, url: str, token: str) -> dic
 def liste_declaration(nom_projet: str) -> None:
     # Hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
     # Http client
     httpx_internet_client = HttpxClient(client_config)
@@ -116,7 +119,9 @@ def get_consommation_by_id(
 def consommation_by_id(nom_projet: str) -> None:
     # Hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
     # Http client
     httpx_internet_client = HttpxClient(client_config)

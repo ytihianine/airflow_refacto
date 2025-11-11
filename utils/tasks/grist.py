@@ -10,6 +10,7 @@ from infra.grist.client import GristAPI
 from utils.config.dag_params import get_project_name
 from utils.config.tasks import get_selecteur_config
 
+from utils.config.types import FileHandlerType
 from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID, PROXY, AGENT
 
 
@@ -137,7 +138,9 @@ def download_grist_doc_to_s3(
 
     # Hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
 
     # Get document data from Grist

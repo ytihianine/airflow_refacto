@@ -18,7 +18,7 @@ from utils.config.tasks import (
     get_required_cols,
 )
 from utils.config.dag_params import get_project_name
-from utils.config.types import P, R
+from utils.config.types import P, R, DatabaseType
 
 
 def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
@@ -89,7 +89,7 @@ def create_grist_etl_task(
         s3_handler = create_default_s3_handler()
         local_handler = create_local_handler()
         sqlite_handler = create_db_handler(
-            connection_id=doc_config.filepath_local, db_type="sqlite"
+            connection_id=doc_config.filepath_local, db_type=DatabaseType.SQLITE
         )
 
         # Download Grist doc from S3 to local temp file

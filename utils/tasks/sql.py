@@ -4,7 +4,6 @@ import logging
 from typing import Optional
 from datetime import datetime, timedelta
 
-from enum import Enum, auto
 import psycopg2
 from airflow.decorators import task
 from airflow.operators.python import get_current_context
@@ -16,7 +15,7 @@ from infra.file_handling.factory import create_default_s3_handler, create_local_
 
 from utils.config.dag_params import get_db_info, get_project_name
 from utils.config.tasks import get_projet_config, get_tbl_names
-from utils.config.types import SelecteurConfig
+from utils.config.types import SelecteurConfig, LoadStrategy, PartitionTimePeriod
 from utils.control.structures import are_lists_egal
 from utils.config.vars import (
     DEFAULT_TMP_SCHEMA,
@@ -25,22 +24,6 @@ from utils.config.vars import (
     DEFAULT_S3_CONN_ID,
     DEFAULT_S3_BUCKET,
 )
-
-
-CONF_SCHEMA = "conf_projets"
-
-
-class PartitionTimePeriod(str, Enum):
-    DAY = "day"
-    WEEK = "week"
-    MONTH = "month"
-    YEAR = "year"
-
-
-class LoadStrategy(Enum):
-    FULL_LOAD = auto()
-    INCREMENTAL = auto()
-    APPEND = auto()
 
 
 def get_primary_keys(

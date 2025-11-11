@@ -6,6 +6,7 @@ from airflow.models import Variable
 from infra.database.factory import create_db_handler
 from infra.file_handling.factory import create_file_handler
 from utils.config.tasks import get_projet_config
+from utils.config.types import FileHandlerType
 from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 
 
@@ -21,9 +22,11 @@ def create_dump_files(nom_projet: str) -> None:
 
     # Hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
-    local_handler = create_file_handler(handler_type="local")
+    local_handler = create_file_handler(handler_type=FileHandlerType.LOCAL)
     conn = db_handler.get_uri()
 
     split_conn_dsn = conn.split("://")[1].split("/")[0].split("@")

@@ -3,6 +3,8 @@
 from typing import Optional, Union
 from pathlib import Path
 
+from utils.config.types import FileHandlerType
+
 from .base import BaseFileHandler
 from .local import LocalFileHandler
 from .s3 import S3FileHandler
@@ -13,7 +15,9 @@ DEFAULT_S3_BUCKET = "dsci"
 
 
 def create_file_handler(
-    handler_type: str, base_path: Optional[Union[str, Path]] = None, **kwargs
+    handler_type: FileHandlerType,
+    base_path: Optional[Union[str, Path]] = None,
+    **kwargs,
 ) -> BaseFileHandler:
     """
     Create and return a file handler instance.
@@ -34,12 +38,11 @@ def create_file_handler(
         >>> handler = create_file_handler("local", base_path="/data")
         >>> handler = create_file_handler("s3", bucket="my-bucket", connection_id="s3_conn")
     """
-    handler_type = handler_type.lower()
 
-    if handler_type == "local":
+    if handler_type == FileHandlerType.LOCAL:
         return LocalFileHandler(base_path=base_path)
 
-    elif handler_type == "s3":
+    elif handler_type == FileHandlerType.S3:
         required_args = {"bucket", "connection_id"}
         missing_args = required_args - kwargs.keys()
         if missing_args:
@@ -73,7 +76,9 @@ def create_default_s3_handler(
     """
     connection_id = connection_id or DEFAULT_S3_CONNECTION_ID
     bucket = bucket or DEFAULT_S3_BUCKET
-    return create_file_handler("s3", connection_id=connection_id, bucket=bucket)
+    return create_file_handler(
+        FileHandlerType.S3, connection_id=connection_id, bucket=bucket
+    )
 
 
 def create_local_handler(
@@ -89,4 +94,4 @@ def create_local_handler(
         BaseFileHandler: Configured local handler instance
     """
     base_path = base_path or None
-    return create_file_handler("local", base_path=base_path)
+    return create_file_handler(FileHandlerType.LOCAL, base_path=base_path)

@@ -5,6 +5,7 @@ from dags.applications.clean_s3.process import check_date_format, safe_parse_dat
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.factory import create_file_handler
 from utils.config.tasks import get_selecteur_config
+from utils.config.types import FileHandlerType
 from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 from utils.dataframe import df_info
 
@@ -14,7 +15,9 @@ def list_keys(selecteur: str) -> None:
     config = get_selecteur_config(nom_projet="dsci", selecteur=selecteur)
     # Hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
 
     # List objects
@@ -35,7 +38,9 @@ def process_keys(input_selecteur: str, output_selecteur: str) -> None:
     config_output = get_selecteur_config(nom_projet="dsci", selecteur=output_selecteur)
     # Hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
 
     # Read file
@@ -82,7 +87,9 @@ def delete_old_keys(input_selecteur: str) -> None:
     config_input = get_selecteur_config(nom_projet="dsci", selecteur=input_selecteur)
     # Hooks
     s3_handler = create_file_handler(
-        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+        handler_type=FileHandlerType.S3,
+        connection_id=DEFAULT_S3_CONN_ID,
+        bucket=DEFAULT_S3_BUCKET,
     )
 
     # Read file
