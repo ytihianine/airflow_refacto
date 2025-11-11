@@ -112,7 +112,7 @@ def download_grist_doc_to_s3(
     doc_id_key: str,
     grist_host: str = "https://grist.numerique.gouv.fr",
     api_token_key: str = "grist_secret_key",
-    http_client_over_internet: bool = True,
+    use_proxy: bool = True,
     **context,
 ) -> None:
     """Download SQLite from a specific Grist doc to S3"""
@@ -121,7 +121,7 @@ def download_grist_doc_to_s3(
     selecteur_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
 
     # Instanciate Grist client
-    if http_client_over_internet:
+    if use_proxy:
         http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
         request_client = RequestsClient(config=http_config)
     else:
