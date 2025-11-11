@@ -1,10 +1,10 @@
 import pandas as pd
 from airflow.models import Variable
 
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_file_handler
 from infra.file_handling.dataframe import read_dataframe
 from infra.http_client.adapters import HttpxClient, ClientConfig
-from utils.config.vars import AGENT, PROXY
+from utils.config.vars import AGENT, PROXY, DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 from utils.config.tasks import get_selecteur_config
 from utils.dataframe import df_info
 
@@ -64,7 +64,9 @@ def get_liste_declarations(api_client: HttpxClient, url: str, token: str) -> dic
 
 def liste_declaration(nom_projet: str) -> None:
     # Hooks
-    s3_hook = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+    s3_handler = create_file_handler(
+        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+    )
     # Http client
     httpx_internet_client = HttpxClient(client_config)
     # Storage paths
@@ -90,11 +92,11 @@ def liste_declaration(nom_projet: str) -> None:
     df_info(df=df_adresses_efa, df_name="Adresses EFA")
 
     # Export
-    s3_hook.write(
+    s3_handler.write(
         content=df_declarations.to_parquet(path=None, index=False),
         file_path=declaration_ademe_config.filepath_tmp_s3,
     )
-    s3_hook.write(
+    s3_handler.write(
         content=df_adresses_efa.to_parquet(path=None, index=False),
         file_path=adresse_efa_config.filepath_tmp_s3,
     )
@@ -113,7 +115,9 @@ def get_consommation_by_id(
 
 def consommation_by_id(nom_projet: str) -> None:
     # Hooks
-    s3_hook = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+    s3_handler = create_file_handler(
+        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+    )
     # Http client
     httpx_internet_client = HttpxClient(client_config)
     # Storage paths
@@ -129,7 +133,7 @@ def consommation_by_id(nom_projet: str) -> None:
     # Main part
     token = get_token(api_client=httpx_internet_client, url=BASE_URL)
     df_declarations = read_dataframe(
-        file_handler=s3_hook, file_path=declaration_ademe_config.filepath_tmp_s3
+        file_handler=s3_handler, file_path=declaration_ademe_config.filepath_tmp_s3
     )
 
     conso_ids = df_declarations["id_consommation"]
@@ -165,15 +169,15 @@ def consommation_by_id(nom_projet: str) -> None:
     df_info(df=df_indicateur, df_name="Détail indicateur")
 
     # Export files
-    s3_hook.write(
+    s3_handler.write(
         content=df_activite.to_parquet(path=None, index=False),
         file_path=activite_config.filepath_tmp_s3,
     )
-    s3_hook.write(
+    s3_handler.write(
         content=df_indicateur.to_parquet(path=None, index=False),
         file_path=indicateur_config.filepath_tmp_s3,
     )
-    s3_hook.write(
+    s3_handler.write(
         content=df_detail.to_parquet(path=None, index=False),
         file_path=detail_config.filepath_tmp_s3,
     )

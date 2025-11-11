@@ -3,10 +3,10 @@ import pandas as pd
 
 from infra.database.factory import create_db_handler
 from infra.database.postgres import PostgresDBHandler
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_file_handler
 from infra.http_client.adapters import HttpxClient
 from infra.http_client.config import ClientConfig
-from utils.config.vars import AGENT, PROXY
+from utils.config.vars import AGENT, DEFAULT_S3_CONN_ID, DEFAULT_S3_BUCKET, PROXY
 from utils.config.tasks import get_selecteur_config
 from utils.dataframe import df_info
 
@@ -54,7 +54,9 @@ def get_georisques(
 
     # Hooks
     db_handler = cast(PostgresDBHandler, create_db_handler("db_data_store"))
-    s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+    s3_handler = create_file_handler(
+        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+    )
 
     # Storage paths
     config_risques = get_selecteur_config(

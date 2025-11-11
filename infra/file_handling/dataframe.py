@@ -1,12 +1,11 @@
 """DataFrame utilities for file handling."""
 
 import io
-from typing import Any, Dict, Optional, Union
+from typing import Optional, Union
 from pathlib import Path
 import pandas as pd
 
 from .base import BaseFileHandler
-from .factory import FileHandlerFactory
 
 
 def read_dataframe(
@@ -31,9 +30,9 @@ def read_dataframe(
     Example:
         ```python
         # Create a file handler for S3
-        handler = FileHandlerFactory.create_handler(
+        handler = create_file_handler(
             's3',
-            connection_id='minio_bucket_dsci',
+            connection_id='minio_bucket',
             bucket='your-bucket'
         )
 
@@ -103,7 +102,7 @@ def write_dataframe(
     Example:
         ```python
         # Create a file handler for S3
-        handler = FileHandlerFactory.create_handler(
+        handler = create_file_handler(
             's3',
             connection_id='minio_bucket_dsci',
             bucket='your-bucket'

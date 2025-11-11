@@ -8,7 +8,7 @@ import pytz
 from airflow.decorators import task
 
 from infra.file_handling.exceptions import FileHandlerError, FileNotFoundError
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_file_handler
 from utils.config.tasks import get_projet_config
 from utils.config.vars import (
     DEFAULT_S3_CONN_ID,
@@ -37,7 +37,9 @@ def copy_s3_files(
     if not nom_projet:
         raise ValueError("Project name must be provided in DAG parameters!")
 
-    s3_handler = S3FileHandler(connection_id=connection_id, bucket=bucket)
+    s3_handler = create_file_handler(
+        handler_type="s3", connection_id=connection_id, bucket=bucket
+    )
 
     # Get timing information
     execution_date = context.get("execution_date")
@@ -107,7 +109,9 @@ def del_s3_files(
     source_keys: List[str] = []
 
     # Initialize S3 handler
-    s3_handler = S3FileHandler(connection_id=connection_id, bucket=bucket)
+    s3_handler = create_file_handler(
+        handler_type="s3", connection_id=connection_id, bucket=bucket
+    )
 
     if not keys_to_delete:
         # Get project name from context

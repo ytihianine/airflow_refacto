@@ -13,9 +13,8 @@ from infra.database.factory import create_db_handler
 from infra.database.postgres import PostgresDBHandler
 
 from infra.file_handling.dataframe import read_dataframe
-from infra.file_handling.factory import FileHandlerFactory
+from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 
-from infra.file_handling.s3 import S3FileHandler
 from utils.config.tasks import get_projet_config, get_tbl_names
 from utils.config.types import SelecteurConfig
 from utils.control.structures import are_lists_egal
@@ -550,15 +549,8 @@ def _process_and_import_file(
     sont dans le même ordre !
     """
     # Define hooks
-    s3_handler = FileHandlerFactory.create_handler(
-        handler_type="s3",
-        base_path=None,
-        connection_id=DEFAULT_S3_CONN_ID,
-        bucket=DEFAULT_S3_BUCKET,
-    )
-    local_handler = FileHandlerFactory.create_handler(
-        handler_type="local", base_path=None, connection_id=None
-    )
+    s3_handler = create_default_s3_handler()
+    local_handler = create_local_handler(base_path=None)
     db = create_db_handler(pg_conn_id)
 
     # Check if old file already exists in local system
@@ -793,10 +785,8 @@ def import_sqlitefile_to_db(
     # Hooks
     db = create_db_handler(pg_conn_id)
     db_uri = db.get_uri().replace("postgresql://", "")
-    s3_handler = S3FileHandler(
-        connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
-    )
-    local_handler = FileHandlerFactory.create_handler(handler_type="local")
+    s3_handler = create_default_s3_handler()
+    local_handler = create_local_handler(base_path=None)
 
     # Copy s3 file to local system
     local_sqlite_path = "/tmp/tmp_grist.db"

@@ -3,7 +3,7 @@ from datetime import timedelta
 from airflow.decorators import task
 from airflow.models import Variable
 
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_file_handler
 from infra.http_client.adapters import RequestsClient
 from infra.http_client.config import ClientConfig
 from infra.grist.client import GristAPI
@@ -138,8 +138,8 @@ def download_grist_doc_to_s3(
     )
 
     # Hooks
-    s3_handler = S3FileHandler(
-        connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
+    s3_handler = create_file_handler(
+        handler_type="s3", connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
     )
 
     # Get document data from Grist

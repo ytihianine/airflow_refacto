@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Optional
 from airflow.decorators import task
 import pandas as pd
 
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_default_s3_handler
 from infra.file_handling.dataframe import read_dataframe
 
 from utils.dataframe import df_info
@@ -15,7 +15,6 @@ from utils.config.tasks import (
     get_cols_mapping,
     format_cols_mapping,
 )
-from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 
 TaskParams = Dict[str, Any]
 
@@ -23,9 +22,7 @@ TaskParams = Dict[str, Any]
 def create_parquet_converter_task(
     selecteur: str,
     task_params: Optional[TaskParams] = None,
-    process_func: Optional[
-        Callable[[pd.DataFrame, dict[str, str]], pd.DataFrame]
-    ] = None,
+    process_func: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
     read_options: Optional[dict[str, Any]] = None,
     apply_cols_mapping: bool = True,
 ) -> Callable:
@@ -52,9 +49,8 @@ def create_parquet_converter_task(
     @task(**task_params)
     def convert_to_parquet(**context) -> None:
         """Convert file to Parquet format and upload to S3."""
-        s3_handler = S3FileHandler(
-            connection_id=DEFAULT_S3_CONN_ID, bucket=DEFAULT_S3_BUCKET
-        )
+        s3_handler = create_default_s3_handler()
+
         params = context.get("params", {})
         nom_projet = params.get("nom_projet")
         if not nom_projet:

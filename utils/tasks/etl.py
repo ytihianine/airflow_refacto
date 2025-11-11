@@ -8,8 +8,7 @@ import pandas as pd
 from airflow.decorators import task
 
 from infra.file_handling.dataframe import read_dataframe
-from infra.file_handling.local import LocalFileHandler
-from infra.file_handling.s3 import S3FileHandler
+from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 from infra.database.factory import create_db_handler
 from utils.dataframe import df_info
 from utils.config.tasks import (
@@ -94,8 +93,8 @@ def create_grist_etl_task(
             raise ValueError(f"nom_source must be defined for selecteur {selecteur}")
 
         # Initialize hooks
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
-        local_handler = LocalFileHandler()
+        s3_handler = create_default_s3_handler()
+        local_handler = create_local_handler()
         sqlite_handler = create_db_handler(
             connection_id=doc_config.filepath_local, db_type="sqlite"
         )
@@ -156,7 +155,7 @@ def create_file_etl_task(
         nom_projet = _get_project_name(context=context)
 
         # Initialize hooks
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        s3_handler = create_default_s3_handler()
 
         # Get config values related to the task
         task_config = get_selecteur_config(nom_projet=nom_projet, selecteur=selecteur)
@@ -240,7 +239,7 @@ def create_multi_files_input_etl_task(
         nom_projet = _get_project_name(context=context)
 
         # Initialize handler
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        s3_handler = create_default_s3_handler()
 
         # Resolve configs
         output_config = get_selecteur_config(
@@ -340,14 +339,12 @@ def create_action_to_file_etl_task(
         nom_projet = _get_project_name(context=context)
 
         # Initialize handler
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
+        s3_handler = create_default_s3_handler()
 
         # Resolve configs
         output_config = get_selecteur_config(
             nom_projet=nom_projet, selecteur=output_selecteur
         )
-        # Initialize hooks
-        s3_handler = S3FileHandler(connection_id="minio_bucket_dsci", bucket="dsci")
 
         # Execute action
         if use_context:
