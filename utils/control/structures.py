@@ -4,7 +4,7 @@ import ast
 
 def remove_grist_internal_cols(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df = df.drop(labels=list[df.filter(regex="^(grist|manual)").columns], axis=1)
+    df = df.drop(labels=list(df.filter(regex="^(grist|manual)").columns), axis=1)
     return df
 
 
