@@ -1,4 +1,3 @@
-from typing import Any
 import pandas as pd
 
 from utils.control.text import normalize_whitespace_columns
@@ -160,7 +159,7 @@ def process_agent_contrat(df: pd.DataFrame) -> pd.DataFrame:
     #     .str.join(" ")
     #     .fillna("")
     # )
-    df = df.rename(columns={"date_d_entree_a_la_DGE": "date_entree_dge"})
+    df = df.rename(columns={"date_d_entree_a_la_dge": "date_entree_dge"})
     date_cols = [
         "date_premier_contrat_mef",
         "date_debut_contrat_actuel_dge",
