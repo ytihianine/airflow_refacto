@@ -3,17 +3,12 @@ import numpy as np
 
 
 def replace_values(
-    df: pd.DataFrame, to_replace: dict[str, str], cols: list[str] = None
+    df: pd.DataFrame, to_replace: dict[str, str], cols: list[str] | None = None
 ) -> pd.DataFrame:
     if cols:
         df[cols] = df[cols].replace(to_replace=to_replace)
     else:
         df = df.replace(to_replace=to_replace)
-    return df
-
-
-def clean_normalize_df(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.drop(df.filter(regex="^(grist|manual)").columns, axis=1)
     return df
 
 
@@ -25,7 +20,7 @@ def process_direction(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
 
@@ -45,7 +40,7 @@ def process_service(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
 
@@ -69,7 +64,7 @@ def process_projets(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
 
@@ -92,7 +87,7 @@ def process_selecteur(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
 
@@ -117,7 +112,7 @@ def process_source(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
 
@@ -146,7 +141,7 @@ def process_storage_path(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
 
@@ -173,7 +168,7 @@ def process_col_mapping(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
 
@@ -201,6 +196,6 @@ def process_col_requises(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df[sorted_cols]
+    df = df.loc[sorted_cols]
 
     return df
