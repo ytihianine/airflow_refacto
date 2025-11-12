@@ -170,6 +170,9 @@ def create_file_etl_task(
             if cols_mapping.empty:
                 print(f"No column mapping found for selecteur {selecteur}")
             else:
+                print(
+                    "apply_cols_mapping set to True. Renaming the dataframe labels ..."
+                )
                 df = df.set_axis(
                     labels=[" ".join(colname.split()) for colname in df.columns],
                     axis="columns",
