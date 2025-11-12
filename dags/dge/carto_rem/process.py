@@ -1,3 +1,4 @@
+from typing import Any
 import pandas as pd
 
 from utils.control.text import normalize_whitespace_columns
@@ -103,8 +104,8 @@ def process_agent_r4(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
     df = df.loc[cols_to_keep]
     txt_cols = [
         "numero_poste",
-        "type_de_fonction_libelle_court",
-        "type_de_fonction_libelle_long",
+        "fonction_dge_libelle_court",
+        "fonction_dge_libelle_long",
         "type_poste",
     ]
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
@@ -112,6 +113,10 @@ def process_agent_r4(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
     df["date_acces_corps"] = df["date_acces_corps"].replace("A COMPLETER", None)
     df["date_acces_corps"] = pd.to_datetime(df["date_acces_corps"], format="%d/%m/%Y")
 
+    return df
+
+
+def process_agent_fonction_anais(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
@@ -145,7 +150,7 @@ def process_agent_revalorisation(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_agent_contrat(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.drop(columns=["agent"])
+    df = df.drop(columns=["agent", "duree_contrat_en_cours"])
     # df["duree_cumulee_contrats_tout_contrat_mef"] = (
     #     df["duree_cumulee_contrats_tout_contrat_mef"]
     #     .apply(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
@@ -155,9 +160,11 @@ def process_agent_contrat(df: pd.DataFrame) -> pd.DataFrame:
     #     .str.join(" ")
     #     .fillna("")
     # )
+    df = df.rename(columns={"date_d_entree_a_la_DGE": "date_entree_dge"})
     date_cols = [
         "date_premier_contrat_mef",
         "date_debut_contrat_actuel_dge",
+        "date_entree_dge",
         "date_fin_contrat_cdd_en_cours_au_soir",
         "date_de_cdisation",
     ]
@@ -185,12 +192,24 @@ def process_agent_rem_variable(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_agent(
-    df_rem_carto: pd.DataFrame, df_info_car: pd.DataFrame, required_cols: list[str]
+    df_rem_carto: pd.DataFrame, df_info_car: pd.DataFrame
 ) -> pd.DataFrame:
     df = pd.merge(
         left=df_rem_carto, right=df_info_car, how="outer", on=["matricule_agent"]
     )
-    df = df.loc[required_cols]
+    cols_to_keep = [
+        "corps",
+        "date_de_naissance",
+        "echelon",
+        "genre",
+        "grade",
+        "matricule_agent",
+        "nom_usuel",
+        "prenom",
+        "qualite_statutaire",
+        "date_acces_corps",
+    ]
+    df = df.loc[cols_to_keep]
     df = df.reset_index(drop=True)
     df["id"] = df.index
 
@@ -201,11 +220,20 @@ def process_agent_poste(
     df_agent: pd.DataFrame,
     df_carto_rem: pd.DataFrame,
     df_r4: pd.DataFrame,
-    required_cols: list[str],
+    df_fonction_anais: pd.DataFrame,
 ) -> pd.DataFrame:
     df = pd.merge(left=df_agent, right=df_carto_rem, how="left", on=["matricule_agent"])
     df = pd.merge(left=df, right=df_r4, how="left", on=["matricule_agent"])
-    df = df.loc[required_cols]
+    df = pd.merge(left=df, right=df_fonction_anais, how="left", on=["matricule_agent"])
+    cols_to_keep = [
+        "categorie",
+        "libelle_du_poste",
+        "fonction_dge_libelle_court",
+        "fonction_dge_libelle_long",
+        "matricule_agent",
+        "numero_poste",
+    ]
+    df = df.loc[cols_to_keep]
     df["date_recrutement_structure"] = None
     df = df.reset_index(drop=True)
     df["id"] = df.index

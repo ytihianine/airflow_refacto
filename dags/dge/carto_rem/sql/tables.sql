@@ -42,15 +42,18 @@ CREATE TABLE cartographie_remuneration.ref_valeur_point_indice (
 */
 
 CREATE TABLE cartographie_remuneration.agent (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     matricule_agent BIGINT UNIQUE,
     nom_usuel TEXT,
     prenom TEXT,
     genre TEXT,
     date_de_naissance DATE,
+    qualite_statutaire TEXT,
+    date_acces_corps DATE,
     corps TEXT,
     grade TEXT,
-    echelon INTEGER
+    echelon INTEGER,
+    PRIMARY KEY (matricule_agent)
 );
 
 -- table: cartographie_remuneration.agent_diplome
@@ -78,6 +81,7 @@ CREATE TABLE cartographie_remuneration.agent_contrat (
 	id SERIAL primary key,
 	date_premier_contrat_mef DATE,
 	date_debut_contrat_actuel_dge DATE,
+  date_entree_dge DATE,
 	duree_contrat_en_cours_dge INTEGER,
 	duree_cumulee_contrats_tout_contrat_mef TEXT,
 	date_fin_contrat_cdd_en_cours_au_soir DATE,
@@ -91,8 +95,9 @@ CREATE TABLE cartographie_remuneration.agent_poste (
     matricule_agent BIGINT REFERENCES cartographie_remuneration.agent(matricule_agent),
     numero_poste TEXT,
     categorie TEXT,
-    type_de_fonction_libelle_court TEXT,
-    type_de_fonction_libelle_long TEXT,
+    fonction_anais TEXT,
+    fonction_dge_libelle_court TEXT,
+    fonction_dge_libelle_long TEXT,
     date_recrutement_structure DATE
 );
 

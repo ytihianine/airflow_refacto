@@ -58,23 +58,23 @@ LINK_DOC_DATA = "To define"  # noqa
 )
 def cartographie_remuneration() -> None:
     """Task definitions"""
-    looking_for_files = S3KeySensor(
-        task_id="looking_for_files",
-        aws_conn_id="minio_bucket_dsci",
-        bucket_name="dsci",
-        bucket_key=get_s3_keys_source(nom_projet=nom_projet),
-        mode="reschedule",
-        poke_interval=timedelta(seconds=30),
-        timeout=timedelta(minutes=13),
-        soft_fail=True,
-        on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
-        on_success_callback=create_airflow_callback(mail_status=MailStatus.START),
-    )
+    # looking_for_files = S3KeySensor(
+    #     task_id="looking_for_files",
+    #     aws_conn_id="minio_bucket_dsci",
+    #     bucket_name="dsci",
+    #     bucket_key=get_s3_keys_source(nom_projet=nom_projet),
+    #     mode="reschedule",
+    #     poke_interval=timedelta(seconds=30),
+    #     timeout=timedelta(minutes=13),
+    #     soft_fail=True,
+    #     on_skipped_callback=create_airflow_callback(mail_status=MailStatus.SKIP),
+    #     on_success_callback=create_airflow_callback(mail_status=MailStatus.START),
+    # )
 
     """ Task order """
     chain(
         validate_params(),
-        looking_for_files,
+        # looking_for_files,
         download_grist_doc_to_s3(
             selecteur="grist_doc",
             workspace_id="dsci",
@@ -82,14 +82,14 @@ def cartographie_remuneration() -> None:
         ),
         [source_files(), referentiels(), source_grist()],
         output_files(),
-        create_tmp_tables(),
-        import_file_to_db.partial(keep_file_id_col=True).expand(
-            selecteur_config=get_projet_config(nom_projet=nom_projet)
-        ),
-        copy_tmp_table_to_real_table(),
-        copy_s3_files(bucket="dsci"),
-        del_s3_files(bucket="dsci"),
-        delete_tmp_tables(),
+        # create_tmp_tables(),
+        # import_file_to_db.partial(keep_file_id_col=True).expand(
+        #     selecteur_config=get_projet_config(nom_projet=nom_projet)
+        # ),
+        # copy_tmp_table_to_real_table(),
+        # copy_s3_files(bucket="dsci"),
+        # del_s3_files(bucket="dsci"),
+        # delete_tmp_tables(),
     )
 
 

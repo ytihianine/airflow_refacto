@@ -21,18 +21,34 @@ validate_params = create_validate_params_task(
 @task_group
 def source_files() -> None:
     agent_carto_rem = create_file_etl_task(
-        selecteur="agent_carto_rem", process_func=process.process_agent_carto_rem
+        selecteur="agent_carto_rem",
+        process_func=process.process_agent_carto_rem,
+        add_import_date=False,
+        add_snapshot_id=False,
     )
     agent_info_carriere = create_file_etl_task(
         selecteur="agent_info_carriere",
         process_func=process.process_agent_info_carriere,
+        add_import_date=False,
+        add_snapshot_id=False,
     )
     agent_r4 = create_file_etl_task(
-        selecteur="agent_r4", process_func=process.process_agent_r4
+        selecteur="agent_r4",
+        process_func=process.process_agent_r4,
+        add_import_date=False,
+        add_snapshot_id=False,
+    )
+    agent_fonction_anais = create_file_etl_task(
+        selecteur="agent_fonction_anais",
+        process_func=process.process_agent_r4,
+        add_import_date=False,
+        add_snapshot_id=False,
     )
 
     # ordre des tâches
-    chain([agent_carto_rem(), agent_info_carriere(), agent_r4()])
+    chain(
+        [agent_carto_rem(), agent_info_carriere(), agent_r4(), agent_fonction_anais()]
+    )
 
 
 @task_group
@@ -70,16 +86,27 @@ def output_files() -> None:
         output_selecteur="agent",
         input_selecteurs=["agent_carto_rem", "agent_info_carriere"],
         process_func=process.process_agent,
+        add_import_date=False,
+        add_snapshot_id=False,
     )
     agent_poste = create_multi_files_input_etl_task(
         output_selecteur="agent_poste",
-        input_selecteurs=["agent", "agent_carto_rem", "agent_r4"],
+        input_selecteurs=[
+            "agent",
+            "agent_carto_rem",
+            "agent_r4",
+            "agent_fonction_anais",
+        ],
         process_func=process.process_agent_poste,
+        add_import_date=False,
+        add_snapshot_id=False,
     )
     agent_remuneration = create_multi_files_input_etl_task(
         output_selecteur="agent_remuneration",
         input_selecteurs=["agent_carto_rem", "agent_rem_variable"],
         process_func=process.process_agent_remuneration,
+        add_import_date=False,
+        add_snapshot_id=False,
     )
     # ordre des tâches
     chain(
