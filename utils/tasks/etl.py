@@ -1,7 +1,7 @@
 """Module for ETL task creation and execution."""
 
+from airflow.decorators.base import Task
 from typing import Callable, Optional, Any
-from datetime import datetime
 from airflow import XComArg
 import pandas as pd
 
@@ -18,7 +18,7 @@ from utils.config.tasks import (
     get_required_cols,
 )
 from utils.config.dag_params import get_execution_date, get_project_name
-from utils.config.types import P, R, DatabaseType
+from utils.config.types import R, DatabaseType
 
 
 def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
@@ -59,7 +59,8 @@ def create_grist_etl_task(
     Args:
         selecteur: Configuration selector key
         doc_selecteur: Configuration selector for the Grist document
-        normalisation_process_func: Optional normalization process to run before the process function
+        normalisation_process_func: Optional normalization process to run
+            before the process function
         process_func: Optional function to process the DataFrame
 
     Returns:
@@ -166,11 +167,13 @@ def create_file_etl_task(
                 print(f"No column mapping found for selecteur {selecteur}")
             else:
                 df = df.set_axis(
-                    [" ".join(colname.split()) for colname in df.columns],
+                    labels=[" ".join(colname.split()) for colname in df.columns],
                     axis="columns",
                 )
-                df = df.rename(columns=format_cols_mapping(cols_mapping))
-                df = df[list(format_cols_mapping(cols_mapping).values())]
+                df = df.rename(columns=format_cols_mapping(df_cols_map=cols_mapping))
+                df = df.loc[
+                    list(format_cols_mapping(df_cols_map=cols_mapping).values())
+                ]
 
         if process_func is None:
             print("No process function provided. Skipping the processing step ...")
@@ -278,10 +281,10 @@ def create_multi_files_input_etl_task(
 
 def create_action_etl_task(
     task_id: str,
-    action_func: Callable[P, R],
+    action_func: Callable[..., R],
     action_args: Optional[tuple] = None,
     action_kwargs: Optional[dict[str, Any]] = None,
-):
+) -> Task[..., None]:
     """Create an ETL task that executes a given action function with parameters."""
 
     if action_args is None:
@@ -290,7 +293,7 @@ def create_action_etl_task(
         action_kwargs = {}
 
     @task(task_id=task_id)
-    def _task(**context):
+    def _task(**context) -> None:
         merged_kwargs = {**action_kwargs}
         action_func(*action_args, **merged_kwargs)
 
@@ -300,11 +303,11 @@ def create_action_etl_task(
 def create_action_to_file_etl_task(
     output_selecteur: str,
     task_id: str,
-    action_func: Callable[P, pd.DataFrame],
+    action_func: Callable[..., pd.DataFrame],
     action_args: Optional[tuple] = None,
     action_kwargs: Optional[dict[str, Any]] = None,
     use_context: bool = False,
-):
+) -> Task[..., None]:
     """
     Create an ETL task that executes a given action function with parameters. The action function must return a DataFrame
     that will be saved to a file in S3 according to the output_selecteur configuration.
@@ -325,7 +328,7 @@ def create_action_to_file_etl_task(
         action_kwargs = {}
 
     @task(task_id=task_id)
-    def _task(**context):
+    def _task(**context) -> None:
         # Get project name from context
         nom_projet = get_project_name(context=context)
 
