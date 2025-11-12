@@ -2,9 +2,27 @@
 
 import re
 import unicodedata
-from typing import List, Optional, Set, Union
+from typing import List
+from pandas._typing import DateTimeErrorChoices
 
 import pandas as pd
+
+
+def convert_str_cols_to_date(
+    df: pd.DataFrame,
+    columns: list[str],
+    str_date_format: str,
+    errors: DateTimeErrorChoices,
+) -> pd.DataFrame:
+    if isinstance(columns, str):
+        columns = [columns]
+
+    for date_col in columns:
+        df[date_col] = pd.to_datetime(
+            df.loc[date_col], format=str_date_format, errors=errors
+        )
+
+    return df
 
 
 def normalize_txt_column(series: pd.Series) -> pd.Series:
@@ -17,6 +35,15 @@ def normalize_txt_column(series: pd.Series) -> pd.Series:
         Normalized text Series with single spaces between words
     """
     return series.str.strip().str.split().str.join(" ")
+
+
+def normalize_whitespace_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Normalize whitespace for multiple columns at once."""
+    df = df.copy()
+    for col in columns:
+        if col in df.columns:
+            df[col] = normalize_txt_column(series=df.loc[col])
+    return df
 
 
 def remove_accents(text: str) -> str:
