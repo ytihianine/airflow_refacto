@@ -1,8 +1,7 @@
 import pandas as pd
-from pandas._typing import DateTimeErrorChoices
 import numpy as np
 
-from utils.control.text import normalize_txt_column
+from utils.control.text import convert_str_cols_to_date, normalize_whitespace_columns
 
 corr_mois = {
     "janvier": "01-janv",
@@ -71,32 +70,6 @@ corr_nature_sous_nature = {
 }
 
 
-def convert_str_cols_to_date(
-    df: pd.DataFrame,
-    cols: list[str],
-    str_date_format: str,
-    errors: DateTimeErrorChoices,
-) -> pd.DataFrame:
-    if isinstance(cols, str):
-        cols = [cols]
-
-    for date_col in cols:
-        df[date_col] = pd.to_datetime(
-            df[date_col], format=str_date_format, errors=errors
-        )
-
-    return df
-
-
-def normalize_whitespace_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
-    """Normalize whitespace for multiple columns at once."""
-    df = df.copy()
-    for col in columns:
-        if col in df.columns:
-            df[col] = normalize_txt_column(df[col])
-    return df
-
-
 # ======================================================
 # Demande d'achat (DA)
 # ======================================================
@@ -117,7 +90,7 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
     # Convertir les colonnes temporelles
     date_cols = ["date_creation_da", "date_replication"]
     df = convert_str_cols_to_date(
-        df=df, cols=date_cols, str_date_format="%d/%m/%Y", errors="coerce"
+        df=df, columns=date_cols, str_date_format="%d/%m/%Y", errors="coerce"
     )
 
     # Ajouter les colonnes complémentaires
@@ -131,7 +104,7 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
     df["mois_nom"] = (
         df["date_creation_da"].df.month_name(locale="fr_FR.utf-8").str.lower()
     )
-    df["mois_nombre"] = df["moi_nom"].map(corr_mois).fillna(-1)
+    df["mois_nombre"] = df.loc["moi_nom"].map(corr_mois).fillna(-1)
 
     palier = [0, 3, 6, 9, 12, 15, np.inf]
     labels = [
@@ -165,7 +138,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
 
     # Nettoyer les champs textuels
     txt_cols = ["centre_financer", "centre_cout"]
-    df = normalize_whitespace_columns(df, txt_cols)
+    df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Ajouter les colonnes complémentaires
     df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
@@ -173,7 +146,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     # (stand-by) Détermine si multiple ou unique
 
     # Catégoriser les données
-    df["type_ej_nom"] = df["type_ej"].map(corr_type_ej).fillna("non determine")
+    df["type_ej_nom"] = df.loc["type_ej"].map(corr_type_ej).fillna("non determine")
 
     return df
 
@@ -199,13 +172,15 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     # Convertir les colonnes temporelles
     date_cols = ["date_comptable"]
     df = convert_str_cols_to_date(
-        df=df, cols=date_cols, str_date_format="%d/%m/%Y", errors="coerce"
+        df=df, columns=date_cols, str_date_format="%d/%m/%Y", errors="coerce"
     )
 
     # Catégoriser les données
     df["mois"] = df["date_comptable"].df.month
     df["nat_snat_nom"] = (
-        df["nature_sous_nature"].map(corr_nature_sous_nature).fillna("non determine")
+        df.loc["nature_sous_nature"]
+        .map(corr_nature_sous_nature)
+        .fillna("non determine")
     )
     df["nat_snat_groupe"] = np.where(
         df["nature_sous_nature"].isin(["2.1", "2.2", "2.3"]),
@@ -220,7 +195,7 @@ def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
     """fichier INFBUD55"""
     # Nettoyer les champs textuels
     txt_cols = ["societe", "type_flux"]
-    df = normalize_whitespace_columns(df, txt_cols)
+    df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Filtrer les lignes
     df = df.loc[df["type_flux"] == "Flux 3"]
@@ -309,7 +284,7 @@ def process_delai_global_paiement(df: pd.DataFrame) -> pd.DataFrame:
 
     # Ajouter les colonnes complémentaires
     df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
-    df["mois_nom"] = df["periode_comptable"].map(corr_num_mois).fillna("inconnu")
+    df["mois_nom"] = df.loc["periode_comptable"].map(corr_num_mois).fillna("inconnu")
 
     # Arrondir les valeurs
     df["delai_global_paiement"] = df["delai_global_paiement"].round(2)

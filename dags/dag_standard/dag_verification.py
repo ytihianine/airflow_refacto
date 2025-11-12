@@ -1,4 +1,6 @@
-from datetime import timedelta
+from typing import Any
+
+
 from pprint import pprint
 
 from airflow.decorators import dag, task
@@ -14,10 +16,10 @@ LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow
 LINK_DOC_DONNEES = "https://catalogue-des-donnees.lab.incubateur.finances.rie.gouv.fr/app/dataset?datasetId=49"  # noqa
 
 
-default_args = {
+default_args: dict[str, Any] = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": days_ago(1),
+    "start_date": days_ago(n=1),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 0,
@@ -26,13 +28,13 @@ default_args = {
 
 # Définition du DAG
 @dag(
-    "dag_verification",
-    schedule_interval=timedelta(seconds=30),
+    dag_id="dag_verification",
+    schedule_interval=None,
     max_active_runs=1,
     max_consecutive_failed_dag_runs=1,
     catchup=False,
     tags=["SG", "Vérification"],
-    description="Dag qui sert de standard pour l'ensemble des dags.",  # noqa
+    description="Dag de vérification.",  # noqa
     default_args=default_args,
     params={
         "nom_projet": "Projet test",
@@ -52,14 +54,16 @@ default_args = {
     },
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
-def dag_verification():
+def dag_verification() -> None:
     @task
-    def print_context(**context):
-        pprint(context)
-        pprint(context["dag"].__dict__)
-        pprint(context["ti"].__dict__)
+    def print_context(**context) -> None:
+        pprint(object=context)
+        pprint(object=context["dag"].__dict__)
+        pprint(object=context["ti"].__dict__)
         pprint(
-            context["ti"].xcom_pull(key="snapshot_id", task_ids="get_projet_snapshot")
+            object=context["ti"].xcom_pull(
+                key="snapshot_id", task_ids="get_projet_snapshot"
+            )
         )
 
     # Ordre des tâches

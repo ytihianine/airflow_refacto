@@ -1,11 +1,11 @@
 import pandas as pd
 
-from utils.control.text import normalize_txt_column
+from utils.control.text import normalize_whitespace_columns
 
 
 def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     print("Normalizing dataframe")
-    df.columns = map(str.lower, df.columns)
+    df = df.set_axis(labels=map(str.lower, df.columns), axis="columns")
     df = df.convert_dtypes()
     return df
 
@@ -51,7 +51,8 @@ def process_ref_valeur_point_indice(df: pd.DataFrame) -> pd.DataFrame:
 
 def normalize_df_source(df: pd.DataFrame) -> pd.DataFrame:
     df = df.set_axis(
-        [" ".join(colname.strip().split()) for colname in df.columns], axis="columns"
+        labels=[" ".join(colname.strip().split()) for colname in df.columns],
+        axis="columns",
     )
     return df
 
@@ -60,7 +61,7 @@ def process_agent_carto_rem(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFram
     df = normalize_df_source(df=df)
     df = df.rename(columns=cols_mapping, errors="raise")
     cols_to_keep = list(cols_mapping.values())
-    df = df[cols_to_keep]
+    df = df.loc[cols_to_keep]
     df["matricule_agent"] = (
         df["matricule_nom_prenom"].str.split("_").str.get(0).astype("int64")
     )
@@ -76,8 +77,8 @@ def process_agent_carto_rem(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFram
         "type_indemnitaire",
         "groupe_ifse",
     ]
-    for col in txt_cols:
-        df[col] = normalize_txt_column(series=df[col])
+    df = normalize_whitespace_columns(df=df, columns=txt_cols)
+
     return df
 
 
@@ -85,14 +86,13 @@ def process_agent_info_carriere(df: pd.DataFrame, cols_mapping: dict) -> pd.Data
     df = normalize_df_source(df=df)
     df = df.rename(columns=cols_mapping, errors="raise")
     cols_to_keep = list(cols_mapping.values())
-    df = df[cols_to_keep]
+    df = df.loc[cols_to_keep]
     txt_cols = [
         "dge_perimetre",
         "nom_usuel",
         "prenom",
     ]
-    for col in txt_cols:
-        df[col] = df[col] = normalize_txt_column(series=df[col])
+    df = normalize_whitespace_columns(df=df, columns=txt_cols)
     return df
 
 
@@ -100,15 +100,14 @@ def process_agent_r4(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
     df = normalize_df_source(df=df)
     df = df.rename(columns=cols_mapping, errors="raise")
     cols_to_keep = list(cols_mapping.values())
-    df = df[cols_to_keep]
+    df = df.loc[cols_to_keep]
     txt_cols = [
         "numero_poste",
         "type_de_fonction_libelle_court",
         "type_de_fonction_libelle_long",
         "type_poste",
     ]
-    for col in txt_cols:
-        df[col] = df[col] = normalize_txt_column(series=df[col])
+    df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
     df["date_acces_corps"] = df["date_acces_corps"].replace("A COMPLETER", None)
     df["date_acces_corps"] = pd.to_datetime(df["date_acces_corps"], format="%d/%m/%Y")
@@ -191,7 +190,7 @@ def process_agent(
     df = pd.merge(
         left=df_rem_carto, right=df_info_car, how="outer", on=["matricule_agent"]
     )
-    df = df[required_cols]
+    df = df.loc[required_cols]
     df = df.reset_index(drop=True)
     df["id"] = df.index
 
@@ -206,7 +205,7 @@ def process_agent_poste(
 ) -> pd.DataFrame:
     df = pd.merge(left=df_agent, right=df_carto_rem, how="left", on=["matricule_agent"])
     df = pd.merge(left=df, right=df_r4, how="left", on=["matricule_agent"])
-    df = df[required_cols]
+    df = df.loc[required_cols]
     df["date_recrutement_structure"] = None
     df = df.reset_index(drop=True)
     df["id"] = df.index
@@ -235,7 +234,7 @@ def process_agent_remuneration(
         how="left",
         on=["matricule_agent"],
     )
-    df = df[cols_to_keep]
+    df = df.loc[cols_to_keep]
     map_region_indem = {
         "Pas d'indemnité de résidence": 0,
         "Zone Corse et certaines communes de l'Ain et de la Haute-Savoie": 0,
@@ -244,7 +243,9 @@ def process_agent_remuneration(
         "Zone à 1% com. minières Moselle": 0.001,
         "Zone à 3%": 0.003,
     }
-    df["region_indemnitaire_valeur"] = df["region_indemnitaire"].map(map_region_indem)
+    df["region_indemnitaire_valeur"] = df.loc["region_indemnitaire"].map(
+        map_region_indem
+    )
     cols = [
         "total_indemnitaire_annuel",
         "totale_brute_annuel",
@@ -254,12 +255,12 @@ def process_agent_remuneration(
     ]
 
     for c in cols:
-        df[c] = df[c].astype(str).str.replace(",", ".")
-        df[c] = pd.to_numeric(df[c], errors="coerce")
+        df[c] = df.loc[c].astype(str).str.replace(",", ".")
+        df[c] = pd.to_numeric(arg=df.loc[c], errors="coerce")
 
     df["present_cartographie"] = (
-        df["present_cartographie"]
-        .apply(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
+        df.loc["present_cartographie"]
+        .apply(lambda x: x.decode(encoding="utf-8") if isinstance(x, bytes) else x)
         .map({"T": True, "F": False})
     )
     df = df.reset_index(drop=True)
