@@ -34,12 +34,12 @@ from dags.dge.carto_rem.tasks import (
 # Mails
 nom_projet = "Cartographie rémunération"
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/cgefi/barometre?ref_type=heads"  # noqa
-LINK_DOC_DATA = ""  # noqa
+LINK_DOC_DATA = "To define"  # noqa
 
 
 # Définition du DAG
 @dag(
-    "cartographie_remuneration",
+    dag_id="cartographie_remuneration",
     schedule_interval="*/15 8-20 * * 1-5",
     max_active_runs=1,
     max_consecutive_failed_dag_runs=1,
@@ -56,7 +56,7 @@ LINK_DOC_DATA = ""  # noqa
     ),
     on_failure_callback=create_airflow_callback(mail_status=MailStatus.ERROR),
 )
-def cartographie_remuneration():
+def cartographie_remuneration() -> None:
     """Task definitions"""
     looking_for_files = S3KeySensor(
         task_id="looking_for_files",
