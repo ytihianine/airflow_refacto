@@ -49,19 +49,7 @@ def process_ref_valeur_point_indice(df: pd.DataFrame) -> pd.DataFrame:
 """
 
 
-def normalize_df_source(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.set_axis(
-        labels=[" ".join(colname.strip().split()) for colname in df.columns],
-        axis="columns",
-    )
-    return df
-
-
-def process_agent_carto_rem(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
-    df = normalize_df_source(df=df)
-    df = df.rename(columns=cols_mapping, errors="raise")
-    cols_to_keep = list(cols_mapping.values())
-    df = df.loc[:, cols_to_keep]
+def process_agent_carto_rem(df: pd.DataFrame) -> pd.DataFrame:
     df["matricule_agent"] = (
         df["matricule_nom_prenom"].str.split("_").str.get(0).astype("int64")
     )
@@ -82,11 +70,7 @@ def process_agent_carto_rem(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFram
     return df
 
 
-def process_agent_info_carriere(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
-    df = normalize_df_source(df=df)
-    df = df.rename(columns=cols_mapping, errors="raise")
-    cols_to_keep = list(cols_mapping.values())
-    df = df.loc[:, cols_to_keep]
+def process_agent_info_carriere(df: pd.DataFrame) -> pd.DataFrame:
     txt_cols = [
         "dge_perimetre",
         "nom_usuel",
@@ -96,11 +80,7 @@ def process_agent_info_carriere(df: pd.DataFrame, cols_mapping: dict) -> pd.Data
     return df
 
 
-def process_agent_r4(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
-    df = normalize_df_source(df=df)
-    df = df.rename(columns=cols_mapping, errors="raise")
-    cols_to_keep = list(cols_mapping.values())
-    df = df.loc[:, cols_to_keep]
+def process_agent_r4(df: pd.DataFrame) -> pd.DataFrame:
     txt_cols = [
         "numero_poste",
         "fonction_dge_libelle_court",
