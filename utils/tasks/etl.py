@@ -173,14 +173,14 @@ def create_file_etl_task(
                 print(
                     "apply_cols_mapping set to True. Renaming the dataframe labels ..."
                 )
+                cols_mapping = format_cols_mapping(df_cols_map=cols_mapping)
+                print(f"Columns mapping: \n{cols_mapping}")
                 df = df.set_axis(
                     labels=[" ".join(colname.split()) for colname in df.columns],
                     axis="columns",
                 )
-                df = df.rename(columns=format_cols_mapping(df_cols_map=cols_mapping))
-                df = df.loc[
-                    list(format_cols_mapping(df_cols_map=cols_mapping).values())
-                ]
+                df = df.rename(columns=cols_mapping)
+                df = df.loc[list(cols_mapping.values())]
 
         if process_func is None:
             print("No process function provided. Skipping the processing step ...")
