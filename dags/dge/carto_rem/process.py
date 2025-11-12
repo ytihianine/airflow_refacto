@@ -61,7 +61,7 @@ def process_agent_carto_rem(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFram
     df = normalize_df_source(df=df)
     df = df.rename(columns=cols_mapping, errors="raise")
     cols_to_keep = list(cols_mapping.values())
-    df = df.loc[cols_to_keep]
+    df = df.loc[:, cols_to_keep]
     df["matricule_agent"] = (
         df["matricule_nom_prenom"].str.split("_").str.get(0).astype("int64")
     )
@@ -86,7 +86,7 @@ def process_agent_info_carriere(df: pd.DataFrame, cols_mapping: dict) -> pd.Data
     df = normalize_df_source(df=df)
     df = df.rename(columns=cols_mapping, errors="raise")
     cols_to_keep = list(cols_mapping.values())
-    df = df.loc[cols_to_keep]
+    df = df.loc[:, cols_to_keep]
     txt_cols = [
         "dge_perimetre",
         "nom_usuel",
@@ -100,7 +100,7 @@ def process_agent_r4(df: pd.DataFrame, cols_mapping: dict) -> pd.DataFrame:
     df = normalize_df_source(df=df)
     df = df.rename(columns=cols_mapping, errors="raise")
     cols_to_keep = list(cols_mapping.values())
-    df = df.loc[cols_to_keep]
+    df = df.loc[:, cols_to_keep]
     txt_cols = [
         "numero_poste",
         "fonction_dge_libelle_court",
@@ -208,7 +208,7 @@ def process_agent(
         "qualite_statutaire",
         "date_acces_corps",
     ]
-    df = df.loc[cols_to_keep]
+    df = df.loc[:, cols_to_keep]
     df = df.reset_index(drop=True)
     df["id"] = df.index
 
@@ -232,7 +232,7 @@ def process_agent_poste(
         "matricule_agent",
         "numero_poste",
     ]
-    df = df.loc[cols_to_keep]
+    df = df.loc[:, cols_to_keep]
     df["date_recrutement_structure"] = None
     df = df.reset_index(drop=True)
     df["id"] = df.index
@@ -261,7 +261,7 @@ def process_agent_remuneration(
         how="left",
         on=["matricule_agent"],
     )
-    df = df.loc[cols_to_keep]
+    df = df.loc[:, cols_to_keep]
     map_region_indem = {
         "Pas d'indemnité de résidence": 0,
         "Zone Corse et certaines communes de l'Ain et de la Haute-Savoie": 0,

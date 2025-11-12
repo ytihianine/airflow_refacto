@@ -19,7 +19,7 @@ def convert_str_cols_to_date(
 
     for date_col in columns:
         df[date_col] = pd.to_datetime(
-            df.loc[date_col], format=str_date_format, errors=errors
+            df.loc[:, date_col], format=str_date_format, errors=errors
         )
 
     return df

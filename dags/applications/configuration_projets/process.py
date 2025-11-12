@@ -20,7 +20,7 @@ def process_direction(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df
 
@@ -40,7 +40,7 @@ def process_service(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df
 
@@ -64,7 +64,7 @@ def process_projets(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df
 
@@ -87,7 +87,7 @@ def process_selecteur(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df
 
@@ -112,7 +112,7 @@ def process_source(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df
 
@@ -141,7 +141,7 @@ def process_storage_path(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df
 
@@ -168,7 +168,7 @@ def process_col_mapping(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df
 
@@ -196,6 +196,6 @@ def process_col_requises(df: pd.DataFrame) -> pd.DataFrame:
     # Sort columns to match db cols order
     cols = df.columns
     sorted_cols = sorted(cols)
-    df = df.loc[sorted_cols]
+    df = df.loc[:, sorted_cols]
 
     return df

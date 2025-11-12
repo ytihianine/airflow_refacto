@@ -180,7 +180,7 @@ def create_file_etl_task(
                     axis="columns",
                 )
                 df = df.rename(columns=cols_mapping)
-                df = df.loc[list(cols_mapping.values())]
+                df = df.loc[:, list(cols_mapping.values())]
 
         if process_func is None:
             print("No process function provided. Skipping the processing step ...")
