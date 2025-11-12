@@ -10,6 +10,7 @@ from airflow.decorators import task
 from infra.file_handling.dataframe import read_dataframe
 from infra.file_handling.factory import create_default_s3_handler, create_local_handler
 from infra.database.factory import create_db_handler
+from utils.control.structures import remove_grist_internal_cols
 from utils.dataframe import df_info
 from utils.config.tasks import (
     get_selecteur_config,
@@ -104,6 +105,9 @@ def create_grist_etl_task(
             print(
                 "No normalisation process function provided. Skipping the normalisation step ..."
             )
+
+        # Removing Grist internal colums
+        df = remove_grist_internal_cols(df=df)
 
         df_info(df=df, df_name=f"{selecteur} - Source normalisée")
         if process_func is not None:

@@ -2,6 +2,12 @@ import pandas as pd
 import ast
 
 
+def remove_grist_internal_cols(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df = df.drop(list[df.filter(regex="^(grist|manual)").columns], axis=1)
+    return df
+
+
 def convert_str_of_list_to_list(df: pd.DataFrame, col_to_convert: str) -> pd.DataFrame:
     df[col_to_convert] = df[col_to_convert].apply(
         lambda x: ast.literal_eval(x) if isinstance(x, str) else x
