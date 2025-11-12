@@ -309,8 +309,9 @@ def create_action_to_file_etl_task(
     use_context: bool = False,
 ) -> Task[..., None]:
     """
-    Create an ETL task that executes a given action function with parameters. The action function must return a DataFrame
-    that will be saved to a file in S3 according to the output_selecteur configuration.
+    Create an ETL task that executes a given action function with parameters. The action
+    function must return a DataFrame that will be saved to a file in S3 according
+    to the output_selecteur configuration.
 
     Args:
         output_selecteur: The config selector key for the output dataset
