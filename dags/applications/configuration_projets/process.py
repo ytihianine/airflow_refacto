@@ -48,7 +48,7 @@ def process_service(df: pd.DataFrame) -> pd.DataFrame:
 def process_projets(df: pd.DataFrame) -> pd.DataFrame:
     # Rename
     cols_to_rename = {
-        "Projet": "nom_projet",
+        "projet": "nom_projet",
         "direction": "id_direction",
         "service": "id_service",
     }
@@ -72,9 +72,9 @@ def process_projets(df: pd.DataFrame) -> pd.DataFrame:
 def process_selecteur(df: pd.DataFrame) -> pd.DataFrame:
     # Rename
     cols_to_rename = {
-        "Projet": "id_projet",
-        "Type_de_selecteur": "type_selecteur",
-        "Selecteur": "selecteur",
+        "projet": "id_projet",
+        "type_de_selecteur": "type_selecteur",
+        "selecteur": "selecteur",
     }
     df = (
         df.rename(columns=cols_to_rename)
@@ -95,9 +95,9 @@ def process_selecteur(df: pd.DataFrame) -> pd.DataFrame:
 def process_source(df: pd.DataFrame) -> pd.DataFrame:
     # Rename
     cols_to_rename = {
-        "Projet": "id_projet",
-        "Type": "type_source",
-        "Selecteur": "id_selecteur",
+        "projet": "id_projet",
+        "type": "type_source",
+        "selecteur": "id_selecteur",
     }
     df = df.drop(columns=["Sous_type"])
     df = (
@@ -149,8 +149,8 @@ def process_storage_path(df: pd.DataFrame) -> pd.DataFrame:
 def process_col_mapping(df: pd.DataFrame) -> pd.DataFrame:
     # Rename
     cols_to_rename = {
-        "Projet": "id_projet",
-        "Selecteur": "id_selecteur",
+        "projet": "id_projet",
+        "selecteur": "id_selecteur",
     }
     df = df.drop(columns=["Nombre_d_utilisation"])
     df = (
@@ -176,9 +176,9 @@ def process_col_mapping(df: pd.DataFrame) -> pd.DataFrame:
 def process_col_requises(df: pd.DataFrame) -> pd.DataFrame:
     # Rename
     cols_to_rename = {
-        "Projet": "id_projet",
-        "Selecteur": "id_selecteur",
-        "Colonne_requise": "id_correspondance_colonne",
+        "projet": "id_projet",
+        "selecteur": "id_selecteur",
+        "colonne_requise": "id_correspondance_colonne",
     }
     col_to_keep = ["id", "id_projet", "id_selecteur", "id_correspondance_colonne"]
     df = (
