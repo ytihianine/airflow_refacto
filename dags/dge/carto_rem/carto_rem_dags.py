@@ -62,7 +62,7 @@ def cartographie_remuneration() -> None:
         task_id="looking_for_files",
         aws_conn_id="minio_bucket_dsci",
         bucket_name="dsci",
-        bucket_key=get_s3_keys_source(nom_projet=nom_projet),
+        bucket_key=get_s3_keys_source(),
         mode="reschedule",
         poke_interval=timedelta(seconds=30),
         timeout=timedelta(minutes=13),
