@@ -286,7 +286,8 @@ def process_agent_remuneration(
     df["region_indemnitaire_valeur"] = df.loc[:, "region_indemnitaire"].map(
         map_region_indem
     )
-    cols = [
+    numeric_cols = [
+        "remuneration_principale",
         "total_indemnitaire_annuel",
         "totale_brute_annuel",
         "plafond_part_variable",
@@ -294,9 +295,9 @@ def process_agent_remuneration(
         "plafond_part_variable_collective",
     ]
 
-    for c in cols:
-        df[c] = df.loc[:, c].astype(str).str.replace(",", ".")
-        df[c] = pd.to_numeric(arg=df.loc[:, c], errors="coerce")
+    for col in numeric_cols:
+        df[col] = df.loc[:, col].astype(str).str.replace(",", ".")
+        df[col] = pd.to_numeric(arg=df.loc[:, col], errors="coerce")
 
     df["present_cartographie"] = (
         df.loc[:, "present_cartographie"]
