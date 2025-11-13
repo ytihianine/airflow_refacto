@@ -196,18 +196,23 @@ def get_tbl_names(nom_projet: str, order_tbl: bool = False) -> List[str]:
     return df.loc[:, "tbl_name"].tolist()
 
 
-def get_s3_keys_source(context: dict, nom_projet: Optional[str]) -> List[str]:
+def get_s3_keys_source(
+    context: Optional[dict] = None, nom_projet: Optional[str] = None
+) -> List[str]:
     """Get all source S3 filepaths for a project.
 
     Used for KeySensors.
 
     Args:
+        context: task context. Provided automatically by airflow
         nom_projet: Project name
 
     Returns:
         List of S3 source filepaths
     """
-    if nom_projet is None:
+    if nom_projet is None and context is None:
+        raise ValueError("nom_projet or context must be provided")
+    if nom_projet is None and context:
         nom_projet = get_project_name(context=context)
 
     db = create_db_handler(connection_id=DEFAULT_PG_CONFIG_CONN_ID)
