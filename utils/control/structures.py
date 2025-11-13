@@ -14,6 +14,18 @@ def convert_str_of_list_to_list(df: pd.DataFrame, col_to_convert: str) -> pd.Dat
     return df
 
 
+def lower_dataframe_labels(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.set_axis(labels=map(str.lower, df.columns), axis="columns")
+    return df
+
+
+def normalize_grist_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    print("Normalizing dataframe")
+    df = lower_dataframe_labels(df=df)
+    df = remove_grist_internal_cols(df=df)
+    return df
+
+
 def are_lists_egal(list_A: list[str], list_B: list[str]) -> bool:
     # Convert to sets
     list_A = set(list_A)
