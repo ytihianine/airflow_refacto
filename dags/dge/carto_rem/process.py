@@ -279,9 +279,9 @@ def process_agent_remuneration(
         "Pas d'indemnité de résidence": 0,
         "Zone Corse et certaines communes de l'Ain et de la Haute-Savoie": 0,
         "Zone à 0%": 0,
-        "Zone à 1%": 0.001,
-        "Zone à 1% com. minières Moselle": 0.001,
-        "Zone à 3%": 0.003,
+        "Zone à 1%": 0.01,
+        "Zone à 1% com. minières Moselle": 0.01,
+        "Zone à 3%": 0.03,
     }
     df["region_indemnitaire_valeur"] = df.loc[:, "region_indemnitaire"].map(
         map_region_indem
