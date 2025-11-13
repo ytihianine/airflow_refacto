@@ -98,7 +98,7 @@ def process_agent_r4(df: pd.DataFrame) -> pd.DataFrame:
 def process_agent_fonction_anais(df: pd.DataFrame) -> pd.DataFrame:
     txt_cols = ["libelle_du_poste"]
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
-    df[txt_cols] = df.loc[:, txt_cols].str.capitalize()
+    df["libelle_du_poste"] = df.loc[:, "libelle_du_poste"].str.capitalize()
     return df
 
 
