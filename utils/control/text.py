@@ -42,7 +42,7 @@ def normalize_whitespace_columns(df: pd.DataFrame, columns: list[str]) -> pd.Dat
     df = df.copy()
     for col in columns:
         if col in df.columns:
-            df[col] = normalize_txt_column(series=df.loc[col])
+            df[col] = normalize_txt_column(series=df.loc[:, col])
     return df
 
 
