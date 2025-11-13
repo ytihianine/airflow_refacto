@@ -253,7 +253,7 @@ def process_agent_remuneration(
         "Zone à 1% com. minières Moselle": 0.001,
         "Zone à 3%": 0.003,
     }
-    df["region_indemnitaire_valeur"] = df.loc["region_indemnitaire"].map(
+    df["region_indemnitaire_valeur"] = df.loc[:, "region_indemnitaire"].map(
         map_region_indem
     )
     cols = [
@@ -265,11 +265,11 @@ def process_agent_remuneration(
     ]
 
     for c in cols:
-        df[c] = df.loc[c].astype(str).str.replace(",", ".")
-        df[c] = pd.to_numeric(arg=df.loc[c], errors="coerce")
+        df[c] = df.loc[:, c].astype(str).str.replace(",", ".")
+        df[c] = pd.to_numeric(arg=df.loc[:, c], errors="coerce")
 
     df["present_cartographie"] = (
-        df.loc["present_cartographie"]
+        df.loc[:, "present_cartographie"]
         .apply(lambda x: x.decode(encoding="utf-8") if isinstance(x, bytes) else x)
         .map({"T": True, "F": False})
     )
