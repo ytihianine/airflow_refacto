@@ -120,8 +120,8 @@ def process_source(df: pd.DataFrame) -> pd.DataFrame:
 def process_storage_path(df: pd.DataFrame) -> pd.DataFrame:
     # Rename
     cols_to_rename = {
-        "Projet": "id_projet",
-        "Selecteur": "id_selecteur",
+        "projet": "id_projet",
+        "selecteur": "id_selecteur",
         "db_tbl_name": "tbl_name",
     }
     df = (
