@@ -173,11 +173,12 @@ def process_agent_rem_variable(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_agent(
-    df_rem_carto: pd.DataFrame, df_info_car: pd.DataFrame
+    df_rem_carto: pd.DataFrame, df_info_car: pd.DataFrame, df_r4: pd.DataFrame
 ) -> pd.DataFrame:
     df = pd.merge(
         left=df_rem_carto, right=df_info_car, how="outer", on=["matricule_agent"]
     )
+    df = pd.merge(left=df, right=df_r4, how="left", on=["matricule_agent"])
     cols_to_keep = [
         "corps",
         "date_de_naissance",

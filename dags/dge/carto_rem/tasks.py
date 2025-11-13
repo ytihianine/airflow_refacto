@@ -84,7 +84,7 @@ def source_grist() -> None:
 def output_files() -> None:
     agent = create_multi_files_input_etl_task(
         output_selecteur="agent",
-        input_selecteurs=["agent_carto_rem", "agent_info_carriere"],
+        input_selecteurs=["agent_carto_rem", "agent_info_carriere", "agent_r4"],
         process_func=process.process_agent,
         add_import_date=False,
         add_snapshot_id=False,
