@@ -1,10 +1,10 @@
 """Functions for retrieving and managing project configurations."""
 
-import logging
 from typing import List, Optional
 
 import pandas as pd
 
+from utils.config.dag_params import get_project_name
 from utils.config.types import SelecteurConfig
 from utils.exceptions import ConfigError
 from infra.database.factory import create_db_handler
@@ -193,10 +193,10 @@ def get_tbl_names(nom_projet: str, order_tbl: bool = False) -> List[str]:
     if df.empty:
         return []
 
-    return df["tbl_name"].tolist()
+    return df.loc[:, "tbl_name"].tolist()
 
 
-def get_s3_keys_source(nom_projet: str) -> List[str]:
+def get_s3_keys_source(context: dict, nom_projet: Optional[str]) -> List[str]:
     """Get all source S3 filepaths for a project.
 
     Used for KeySensors.
@@ -207,14 +207,18 @@ def get_s3_keys_source(nom_projet: str) -> List[str]:
     Returns:
         List of S3 source filepaths
     """
-    db = create_db_handler(DEFAULT_PG_CONFIG_CONN_ID)
+    if nom_projet is None:
+        nom_projet = get_project_name(context=context)
+
+    db = create_db_handler(connection_id=DEFAULT_PG_CONFIG_CONN_ID)
 
     query = """
         SELECT vcp.filepath_source_s3
         FROM conf_projets.vue_conf_projets vcp
         WHERE vcp.filepath_source_s3 IS NOT NULL
-        AND vcp.nom_projet = %s;
+            AND vcp.type_source='Fichier'
+            AND vcp.nom_projet = %s;
     """
 
-    df = db.fetch_df(query, (nom_projet,))
-    return df["filepath_source_s3"].tolist()
+    df = db.fetch_df(query, parameters=(nom_projet,))
+    return df.loc[:, "filepath_source_s3"].tolist()
