@@ -259,6 +259,7 @@ def process_agent_remuneration(
         "indice_majore",
         "type_indemnitaire",
         "region_indemnitaire",
+        "remuneration_principale",
         "total_indemnitaire_annuel",
         "total_annuel_ifse",
         "totale_brute_annuel",
