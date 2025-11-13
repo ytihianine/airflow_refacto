@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from utils.control.text import normalize_whitespace_columns
 
@@ -162,9 +163,13 @@ def process_agent_contrat(df: pd.DataFrame) -> pd.DataFrame:
 def process_agent_rem_variable(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["agent"])
     df = df.rename(
-        columns={"part_variable_collective": "plafond_part_variable_collective"}
+        columns={
+            "part_variable_collective": "plafond_part_variable_collective",
+            "base_remuneration": "id_base_remuneration",
+        }
     )
     df["observations"] = df["observations"].str.strip().str.split().str.join(" ")
+    df["id_base_remuneration"].replace(0, np.nan, inplace=True)
     return df
 
 
@@ -256,6 +261,7 @@ def process_agent_remuneration(
 ) -> pd.DataFrame:
     cols_to_keep = [
         "matricule_agent",
+        "id_base_remuneration",
         "indice_majore",
         "type_indemnitaire",
         "region_indemnitaire",
