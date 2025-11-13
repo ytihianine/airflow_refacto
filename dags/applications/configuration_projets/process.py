@@ -99,7 +99,7 @@ def process_source(df: pd.DataFrame) -> pd.DataFrame:
         "type": "type_source",
         "selecteur": "id_selecteur",
     }
-    df = df.drop(columns=["Sous_type"])
+    df = df.drop(columns=["sous_type"])
     df = (
         df.rename(columns=cols_to_rename)
         .pipe(replace_values, to_replace={0: None}, cols=["id_projet", "id_selecteur"])
@@ -152,7 +152,7 @@ def process_col_mapping(df: pd.DataFrame) -> pd.DataFrame:
         "projet": "id_projet",
         "selecteur": "id_selecteur",
     }
-    df = df.drop(columns=["Nombre_d_utilisation"])
+    df = df.drop(columns=["nombre_d_utilisation"])
     df = (
         df.rename(columns=cols_to_rename)
         .pipe(replace_values, to_replace={0: None}, cols=["id_projet", "id_selecteur"])
