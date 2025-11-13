@@ -96,6 +96,8 @@ def process_agent_r4(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_agent_fonction_anais(df: pd.DataFrame) -> pd.DataFrame:
+    txt_cols = ["libelle_du_poste"]
+    df = normalize_whitespace_columns(df=df, columns=txt_cols)
     return df
 
 

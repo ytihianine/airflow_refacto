@@ -40,7 +40,7 @@ def source_files() -> None:
     )
     agent_fonction_anais = create_file_etl_task(
         selecteur="agent_fonction_anais",
-        process_func=process.process_agent_r4,
+        process_func=process.process_agent_fonction_anais,
         add_import_date=False,
         add_snapshot_id=False,
     )
