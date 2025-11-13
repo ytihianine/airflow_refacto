@@ -28,26 +28,30 @@ def normalize_grist_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 def are_lists_egal(list_A: list[str], list_B: list[str]) -> bool:
     # Convert to sets
-    list_A = set(list_A)
-    list_B = set(list_B)
+    set_A = set(list_A)
+    set_B = set(list_B)
 
     # Elements in A but not in B
-    only_in_list_A = list(list_A - list_B)
+    only_in_set_A = list(set_A - set_B)
 
     # Elements in B but not in A
-    only_in_list_B = list(list_B - list_A)
+    only_in_set_B = list(set_B - set_A)
 
-    if len(only_in_list_B) == 0 and len(only_in_list_A) == 0:
+    if len(only_in_set_B) == 0 and len(only_in_set_A) == 0:
         print("Les colonnes sont identiques entre le DataFrame et la table")
         return True
 
-    if len(only_in_list_A) > 0:
+    if len(only_in_set_A) > 0:
         print(
-            f"Les éléments suivants sont présents dans la 1ère liste mais pas la 2nd: \n{only_in_list_A}"
+            f"""Les éléments suivants sont présents dans la 1ère liste mais pas la 2nd:
+                {only_in_set_A}
+            """
         )
-    if len(only_in_list_B) > 0:
+    if len(only_in_set_B) > 0:
         print(
-            f"Les éléments suivants sont présents dans la 2nd liste mais pas la 1ère: \n{only_in_list_B}"
+            f"""Les éléments suivants sont présents dans la 2nd liste mais pas la 1ère:
+                {only_in_set_B}
+            """
         )
 
     return False
