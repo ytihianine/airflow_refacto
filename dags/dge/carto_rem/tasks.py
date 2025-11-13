@@ -73,10 +73,21 @@ def source_grist() -> None:
         normalisation_process_func=process.normalize_dataframe,
         process_func=process.process_agent_rem_variable,
     )
+    agent_experience_pro = create_grist_etl_task(
+        selecteur="agent_experience_pro",
+        normalisation_process_func=process.normalize_dataframe,
+        process_func=process.process_agent_experience_pro,
+    )
 
     # ordre des tâches
     chain(
-        [agent_diplome(), agent_revalorisation(), agent_contrat(), agent_rem_variable()]
+        [
+            agent_diplome(),
+            agent_revalorisation(),
+            agent_contrat(),
+            agent_rem_variable(),
+            agent_experience_pro(),
+        ]
     )
 
 

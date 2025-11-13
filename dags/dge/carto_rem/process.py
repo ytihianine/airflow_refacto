@@ -168,6 +168,34 @@ def process_agent_rem_variable(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def process_agent_experience_pro(df: pd.DataFrame) -> pd.DataFrame:
+    # Convertir les mois en valeurs décimales
+    df["exp_pro_totale_mois"] = (df["exp_pro_totale_mois"] / 12).round(1)
+    df["exp_qualifiante_sur_le_poste_mois"] = (
+        df["exp_qualifiante_sur_le_poste_mois"] / 12
+    ).round(1)
+
+    # Calculer l'exp pro en année
+    df["experience_pro_totale"] = (
+        df.loc[:, "exp_pro_totale_annee"] + df.loc[:, "exp_pro_totale_mois"]
+    )
+    df["experience_pro_qualifiante_sur_poste"] = (
+        df.loc[:, "exp_qualifiante_sur_le_poste_annee"]
+        + df.loc[:, "exp_qualifiante_sur_le_poste_mois"]
+    )
+
+    cols_to_keep = [
+        "matricule_agent",
+        "experience_pro_totale",
+        "experience_pro_qualifiante_sur_poste",
+    ]
+    df = df.loc[:, cols_to_keep]
+    df = df.loc[df["matricule_agent"] != 0]
+    df = df.reset_index(drop=True)
+    df["id"] = df.index
+    return df
+
+
 """
     Functions de processing des fichiers finaux
 """
