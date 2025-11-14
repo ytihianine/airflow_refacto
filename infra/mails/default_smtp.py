@@ -152,7 +152,7 @@ def create_airflow_callback(mail_status: MailStatus) -> Callable:
         mail_info = get_mail_info(context=context)
 
         if not mail_info["enable"]:
-            print("Skipping! Debug mode is active.")
+            print("Skipping! Mails are disabled for this dag ...")
             return
 
         mail_message = MailMessage(
