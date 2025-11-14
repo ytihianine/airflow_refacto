@@ -8,6 +8,7 @@ from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
 from infra.mails.sender import create_airflow_callback, MailStatus
+from infra.mails.default_smtp import send_success_mail
 
 from utils.tasks.sql import create_projet_snapshot, get_projet_snapshot
 
@@ -66,8 +67,17 @@ def dag_verification() -> None:
             )
         )
 
+    @task
+    def send_simple_mail(**context) -> None:
+        send_success_mail(context=context)
+
     # Ordre des tâches
-    chain(create_projet_snapshot(), get_projet_snapshot(), print_context())
+    chain(
+        create_projet_snapshot(),
+        get_projet_snapshot(),
+        print_context(),
+        send_simple_mail(),
+    )
 
 
 dag_verification()
