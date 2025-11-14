@@ -7,19 +7,19 @@ from jinja2 import Environment, FileSystemLoader
 
 from airflow.utils.email import send_email_smtp
 
-from utils.config.dag_params import get_mail_info
+from utils.config.dag_params import get_execution_date, get_mail_info, get_doc_info
 from utils.config.vars import get_root_folder, DEFAULT_SMTP_CONN_ID
 
 
 class MailStatus(Enum):
     """Mail notification status types."""
 
-    START = "start"
-    SUCCESS = "success"
-    ERROR = "error"
-    SKIP = "skip"
-    WARNING = "warning"
-    INFO = "info"
+    START = "Début"
+    SUCCESS = "Succès"
+    ERROR = "Erreur"
+    SKIP = "Skip"
+    WARNING = "Warning"
+    INFO = "Information"
 
 
 class MailPriority(Enum):
@@ -155,11 +155,21 @@ def create_airflow_callback(mail_status: MailStatus) -> Callable:
             print("Skipping! Mails are disabled for this dag ...")
             return
 
+        doc_info = get_doc_info(context=context)
+        execution_date = get_execution_date(context=context)
+
         mail_message = MailMessage(
             mail_status=mail_status,
             to=mail_info["to"],
             cc=mail_info["cc"],
             bcc=mail_info["bcc"],
+            template_parameters={
+                "dag_name": context["dag_run"].id,
+                "dag_statut": mail_status.value,
+                "start_date": execution_date.strftime(format="%d-%m-%Y %H:%M:%S"),
+                "link_doc_pipeline": doc_info["lien_pipeline"],
+                "link_doc_donnees": doc_info["lien_donnees"],
+            },
         )
 
         if mail_info["enable"]:

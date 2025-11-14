@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
 from typing import Optional
 
-from utils.config.types import DBParams, MailParams
+from utils.config.types import DBParams, MailParams, DocsParams
 
 DEFAULT_OWNER = "airflow"
 DEFAULT_EMAIL_TO = ["yanis.tihianine@finances.gouv.fr"]
@@ -61,6 +61,23 @@ def get_mail_info(context: dict) -> MailParams:
         raise ValueError("mail_to must be defined in DAG parameters under mail section")
 
     return {"enable": mail_enabled, "to": mail_to, "cc": mail_cc, "bcc": mail_bcc}
+
+
+def get_doc_info(context: dict) -> DocsParams:
+    """Extract and validate documentation info from context."""
+    mail_params = context.get("params", {}).get("docs", {})
+    lien_pipeline = mail_params.get("lien_pipeline", False)
+    lien_donnees = mail_params.get("lien_donnees")
+
+    if not lien_pipeline:
+        print("Set default value to lien_pipeline dag parameter")
+        lien_pipeline = "Non-défini"
+
+    if not lien_donnees:
+        print("Set default value to lien_pipeline dag parameter")
+        lien_donnees = "Non-défini"
+
+    return {"lien_pipeline": lien_pipeline, "lien_donnees": lien_donnees}
 
 
 def create_default_args(
