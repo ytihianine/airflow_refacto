@@ -39,12 +39,12 @@ default_mail_config = {
     MailStatus.SUCCESS: {
         "template_path": "pipeline_end_success.html",
         "subject": "[FIN] - Fin de la pipeline",
-        "priority": MailPriority.NORMAL.value,
+        "priority": str(MailPriority.NORMAL.value),
     },
     MailStatus.ERROR: {
         "template_path": "pipeline_end_error.html",
         "subject": "[ECHEC] - Une erreur est survenue dans la pipeline",
-        "priority": MailPriority.HIGH.value,
+        "priority": str(MailPriority.HIGH.value),
     },
     MailStatus.SKIP: {
         "template_path": "",
