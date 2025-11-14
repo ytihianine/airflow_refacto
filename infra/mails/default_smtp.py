@@ -34,32 +34,32 @@ default_mail_config = {
     MailStatus.START: {
         "template_path": "pipeline_start.html",
         "subject": "[DEBUT] - Lancement de la pipeline",
-        "priority": MailPriority.NORMAL,
+        "priority": MailPriority.NORMAL.value,
     },
     MailStatus.SUCCESS: {
         "template_path": "pipeline_end_success.html",
         "subject": "[FIN] - Fin de la pipeline",
-        "priority": MailPriority.NORMAL,
+        "priority": MailPriority.NORMAL.value,
     },
     MailStatus.ERROR: {
         "template_path": "pipeline_end_error.html",
         "subject": "[ECHEC] - Une erreur est survenue dans la pipeline",
-        "priority": MailPriority.HIGH,
+        "priority": MailPriority.HIGH.value,
     },
     MailStatus.SKIP: {
         "template_path": "",
         "subject": "",
-        "priority": MailPriority.NORMAL,
+        "priority": MailPriority.NORMAL.value,
     },
     MailStatus.WARNING: {
         "template_path": "",
         "subject": "",
-        "priority": MailPriority.NORMAL,
+        "priority": MailPriority.NORMAL.value,
     },
     MailStatus.INFO: {
         "template_path": "logs_recap.html",
         "subject": "Notification - Nettoyage des logs",
-        "priority": MailPriority.LOW,
+        "priority": MailPriority.LOW.value,
     },
 }
 
