@@ -85,12 +85,12 @@ def dag_verification() -> None:
     @task
     def send_error_mail(**context) -> None:
         mail_task = create_airflow_callback(mail_status=MailStatus.ERROR)
-        mail_task()
+        mail_task(context=context)
 
     @task
     def send_success_mail(**context) -> None:
         mail_task = create_airflow_callback(mail_status=MailStatus.SUCCESS)
-        mail_task()
+        mail_task(context=context)
 
     # Ordre des tâches
     chain(
