@@ -31,6 +31,7 @@ paris_tz = pytz.timezone("Europe/Paris")
 TMP_KEY = "tmp"
 
 # DEFAULT VARIABLES
+DEFAULT_SMTP_CONN_ID = "smtp_nubonyxia"
 DEFAULT_TMP_SCHEMA = "temporaire"
 DEFAULT_PG_DATA_CONN_ID = "db_data_store"
 DEFAULT_PG_CONFIG_CONN_ID = "db_depose_fichier"

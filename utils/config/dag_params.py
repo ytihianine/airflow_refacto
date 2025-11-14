@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from airflow.utils.dates import days_ago
 from typing import Optional
 
-from utils.config.types import DBParams
+from utils.config.types import DBParams, MailParams
 
 DEFAULT_OWNER = "airflow"
 DEFAULT_EMAIL_TO = ["yanis.tihianine@finances.gouv.fr"]
@@ -43,6 +43,24 @@ def get_db_info(context: dict) -> DBParams:
         "prod_schema": prod_schema,
         "tmp_schema": tmp_schema,
     }
+
+
+def get_mail_info(context: dict) -> MailParams:
+    """Extract and validate database info from context."""
+    mail_params = context.get("params", {}).get("mail", {})
+    mail_enabled = mail_params.get("enable", False)
+    mail_to = mail_params.get("to")
+    mail_cc = mail_params.get("cc")
+    mail_bcc = mail_params.get("bcc")
+
+    if not mail_enabled:
+        raise ValueError(
+            "mail_enabled must be defined in DAG parameters under mail section"
+        )
+    if not mail_to:
+        raise ValueError("mail_to must be defined in DAG parameters under mail section")
+
+    return {"enable": mail_enabled, "to": mail_to, "cc": mail_cc, "bcc": mail_bcc}
 
 
 def create_default_args(
