@@ -164,7 +164,7 @@ def create_airflow_callback(mail_status: MailStatus) -> Callable:
             cc=mail_info["cc"],
             bcc=mail_info["bcc"],
             template_parameters={
-                "dag_name": context["dag_run"].id,
+                "dag_name": context["dag"].dag_id,
                 "dag_statut": mail_status.value,
                 "start_date": execution_date.strftime(format="%d-%m-%Y %H:%M:%S"),
                 "link_doc_pipeline": doc_info["lien_pipeline"],
