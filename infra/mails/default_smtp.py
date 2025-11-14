@@ -1,4 +1,4 @@
-from airflow.utils.email import send_email
+from airflow.utils.email import send_email_smtp
 
 
 def send_success_mail(context: dict) -> None:
@@ -8,7 +8,7 @@ def send_success_mail(context: dict) -> None:
 
     subject = f"DAG {dag_run} has completed"
 
-    send_email(
+    send_email_smtp(
         conn_id="smtp_nubonyxia",
         to=["yanis.tihianine@finances.gouv.fr"],
         subject=subject,
