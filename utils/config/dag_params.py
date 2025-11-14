@@ -53,7 +53,7 @@ def get_mail_info(context: dict) -> MailParams:
     mail_cc = mail_params.get("cc")
     mail_bcc = mail_params.get("bcc")
 
-    if not mail_enabled:
+    if mail_enabled is None:
         raise ValueError(
             "mail_enabled must be defined in DAG parameters under mail section"
         )
