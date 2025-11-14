@@ -73,10 +73,12 @@ def dag_verification() -> None:
 
     # Ordre des tâches
     chain(
-        create_projet_snapshot(),
-        get_projet_snapshot(),
-        print_context(),
-        send_simple_mail(),
+        [
+            create_projet_snapshot(),
+            get_projet_snapshot(),
+            print_context(),
+            send_simple_mail(),
+        ],
     )
 
 
