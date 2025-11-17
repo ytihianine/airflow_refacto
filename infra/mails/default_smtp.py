@@ -8,7 +8,12 @@ from jinja2 import Environment, FileSystemLoader
 from airflow.utils.email import send_email_smtp
 
 from utils.config.dag_params import get_execution_date, get_mail_info, get_doc_info
-from utils.config.vars import get_root_folder, DEFAULT_SMTP_CONN_ID
+from utils.config.vars import (
+    get_root_folder,
+    DEFAULT_SMTP_CONN_ID,
+    DEFAULT_MAIL_CC,
+    paris_tz,
+)
 
 
 class MailStatus(Enum):
@@ -39,12 +44,12 @@ default_mail_config = {
     MailStatus.SUCCESS: {
         "template_path": "pipeline_end_success.html",
         "subject": "[FIN] - Fin de la pipeline",
-        "priority": str(MailPriority.NORMAL.value),
+        "priority": MailPriority.NORMAL.value,
     },
     MailStatus.ERROR: {
         "template_path": "pipeline_end_error.html",
         "subject": "[ECHEC] - Une erreur est survenue dans la pipeline",
-        "priority": str(MailPriority.HIGH.value),
+        "priority": MailPriority.HIGH.value,
     },
     MailStatus.SKIP: {
         "template_path": "",
@@ -92,7 +97,7 @@ class MailMessage:
                 template_parameters=self.template_parameters,
             )
             self.subject = config["subject"]
-            self.custom_headers = {"X-Priority": config["priority"]}
+            self.custom_headers = {"X-Priority": str(config["priority"])}
 
         # Cas 2: mail_status n'est pas précisé -> html_content doit être fourni
         elif self.html_content is None or self.subject is None:
@@ -157,16 +162,24 @@ def create_airflow_callback(mail_status: MailStatus) -> Callable:
 
         doc_info = get_doc_info(context=context)
         execution_date = get_execution_date(context=context)
+        mail_cc = mail_info["cc"]
+
+        if isinstance(mail_cc, list):
+            mail_cc.extend(DEFAULT_MAIL_CC)
+        if mail_cc is None:
+            mail_cc = DEFAULT_MAIL_CC
 
         mail_message = MailMessage(
             mail_status=mail_status,
             to=mail_info["to"],
-            cc=mail_info["cc"],
+            cc=mail_cc,
             bcc=mail_info["bcc"],
             template_parameters={
                 "dag_name": context["dag"].dag_id,
                 "dag_statut": mail_status.value,
-                "start_date": execution_date.strftime(format="%d-%m-%Y %H:%M:%S"),
+                "start_date": execution_date.replace(tzinfo=paris_tz).strftime(
+                    format="%d-%m-%Y %H:%M:%S"
+                ),
                 "link_doc_pipeline": doc_info["lien_pipeline"],
                 "link_doc_donnees": doc_info["lien_donnees"],
             },
