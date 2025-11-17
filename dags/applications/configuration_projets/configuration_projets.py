@@ -46,7 +46,7 @@ default_args = {
             "tmp_schema": "temporaire",
         },
         "mail": {
-            "enable": False,
+            "enable": True,
             "to": ["yanis.tihianine@finances.gouv.fr"],
             "cc": ["labo-data@finances.gouv.fr"],
         },
