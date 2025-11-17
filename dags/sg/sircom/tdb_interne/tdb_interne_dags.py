@@ -1,6 +1,5 @@
 from airflow.decorators import dag
 from airflow.models.baseoperator import chain
-from airflow.utils.dates import days_ago
 from datetime import timedelta
 
 from infra.mails.default_smtp import create_airflow_callback, MailStatus
@@ -25,7 +24,6 @@ from dags.sg.sircom.tdb_interne.tasks import (
 
 # Mails
 nom_projet = "TdB interne - SIRCOM"
-mail_to = ["brigitte.lekime@finances.gouv.fr"]
 LINK_DOC_PIPELINE = "https://forge.dgfip.finances.rie.gouv.fr/sg/dsci/lt/airflow-demo/-/tree/main/dags/sg/dsci/carte_identite_mef?ref_type=heads"  # noqa
 LINK_DOC_DATA = (
     "https://grist.numerique.gouv.fr/o/catalogue/k9LvttaYoxe6/catalogage-MEF"
@@ -34,7 +32,7 @@ LINK_DOC_DATA = (
 
 # Définition du DAG
 @dag(
-    "tdb_sircom",
+    dag_id="tdb_sircom",
     schedule_interval="*/8 8-13,14-19 * * 1-5",
     max_active_runs=1,
     catchup=False,
@@ -48,13 +46,14 @@ LINK_DOC_DATA = (
         prod_schema="sircom",
         lien_pipeline=LINK_DOC_PIPELINE,
         lien_donnees=LINK_DOC_DATA,
-        mail_enable=False,
+        mail_enable=True,
+        mail_to=["brigitte.lekime@finances.gouv.fr"],
     ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),
 )
-def tdb_sircom():
+def tdb_sircom() -> None:
     """Task order"""
     chain(
         validate_params(),
