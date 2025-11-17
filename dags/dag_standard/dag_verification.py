@@ -7,7 +7,7 @@ from airflow.decorators import dag, task
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-# from infra.mails.sender import create_airflow_callback, MailStatus
+# from infra.mails.default_smtp import create_airflow_callback, MailStatus
 from infra.mails.default_smtp import (
     send_mail,
     create_airflow_callback,

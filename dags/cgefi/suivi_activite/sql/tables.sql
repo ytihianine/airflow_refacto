@@ -295,7 +295,12 @@ CREATE TABLE cgefi_poc.process_atpro_f01 (
 CREATE TABLE cgefi_poc.process_atpro_g02 (
 	id SERIAL PRIMARY KEY,
 	annee INTEGER,
-	id_region INTEGER REFERENCES cgefi_poc.region_atpro(id)
+	id_region INTEGER REFERENCES cgefi_poc.region_atpro(id),
+	id_compte INTEGER,
+	id_detail INTEGER,
+	cif_cdd DOUBLE PRECISION,
+	cif_cdi DOUBLE PRECISION,
+	ptp DOUBLE PRECISION
 );
 
 -- table: process_atpro_h01

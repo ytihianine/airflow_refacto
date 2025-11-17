@@ -294,7 +294,9 @@ def process_process_atpro_f02(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_process_atpro_g02(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(columns={"region": "id_region"})
+    df = df.rename(
+        columns={"region": "id_region", "compte": "id_compte", "detail": "id_detail"}
+    )
     print(NO_PROCESS_MSG)
     return df
 

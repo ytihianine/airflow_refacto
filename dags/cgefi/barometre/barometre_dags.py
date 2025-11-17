@@ -5,7 +5,7 @@ from airflow.utils.dates import days_ago
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
-from infra.mails.sender import create_airflow_callback, MailStatus
+from infra.mails.default_smtp import create_airflow_callback, MailStatus
 from utils.config.dag_params import create_dag_params, create_default_args
 from utils.tasks.sql import (
     create_tmp_tables,

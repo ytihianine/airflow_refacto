@@ -3,7 +3,7 @@ from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-from infra.mails.sender import create_airflow_callback, MailStatus
+from infra.mails.default_smtp import create_airflow_callback, MailStatus
 from utils.config.dag_params import create_dag_params, create_default_args
 from utils.config.tasks import get_projet_config
 from utils.tasks.sql import (

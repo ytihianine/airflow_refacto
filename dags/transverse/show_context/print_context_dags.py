@@ -5,7 +5,7 @@ from datetime import timedelta
 from pprint import pprint
 import pytz
 
-from infra.mails.sender import create_airflow_callback, MailStatus
+from infra.mails.default_smtp import create_airflow_callback, MailStatus
 
 default_args = {
     "owner": "airflow",

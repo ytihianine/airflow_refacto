@@ -3,7 +3,7 @@ from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
 
-from infra.mails.sender import create_airflow_callback, MailStatus
+from infra.mails.default_smtp import create_airflow_callback, MailStatus
 
 from dags.applications.clean_s3.task import validate_params, clean_s3_task_group
 
