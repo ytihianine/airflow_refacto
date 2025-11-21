@@ -36,11 +36,11 @@ LINK_DOC_DATA = "Non-défini"  # noqa
     dag_id="chorus_service_prescripteur",
     schedule_interval="*/15 8-19 * * 1-5",
     max_active_runs=1,
-    max_consecutive_failed_dag_runs=1,
+    max_consecutive_failed_dag_runs=2,
     catchup=False,
     tags=["CBCM", "DEV", "CHORUS"],
     description="Traitement du référentiel des services prescripteurs (données comptables)",  # noqa
-    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=10)),
+    default_args=create_default_args(),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="cbcm",
