@@ -31,8 +31,8 @@ from dags.cbcm.donnee_comptable.tasks import source_files, validate_params
 
 # Mails
 nom_projet = "Données comptable"
-LINK_DOC_PIPELINE = ""  # noqa
-LINK_DOC_DATA = ""  # noqa
+LINK_DOC_PIPELINE = "Non-défini"  # noqa
+LINK_DOC_DATA = "Non-défini"  # noqa
 
 
 # Définition du DAG
