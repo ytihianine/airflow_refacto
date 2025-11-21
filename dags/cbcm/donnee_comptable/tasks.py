@@ -16,7 +16,7 @@ validate_params = create_validate_params_task(
 
 
 @task_group(group_id="source_files")
-def source_files():
+def source_files() -> None:
     demande_achat = create_file_etl_task(
         selecteur="demande_achat",
         process_func=process.process_demande_achat,
