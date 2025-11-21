@@ -20,6 +20,7 @@ def source_files() -> None:
     demande_achat = create_file_etl_task(
         selecteur="demande_achat",
         process_func=process.process_demande_achat,
+        read_options={"skiprows": 3},
     )
     engagement_juridique = create_file_etl_task(
         selecteur="engagement_juridique",
@@ -32,6 +33,7 @@ def source_files() -> None:
     demande_paiement_flux = create_file_etl_task(
         selecteur="demande_paiement_flux",
         process_func=process.process_demande_paiement_flux,
+        read_options={"skiprows": 3},
     )
     demande_paiement_sfp = create_file_etl_task(
         selecteur="demande_paiement_sfp",
@@ -48,6 +50,7 @@ def source_files() -> None:
     delai_global_paiement = create_file_etl_task(
         selecteur="delai_global_paiement",
         process_func=process.process_delai_global_paiement,
+        read_options={"skiprows": 3},
     )
 
     chain(
