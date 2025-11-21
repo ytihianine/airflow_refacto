@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 from utils.control.text import normalize_whitespace_columns
 
@@ -20,7 +19,7 @@ def process_ref_bop(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
     # Gestion des références vides
-    df["prog"] = df.loc[:, "prog"].replace({0: np.nan})
+    df["prog"] = df.loc[:, "prog"].replace({0: pd.NA})
     return df
 
 
@@ -31,7 +30,7 @@ def process_ref_uo(df: pd.DataFrame) -> pd.DataFrame:
 
     # Gestion des références vides
     rpl_cols = ["prog", "bop"]
-    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: np.nan})
+    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
     return df
 
 
@@ -42,7 +41,7 @@ def process_ref_cc(df: pd.DataFrame) -> pd.DataFrame:
 
     # Gestion des références vides
     rpl_cols = ["prog", "bop", "uo"]
-    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: np.nan})
+    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
     return df
 
 
@@ -88,6 +87,6 @@ def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
         "designation_uo",
         "designation_cc",
     ]
-    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: np.nan})
+    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
 
     return df
