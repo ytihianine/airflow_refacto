@@ -4,6 +4,7 @@ from airflow.utils.dates import days_ago
 
 from infra.mails.default_smtp import create_airflow_callback, MailStatus
 
+from utils.config.dag_params import create_default_args, create_dag_params
 from utils.tasks.grist import download_grist_doc_to_s3
 from utils.tasks.sql import (
     create_tmp_tables,
@@ -48,23 +49,14 @@ default_args = {
     catchup=False,
     tags=["CBCM", "DEV", "CHORUS"],
     description="Traitement du référentiel des services prescripteurs (données comptables)",  # noqa
-    default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "cbcm",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": None,
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DATA,
-        },
-    },
+    default_args=create_default_args(retries=1),
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="cbcm",
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+        mail_enable=False,
+    ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),
