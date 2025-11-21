@@ -1,3 +1,4 @@
+from datetime import timedelta
 from airflow.decorators import dag
 from airflow.models.baseoperator import chain
 from airflow.utils.dates import days_ago
@@ -24,20 +25,10 @@ from utils.tasks.s3 import (
 from dags.cbcm.ref_service_prescripteur.tasks import grist_source, validate_params
 
 
-# Mails
+# Variables
 nom_projet = "Données comptable - référentiel"
 LINK_DOC_PIPELINE = "Non-défini"  # noqa
 LINK_DOC_DATA = "Non-défini"  # noqa
-
-
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(n=1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-}
 
 
 # Définition du DAG
@@ -49,7 +40,7 @@ default_args = {
     catchup=False,
     tags=["CBCM", "DEV", "CHORUS"],
     description="Traitement du référentiel des services prescripteurs (données comptables)",  # noqa
-    default_args=create_default_args(retries=1),
+    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=10)),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="cbcm",
