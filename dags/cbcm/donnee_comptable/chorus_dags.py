@@ -24,6 +24,7 @@ from utils.tasks.s3 import (
     del_s3_files,
 )
 from utils.config.tasks import get_s3_keys_source, get_projet_config
+from utils.config.dag_params import create_default_args, create_dag_params
 
 from dags.cbcm.donnee_comptable.tasks import source_files, validate_params
 
@@ -32,16 +33,6 @@ from dags.cbcm.donnee_comptable.tasks import source_files, validate_params
 nom_projet = "Données comptable"
 LINK_DOC_PIPELINE = ""  # noqa
 LINK_DOC_DATA = ""  # noqa
-
-
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": days_ago(1),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-}
 
 
 # Définition du DAG
@@ -53,23 +44,14 @@ default_args = {
     catchup=False,
     tags=["CBCM", "DEV", "CHORUS"],
     description="Traitement des données comptables issues de Chorus",  # noqa
-    default_args=default_args,
-    params={
-        "nom_projet": nom_projet,
-        "db": {
-            "prod_schema": "cbcm",
-            "tmp_schema": "temporaire",
-        },
-        "mail": {
-            "enable": False,
-            "to": None,
-            "cc": ["labo-data@finances.gouv.fr"],
-        },
-        "docs": {
-            "lien_pipeline": LINK_DOC_PIPELINE,
-            "lien_donnees": LINK_DOC_DATA,
-        },
-    },
+    default_args=create_default_args(),
+    params=create_dag_params(
+        nom_projet=nom_projet,
+        prod_schema="donnee_comptable",
+        mail_enable=False,
+        lien_pipeline=LINK_DOC_PIPELINE,
+        lien_donnees=LINK_DOC_DATA,
+    ),
     on_failure_callback=create_airflow_callback(
         mail_status=MailStatus.ERROR,
     ),
