@@ -1,6 +1,7 @@
 """SQL task utilities using infrastructure handlers."""
 
 import logging
+import textwrap
 from typing import Optional
 from datetime import datetime, timedelta
 
@@ -381,7 +382,8 @@ def copy_tmp_table_to_real_table(
                 WHEN MATCHED THEN
                     UPDATE SET {", ".join([f"{col}=tbl_source.{col}" for col in col_list if col not in pk_cols])}
                 WHEN NOT MATCHED THEN
-                    INSERT ({', '.join(col_list)}) VALUES ({', '.join([f'tbl_source.{col}' for col in col_list])})
+                    INSERT ({', '.join(col_list)})
+                        VALUES ({', '.join([f'tbl_source.{col}' for col in col_list])})
                 /* Only for PG v17+
                 WHEN NOT MATCHED BY SOURCE THEN
                     DELETE;
@@ -389,13 +391,14 @@ def copy_tmp_table_to_real_table(
             """
 
             # DELETE rows not in staging
-            delete_query = f"""
-                DELETE FROM {prod_table} tbl_target
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM {tmp_table} tbl_source
-                    WHERE {" AND ".join([f"tbl_source.{col} = tbl_target.{col}" for col in pk_cols])}
-                );
-            """
+            # delete_query = f"""
+            #     DELETE FROM {prod_table} tbl_target
+            #     WHERE NOT EXISTS (
+            #         SELECT 1 FROM {tmp_table} tbl_source
+            #         WHERE
+            #           {" AND ".join([f"tbl_source.{col} = tbl_target.{col}" for col in pk_cols])}
+            #     );
+            # """
             queries.append(merge_query)  # , delete_query]
     elif load_strategy == LoadStrategy.APPEND:
         insert_queries = []
@@ -525,7 +528,12 @@ def _process_and_import_file(
         )
     else:
         raise ValueError(
-            "Il y a des différences entre les colonnes du DataFrame et de la Table. Impossible d'importer les données."
+            textwrap.dedent(
+                text="""
+            Il y a des différences entre les colonnes du DataFrame et de la Table.
+            Impossible d'importer les données.
+        """
+            )
         )
 
     # Deleting file from local system
