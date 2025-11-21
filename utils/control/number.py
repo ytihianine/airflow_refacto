@@ -1,4 +1,22 @@
 import pandas as pd
+from pandas._typing import DateTimeErrorChoices
+
+
+def convert_to_numeric(
+    df: pd.DataFrame,
+    columns: list[str],
+    errors: DateTimeErrorChoices,
+) -> pd.DataFrame:
+    if isinstance(columns, str):
+        columns = [columns]
+
+    for date_col in columns:
+        df[date_col] = pd.to_numeric(
+            arg=df.loc[:, date_col],
+            errors=errors,
+        )
+
+    return df
 
 
 def is_lower(
