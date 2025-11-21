@@ -41,7 +41,7 @@ default_args = {
 
 # Définition du DAG
 @dag(
-    dag_id="cbcm_chorus",
+    dag_id="chorus_service_prescripteur",
     schedule_interval="*/15 8-19 * * 1-5",
     max_active_runs=1,
     max_consecutive_failed_dag_runs=1,
@@ -69,7 +69,7 @@ default_args = {
         mail_status=MailStatus.ERROR,
     ),
 )
-def cbcm_chorus() -> None:
+def chorus_service_prescripteur() -> None:
     """Task definition"""
 
     # Ordre des tâches
@@ -97,4 +97,4 @@ def cbcm_chorus() -> None:
     )
 
 
-cbcm_chorus()
+chorus_service_prescripteur()
