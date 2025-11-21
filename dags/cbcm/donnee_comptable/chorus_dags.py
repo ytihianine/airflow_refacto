@@ -25,7 +25,7 @@ from utils.tasks.s3 import (
 )
 from utils.config.tasks import get_s3_keys_source, get_projet_config
 
-from dags.cbcm.chorus.tasks import source_files, validate_params
+from dags.cbcm.donnee_comptable.tasks import source_files, validate_params
 
 
 # Mails
@@ -46,7 +46,7 @@ default_args = {
 
 # Définition du DAG
 @dag(
-    "cbcm_chorus",
+    dag_id="chorus_donnees_comptables",
     schedule_interval="*/15 8-19 * * 1-5",
     max_active_runs=1,
     max_consecutive_failed_dag_runs=1,
@@ -74,7 +74,7 @@ default_args = {
         mail_status=MailStatus.ERROR,
     ),
 )
-def cbcm_chorus():
+def chorus_donnees_comptables() -> None:
     """Task definition"""
     looking_for_files = S3KeySensor(
         task_id="looking_for_files",
@@ -114,4 +114,4 @@ def cbcm_chorus():
     )
 
 
-cbcm_chorus()
+chorus_donnees_comptables()
