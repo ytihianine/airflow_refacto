@@ -1,6 +1,7 @@
 import pandas as pd
 
 from utils.control.text import normalize_whitespace_columns
+from utils.control.number import convert_to_numeric
 
 
 # ======================================================
@@ -19,7 +20,9 @@ def process_ref_bop(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
     # Gestion des références vides
-    df["prog"] = df.loc[:, "prog"].replace({0: pd.NA})
+    num_cols = ["prog"]
+    df = convert_to_numeric(df=df, columns=num_cols, errors="coerce")
+
     return df
 
 
@@ -29,10 +32,9 @@ def process_ref_uo(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
     # Gestion des références vides
-    rpl_cols = ["prog", "bop"]
-    for col in rpl_cols:
-        df[col] = pd.to_numeric(arg=df[col], errors="coerce").astype("Int64")
-    # df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
+    num_cols = ["prog", "bop"]
+    df = convert_to_numeric(df=df, columns=num_cols, errors="coerce")
+
     return df
 
 
@@ -42,8 +44,9 @@ def process_ref_cc(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
     # Gestion des références vides
-    rpl_cols = ["prog", "bop", "uo"]
-    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
+    num_cols = ["prog", "bop", "uo"]
+    df = convert_to_numeric(df=df, columns=num_cols, errors="coerce")
+
     return df
 
 
@@ -80,7 +83,7 @@ def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
     # Gestion des références vides
-    rpl_cols = [
+    num_cols = [
         "service_prescripteur_pilotage_",
         "service_depense",
         "service_prescripteur_choisi_selon_cf_cc",
@@ -89,6 +92,6 @@ def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
         "designation_uo",
         "designation_cc",
     ]
-    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
+    df = convert_to_numeric(df=df, columns=num_cols, errors="coerce")
 
     return df
