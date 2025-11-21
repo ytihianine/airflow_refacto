@@ -30,8 +30,9 @@ def process_ref_uo(df: pd.DataFrame) -> pd.DataFrame:
 
     # Gestion des références vides
     rpl_cols = ["prog", "bop"]
-    df[rpl_cols] = df.loc[:, rpl_cols].fillna(0)
-    df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
+    for col in rpl_cols:
+        df[col] = pd.to_numeric(arg=df[col], errors="coerce").astype("Int64")
+    # df[rpl_cols] = df.loc[:, rpl_cols].replace({0: pd.NA})
     return df
 
 
