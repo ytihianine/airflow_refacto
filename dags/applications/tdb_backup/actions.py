@@ -18,8 +18,6 @@ from utils.config.vars import (
 )
 
 
-CA_PATH = "/files/bercyCA.crt"
-
 http_client_config = ClientConfig(
     timeout=30, verify_ssl=False, user_agent=AGENT, proxy=PROXY
 )
