@@ -3,9 +3,9 @@ from airflow.models.baseoperator import chain
 
 from utils.tasks.validation import create_validate_params_task
 from utils.config.types import ALL_PARAM_PATHS
-from utils.tasks.etl import create_file_etl_task, create_multi_files_input_etl_task
+from utils.tasks.etl import create_file_etl_task
 
-from dags.cbcm.chorus import process
+from dags.cbcm.donnee_comptable import process
 
 
 validate_params = create_validate_params_task(
