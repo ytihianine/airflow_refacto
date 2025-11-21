@@ -1,6 +1,5 @@
 from airflow.decorators import dag
 from airflow.models.baseoperator import chain
-from datetime import timedelta
 
 from infra.mails.default_smtp import create_airflow_callback, MailStatus
 from utils.tasks.sql import (
@@ -39,8 +38,8 @@ LINK_DOC_DATA = (
     tags=["SG", "SIRCOM", "PRODUCTION", "TABLEAU DE BORD"],
     description="""Pipeline qui scanne les nouvelles données dans Grist
         pour actualiser le tableau de bord du SIRCOM""",
-    max_consecutive_failed_dag_runs=1,
-    default_args=create_default_args(retries=1, retry_delay=timedelta(seconds=30)),
+    max_consecutive_failed_dag_runs=2,
+    default_args=create_default_args(),
     params=create_dag_params(
         nom_projet=nom_projet,
         prod_schema="sircom",
