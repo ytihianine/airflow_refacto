@@ -22,7 +22,6 @@ from utils.config.vars import (
     DEFAULT_PG_DATA_CONN_ID,
     DEFAULT_PG_CONFIG_CONN_ID,
     DEFAULT_S3_CONN_ID,
-    DEFAULT_S3_BUCKET,
 )
 
 
@@ -30,7 +29,7 @@ def get_primary_keys(
     schema: str, table: str, pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID
 ) -> list[str]:
     """Get primary key columns of a table."""
-    db = create_db_handler(pg_conn_id)
+    db = create_db_handler(connection_id=pg_conn_id)
     query = """
         SELECT kcu.column_name
         FROM information_schema.table_constraints tc
@@ -42,8 +41,8 @@ def get_primary_keys(
             AND tc.constraint_type = 'PRIMARY KEY'
         ORDER BY kcu.ordinal_position;
     """
-    df = db.fetch_df(query, (schema, table))
-    return df["column_name"].tolist()
+    df = db.fetch_df(query, parameters=(schema, table))
+    return df.loc[:, "column_name"].tolist()
 
 
 @task(task_id="get_tbl_names_from_postgresql")
@@ -57,7 +56,7 @@ def create_snapshot_id(
     nom_projet: str, execution_date: datetime, pg_conn_id: str
 ) -> None:
 
-    snapshot_id = execution_date.strftime("%Y%m%d_%H%M%S")
+    snapshot_id = execution_date.strftime(format="%Y%m%d_%H%M%S")
     query = """
         INSERT INTO conf_projets.projet_snapshot (id_projet, snapshot_id, creation_timestamp)
         SELECT
@@ -77,8 +76,8 @@ def create_snapshot_id(
     }
 
     # Exécution de la requête
-    db = create_db_handler(pg_conn_id)
-    db.execute(query, params)
+    db = create_db_handler(connection_id=pg_conn_id)
+    db.execute(query, parameters=params)
 
 
 def get_snapshot_id(nom_projet: str, pg_conn_id: str) -> str:
@@ -101,8 +100,8 @@ def get_snapshot_id(nom_projet: str, pg_conn_id: str) -> str:
     params = {"nom_projet": nom_projet}
 
     # Exécution de la requête
-    db = create_db_handler(pg_conn_id)
-    db_result = db.fetch_one(query, params)
+    db = create_db_handler(connection_id=pg_conn_id)
+    db_result = db.fetch_one(query, parameters=params)
 
     if db_result is None:
         raise ValueError(f"No db_result found for project {nom_projet}")
@@ -138,7 +137,8 @@ def get_projet_snapshot(
     Récupérer le dernier snapshot_id d'un projet.
 
     Args:
-        nom_projet (optionnel): Le nom du projet. A spécifier lorsque le nom du projet dans le DAG est différent de celui qui génère le snapshot_id,
+        nom_projet (optionnel): Le nom du projet. A spécifier lorsque le nom du projet
+            dans le DAG est différent de celui qui génère le snapshot_id,
         pg_conn_id: Connexion Postgres. Valeur par défaut
 
     Returns:
@@ -474,8 +474,10 @@ def bulk_load_local_tsv_file_to_db(
         )
     """
 
-    db.copy_expert(copy_sql, local_filepath)
-    logging.info(f"Successfully loaded {local_filepath} into {schema}.tmp_{tbl_name}")
+    db.copy_expert(sql=copy_sql, filepath=local_filepath)
+    logging.info(
+        msg=f"Successfully loaded {local_filepath} into {schema}.tmp_{tbl_name}"
+    )
 
 
 def _process_and_import_file(
@@ -487,22 +489,22 @@ def _process_and_import_file(
     keep_file_id_col: bool = False,
 ) -> None:
     """
-    warning: la fonction bulk_load fonctionne uniquement si les colonnes entre la source et la table de destination
-    sont dans le même ordre !
+    warning: la fonction bulk_load fonctionne uniquement si les colonnes entre la source
+    et la table de destination sont dans le même ordre !
     """
     # Define hooks
     s3_handler = create_default_s3_handler()
     local_handler = create_local_handler(base_path=None)
 
     # Check if old file already exists in local system
-    local_handler.delete(local_filepath)
+    local_handler.delete(file_path=local_filepath)
 
     print(f"Reading file from remote < {s3_filepath} >")
     df = read_dataframe(file_handler=s3_handler, file_path=s3_filepath)
 
     df_cols = df.columns
     sorted_df_cols = sorted(df_cols)
-    df = df.reindex(sorted_df_cols, axis=1).convert_dtypes()
+    df = df.reindex(labels=sorted_df_cols, axis=1).convert_dtypes()
     print(f"DF : {sorted_df_cols}")
     print(f"Saving file to local < {local_filepath} >")
     local_handler.write(
@@ -527,7 +529,7 @@ def _process_and_import_file(
         )
 
     # Deleting file from local system
-    local_handler.delete(local_filepath)
+    local_handler.delete(file_path=local_filepath)
 
 
 @task(task_id="import_files_to_db")
@@ -595,14 +597,14 @@ def import_file_to_db(
 def set_dataset_last_update_date(
     dataset_ids: list[int], pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context
 ) -> None:
-    db = create_db_handler(pg_conn_id)
+    db = create_db_handler(connection_id=pg_conn_id)
     # Vérifier que le dataset existe
     datasets = db.fetch_df(
-        """
+        query="""
             SELECT id
             FROM documentation.datasets
             WHERE id = ANY(%s);""",
-        (dataset_ids,),
+        parameters=(dataset_ids,),
     )
 
     if len(datasets) == 0:
@@ -632,7 +634,7 @@ def set_dataset_last_update_date(
 @task
 def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
     """Tâche pour actualiser les vues matérialisées"""
-    db = create_db_handler(pg_conn_id)
+    db = create_db_handler(connection_id=pg_conn_id)
 
     db_info = get_db_info(context=context)
     prod_schema = db_info.get("prod_schema", None)
@@ -643,7 +645,9 @@ def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
         WHERE schemaname = %s;
     """
 
-    views = db.fetch_df(get_mview_query, (prod_schema,))["matviewname"].tolist()
+    views = db.fetch_df(query=get_mview_query, parameters=(prod_schema,))[
+        "matviewname"
+    ].tolist()
 
     if len(views) == 0:
         print(f"No materialized views found for schema {prod_schema}. Skipping ...")
@@ -654,114 +658,3 @@ def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
         ]
         for query in sql_queries:
             db.execute(query=query)
-
-
-# =========================
-# PGLoader functions/Tasks
-# =========================
-def clean_grist_sqlite_file(local_sqlite_path: str) -> None:
-    import sqlite3
-
-    # Connect to the database
-    conn = sqlite3.connect(local_sqlite_path)
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = cursor.fetchall()
-
-    columns_info = {}
-    # List all columns informations
-    for (table_name,) in tables:
-        cursor.execute(f"PRAGMA table_info({table_name})")
-        columns = cursor.fetchall()
-        # columns tuples look like: (cid, name, type, notnull, dflt_value, pk)
-        column_names = [col[1] for col in columns]
-        columns_info[table_name] = column_names
-        # print(columns_info)
-
-    # Drop all columns related to Grist in tables
-    for table, column_names in columns_info.items():
-        for column_name in column_names:
-            if column_name == "manualSort" or "grist" in column_name:
-                print(f"Dropping column {column_name} from table {table}")
-                cursor.execute(f"ALTER TABLE {table} DROP COLUMN {column_name}")
-
-        if table.startswith("Struc_"):
-            new_tbl_name = table.replace("Struc_", "")
-            print(f"Renaming table {table} to {new_tbl_name}")
-            cursor.execute(f"ALTER TABLE {table} RENAME TO {new_tbl_name}")
-
-    # Commit and close
-    conn.commit()
-    conn.close()
-
-
-@task()
-def import_sqlitefile_to_db(
-    s3_sqlite_path: str, db_schema: str, pg_conn_id: str
-) -> None:
-    import textwrap
-
-    def generate_script(sqlite_path: str, pg_uri: str, db_schema: str) -> str:
-        return textwrap.dedent(
-            f"""
-            LOAD DATABASE
-                FROM sqlite:///{sqlite_path}
-                INTO postgresql://{pg_uri}
-            CAST type date TO date USING unix-timestamp-to-timestamptz
-            SET search_path TO '{db_schema}'
-            WITH include drop, create tables, create indexes, reset sequences
-            EXCLUDING TABLE NAMES LIKE '_grist%', 'onglet_%', 'doc_%', '%_summary_%'
-            ;
-        """
-        )
-
-    # Hooks
-    db = create_db_handler(pg_conn_id)
-    db_uri = db.get_uri().replace("postgresql://", "")
-    s3_handler = create_default_s3_handler()
-    local_handler = create_local_handler(base_path=None)
-
-    # Copy s3 file to local system
-    local_sqlite_path = "/tmp/tmp_grist.db"
-    local_handler.write(
-        file_path=local_sqlite_path, content=s3_handler.read(file_path=s3_sqlite_path)
-    )
-
-    # Clean SQLite file
-    clean_grist_sqlite_file(local_sqlite_path=local_sqlite_path)
-
-    # Generate script to bulk load
-    script = generate_script(
-        sqlite_path=local_sqlite_path, pg_uri=db_uri, db_schema=db_schema
-    )
-    print(script)
-
-    # Create script file on file system
-    PGLOADER_SCRIPT_NAME = "/tmp/tmp_grist.load"
-    with open(PGLOADER_SCRIPT_NAME, "w") as f:
-        f.write(script)
-
-    # Run pgloader command
-    import subprocess
-
-    try:
-        result = subprocess.run(
-            ["pgloader", "--verbose", PGLOADER_SCRIPT_NAME],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        print(result.stdout)
-        print(result.stderr)
-    except subprocess.CalledProcessError as e:
-        print("pgloader failed!")
-        print("STDOUT:\n", e.stdout)
-        print("STDERR:\n", e.stderr)
-        raise
-
-    # Remove script from file system
-    import os
-
-    os.remove(local_sqlite_path)
-    os.remove(PGLOADER_SCRIPT_NAME)
