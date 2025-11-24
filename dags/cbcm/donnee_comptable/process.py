@@ -228,7 +228,7 @@ def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
     df = df.loc[df["type_flux"] == "Flux 3"]
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
+    df["id_dp"] = df["annee_exercice"] + df["societe"] + df["num_dp_flux"]
 
     return df
 
