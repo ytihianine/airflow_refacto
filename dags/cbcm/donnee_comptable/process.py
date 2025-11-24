@@ -248,11 +248,16 @@ def process_demande_paiement_sfp(df: pd.DataFrame) -> pd.DataFrame:
 def process_demande_paiement_carte_achat(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZDEP61"""
     # Nettoyer les champs textuels
-    txt_cols = ["societe", "statut_dp", "type_flux", "automatisation_wf_cpt"]
-    df = normalize_whitespace_columns(df, txt_cols)
+    txt_cols = [
+        "societe",
+        "statut_dp_carte_achat",
+        "type_flux",
+        "automatisation_wf_cpt",
+    ]
+    df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Filtrer les lignes
-    df = df.loc[df["statut_dp"] == "Pré-enregistrée"]
+    df = df.loc[df["statut_dp_carte_achat"] == "Pré-enregistrée"]
 
     # Remplacer les valeurs nulles
     df["niveau_carte_achat"] = np.where(
