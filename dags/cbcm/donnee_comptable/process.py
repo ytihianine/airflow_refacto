@@ -137,11 +137,23 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     ].fillna("Ind")
 
     # Nettoyer les champs textuels
-    txt_cols = ["centre_financer", "centre_cout"]
+    txt_cols = ["centre_financer", "centre_cout", "type_ej"]
     df = normalize_whitespace_columns(df, columns=txt_cols)
+
+    # Convertir les colonnes temporelles
+    date_cols = ["date_creation_ej"]
+    df = convert_str_cols_to_date(
+        df=df, columns=date_cols, str_date_format="%d.%m.%Y %h:%M:%s", errors="coerce"
+    )
 
     # Ajouter les colonnes complémentaires
     df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
+    df["ej_cf_cc"] = df["id_ej"] + "_" + df["centre_financer"] + "_" + df["centre_cout"]
+    df["annee_exercice"] = df.loc[:, "date_creation_ej"].df.year
+    df["mois_ej"] = df.loc[:, "date_creation_ej"].df.month
+
+    # Suppression des doublons
+    df = df.drop_duplicate(subset=["ef_cf_cc"])
 
     # (stand-by) Détermine si multiple ou unique
 
