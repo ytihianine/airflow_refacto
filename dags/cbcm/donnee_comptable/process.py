@@ -126,6 +126,21 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
+    """fichier ZJDP"""
+    # Nettoyer les champs textuels
+    txt_cols = ["societe", "statut_dp", "type_flux", "automatisation_wf_cpt"]
+    df = normalize_whitespace_columns(df, columns=txt_cols)
+
+    # Ajouter les colonnes complémentaires
+
+    # Suppression des doublons
+
+    # En attente de confirmation
+
+    return df
+
+
 # ======================================================
 # Engagement juridique (EJ)
 # ======================================================
@@ -251,21 +266,6 @@ def process_demande_paiement_carte_achat(df: pd.DataFrame) -> pd.DataFrame:
 
     # Suppression des doublons
     df = df.drop_duplicates(subset=["id_dp"])
-    return df
-
-
-def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
-    """fichier ZJDP"""
-    # Nettoyer les champs textuels
-    txt_cols = ["societe", "statut_dp", "type_flux", "automatisation_wf_cpt"]
-    df = normalize_whitespace_columns(df, txt_cols)
-
-    # Ajouter les colonnes complémentaires
-
-    # Suppression des doublons
-
-    # En attente de confirmation
-
     return df
 
 
