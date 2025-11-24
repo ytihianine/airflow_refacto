@@ -221,11 +221,11 @@ def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
 def process_demande_paiement_sfp(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZSFP_SUIVI"""
     # Nettoyer les champs textuels
-    txt_cols = ["societe", "statut_sfp", "type_flux", "automatisation_wf_cpt"]
-    df = normalize_whitespace_columns(df, txt_cols)
+    txt_cols = ["societe", "statut_sfp", "type_flux_sfp", "automatisation_wf_cpt"]
+    df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
+    df["id_dp"] = df["annee_exercice"] + df["societe"] + df["num_piece_sfp"]
 
     return df
 
