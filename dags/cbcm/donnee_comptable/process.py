@@ -163,7 +163,9 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
 
     # Ajouter les colonnes complémentaires
     df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
-    df["ej_cf_cc"] = df["id_ej"] + "_" + df["centre_financer"] + "_" + df["centre_cout"]
+    df["ej_cf_cc"] = (
+        df["id_ej"].astype(str) + "_" + df["centre_financer"] + "_" + df["centre_cout"]
+    )
     df["annee_exercice"] = df.loc[:, "date_creation_ej"].dt.year
     df["mois_ej"] = df.loc[:, "date_creation_ej"].dt.month
 
@@ -194,7 +196,7 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     df = df.loc[df["statut_piece"] == "Comptabiliser"]
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
+    df["id_dp"] = df["annee_exercice"].astype(str) + df["societe"] + df["num_dp"]
 
     # Convertir les colonnes temporelles
     date_cols = ["date_comptable"]
@@ -228,7 +230,7 @@ def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
     df = df.loc[df["type_flux"] == "Flux 3"]
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["annee_exercice"] + df["societe"] + df["num_dp_flux"]
+    df["id_dp"] = df["annee_exercice"].astype(str) + df["societe"] + df["num_dp_flux"]
 
     return df
 
@@ -240,7 +242,7 @@ def process_demande_paiement_sfp(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["annee_exercice"] + df["societe"] + df["num_piece_sfp"]
+    df["id_dp"] = df["annee_exercice"].astype(str) + df["societe"] + df["num_piece_sfp"]
 
     return df
 
@@ -267,7 +269,7 @@ def process_demande_paiement_carte_achat(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["exercice"] + df["societe"] + df["num_dp"]
+    df["id_dp"] = df["exercice"].astype(str) + df["societe"] + df["num_dp"]
 
     # Suppression des doublons
     df = df.drop_duplicates(subset=["id_dp"])
