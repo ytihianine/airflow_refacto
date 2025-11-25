@@ -114,7 +114,7 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
         "16 jours et +",
     ]
     df["delai_traitement_classe"] = pd.cut(
-        x=df["delai_de_traitement_da"],
+        x=df["delai_traitement_da"],
         bins=palier,
         labels=labels,
         right=True,
