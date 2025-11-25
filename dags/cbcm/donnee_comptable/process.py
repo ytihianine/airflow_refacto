@@ -136,7 +136,7 @@ def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
         + df["societe"]
         + df["num_piece_reference"].astype(str)
     )
-    df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
+    df["cf_cc"] = df["centre_financier"] + "_" + df["centre_cout"]
     df["id_dp_cf_cc"] = df["id_dp"] + df["cf_cc"]
 
     # Suppression des doublons
