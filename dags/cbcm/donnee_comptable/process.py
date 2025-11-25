@@ -175,7 +175,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     # (stand-by) Détermine si multiple ou unique
 
     # Catégoriser les données
-    df["type_ej_nom"] = df.loc["type_ej"].map(corr_type_ej).fillna("non determine")
+    df["type_ej_nom"] = df.loc[:, "type_ej"].map(corr_type_ej).fillna("non determine")
 
     return df
 
