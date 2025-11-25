@@ -170,7 +170,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     df["mois_ej"] = df.loc[:, "date_creation_ej"].dt.month
 
     # Suppression des doublons
-    df = df.drop_duplicate(subset=["ef_cf_cc"])
+    df = df.drop_duplicates(subset=["ef_cf_cc"])
 
     # (stand-by) Détermine si multiple ou unique
 
