@@ -82,7 +82,7 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
 
     # Nettoyer les champs textuels
     txt_cols = ["centre_financer", "centre_cout"]
-    df = normalize_whitespace_columns(df, txt_cols)
+    df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Retirer les lignes sans date de réplication
     df = df.loc[df["date_replication"].notna()]
@@ -100,9 +100,9 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
     df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
 
     # Catégoriser les données
-    df["mois"] = df["date_creation_da"].df.month
+    df["mois"] = df["date_creation_da"].dt.month
     df["mois_nom"] = (
-        df["date_creation_da"].df.month_name(locale="fr_FR.utf-8").str.lower()
+        df["date_creation_da"].dt.month_name(locale="fr_FR.utf-8").str.lower()
     )
     df["mois_nombre"] = df.loc["moi_nom"].map(corr_mois).fillna(-1)
 
@@ -164,8 +164,8 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     # Ajouter les colonnes complémentaires
     df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
     df["ej_cf_cc"] = df["id_ej"] + "_" + df["centre_financer"] + "_" + df["centre_cout"]
-    df["annee_exercice"] = df.loc[:, "date_creation_ej"].df.year
-    df["mois_ej"] = df.loc[:, "date_creation_ej"].df.month
+    df["annee_exercice"] = df.loc[:, "date_creation_ej"].dt.year
+    df["mois_ej"] = df.loc[:, "date_creation_ej"].dt.month
 
     # Suppression des doublons
     df = df.drop_duplicate(subset=["ef_cf_cc"])
@@ -203,7 +203,7 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Catégoriser les données
-    df["mois"] = df["date_comptable"].df.month
+    df["mois"] = df["date_comptable"].dt.month
     df["nat_snat_nom"] = (
         df.loc["nature_sous_nature"]
         .map(corr_nature_sous_nature)
@@ -288,7 +288,7 @@ def process_delai_global_paiement(df: pd.DataFrame) -> pd.DataFrame:
         "service_executant",
         "societe",
     ]
-    df = normalize_whitespace_columns(df, txt_cols)
+    df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Remplacer les valeurs nulles
     df["centre_cout"] = df["centre_cout"].replace({"#": "Ind"})
