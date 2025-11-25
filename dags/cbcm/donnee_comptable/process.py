@@ -116,7 +116,7 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
         "16 jours et +",
     ]
     df["delai_traitement_classe"] = pd.cut(
-        df["delai_de_traitement_da"],
+        x=df["delai_de_traitement_da"],
         bins=palier,
         labels=labels,
         right=True,
@@ -158,7 +158,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     # Convertir les colonnes temporelles
     date_cols = ["date_creation_ej"]
     df = convert_str_cols_to_date(
-        df=df, columns=date_cols, str_date_format="%d.%m.%Y %h:%M:%s", errors="coerce"
+        df=df, columns=date_cols, str_date_format="%d.%m.%Y %H:%M:%s", errors="coerce"
     )
 
     # Ajouter les colonnes complémentaires
