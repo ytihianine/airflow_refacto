@@ -101,10 +101,8 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
 
     # Catégoriser les données
     df["mois"] = df["date_creation_da"].dt.month
-    df["mois_nom"] = (
-        df["date_creation_da"].dt.month_name(locale="fr_FR.UTF-8").str.lower()
-    )
-    df["mois_nombre"] = df.loc["moi_nom"].map(corr_mois).fillna(-1)
+    df["mois_nom"] = df.loc[:, "mois"].map(corr_num_mois).fillna("Non déterminé")
+    df["mois_nombre"] = df.loc[:, "mois_nom"].map(corr_mois).fillna(-1)
 
     palier = [0, 3, 6, 9, 12, 15, np.inf]
     labels = [
