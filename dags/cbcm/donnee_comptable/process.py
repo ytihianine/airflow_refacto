@@ -158,7 +158,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     # Convertir les colonnes temporelles
     date_cols = ["date_creation_ej"]
     df = convert_str_cols_to_date(
-        df=df, columns=date_cols, str_date_format="%d.%m.%Y %H:%M:%s", errors="coerce"
+        df=df, columns=date_cols, str_date_format="%d.%m.%Y %H:%M:%S", errors="coerce"
     )
 
     # Ajouter les colonnes complémentaires
