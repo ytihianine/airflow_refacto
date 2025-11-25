@@ -187,8 +187,8 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     df[["centre_financer"]] = df[["centre_financer"]].fillna("Ind")
 
     # Nettoyer les champs textuels
-    txt_cols = ["centre_financer", "societe", "statut_piece", "nature_sous_nature"]
-    df = normalize_whitespace_columns(df, txt_cols)
+    txt_cols = ["centre_financer", "societe", "statut_piece"]
+    df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Filtrer les lignes
     df = df.loc[df["statut_piece"] == "Comptabiliser"]
