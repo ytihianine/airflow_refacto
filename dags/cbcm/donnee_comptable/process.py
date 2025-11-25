@@ -196,7 +196,9 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     df = df.loc[df["statut_piece"] == "Comptabiliser"]
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["annee_exercice"].astype(str) + df["societe"] + df["num_dp"]
+    df["id_dp"] = (
+        df["annee_exercice"].astype(str) + df["societe"] + df["num_dp"].astype(str)
+    )
 
     # Convertir les colonnes temporelles
     date_cols = ["date_comptable"]
@@ -230,7 +232,9 @@ def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
     df = df.loc[df["type_flux"] == "Flux 3"]
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["annee_exercice"].astype(str) + df["societe"] + df["num_dp_flux"]
+    df["id_dp"] = (
+        df["annee_exercice"].astype(str) + df["societe"] + df["num_dp_flux"].astype(str)
+    )
 
     return df
 
@@ -242,7 +246,11 @@ def process_demande_paiement_sfp(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["annee_exercice"].astype(str) + df["societe"] + df["num_piece_sfp"]
+    df["id_dp"] = (
+        df["annee_exercice"].astype(str)
+        + df["societe"]
+        + df["num_piece_sfp"].astype(str)
+    )
 
     return df
 
