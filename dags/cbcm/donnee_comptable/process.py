@@ -277,7 +277,11 @@ def process_demande_paiement_carte_achat(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Ajouter les colonnes complémentaires
-    df["id_dp"] = df["annee_exercice"].astype(str) + df["societe"] + df["num_dp"]
+    df["id_dp"] = (
+        df["annee_exercice"].astype(str)
+        + df["societe"]
+        + df["num_piece_dp_carte_achat"].astype(str)
+    )
 
     # Suppression des doublons
     df = df.drop_duplicates(subset=["id_dp"])
