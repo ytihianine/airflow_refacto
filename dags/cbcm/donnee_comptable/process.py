@@ -143,7 +143,7 @@ def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop_duplicates(subset=["id_dp_cf_cc"])
 
     # Regroupement
-    df = df.groupby(by=["id_dp"]).count()
+    df = df.groupby(by=["id_dp"], as_index=False).count()
 
     return df
 
