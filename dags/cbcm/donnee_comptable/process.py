@@ -127,14 +127,23 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
 def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZJDP"""
     # Nettoyer les champs textuels
-    txt_cols = ["societe", "statut_dp", "type_flux", "automatisation_wf_cpt"]
+    txt_cols = ["societe", "centre_cout", "centre_financier"]
     df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Ajouter les colonnes complémentaires
+    df["id_dp"] = (
+        df["annee_exercice_piece_fi"].astype(str)
+        + df["societe"]
+        + df["num_piece_reference"].astype(str)
+    )
+    df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
+    df["id_dp_cf_cc"] = df["id_dp"] + df["cf_cc"]
 
     # Suppression des doublons
+    df = df.drop_duplicates(subset=["id_dp_cf_cc"])
 
-    # En attente de confirmation
+    # Regroupement
+    df = df.groupby(by=["id_dp"]).count()
 
     return df
 
