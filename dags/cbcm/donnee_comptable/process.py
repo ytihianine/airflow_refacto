@@ -143,7 +143,16 @@ def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop_duplicates(subset=["id_dp_cf_cc"])
 
     # Regroupement
-    df = df.groupby(by=["id_dp"], as_index=False).count()
+    df_grouped = (
+        df["id_dp", "id_dp_cf_cc"].groupby(by=["id_dp"], as_index=False).count()
+    )
+
+    # Catégoriser les données
+    df_grouped["unique_multi"] = np.where(
+        df_grouped["id_dp_cf_cc"] == 1,
+        "Unique",
+        "Multiple",
+    )
 
     return df
 
