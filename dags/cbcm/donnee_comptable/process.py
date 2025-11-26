@@ -144,14 +144,17 @@ def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
 
     # Regroupement
     df_grouped = df.groupby(by=["id_dp"], as_index=False)["id_dp_cf_cc"].count()
+    df_grouped = df_grouped.rename(columns={"id_dp_cf_cc": "nb_poste"})
 
     # Catégoriser les données
     df_grouped["unique_multi"] = np.where(
-        df_grouped["id_dp_cf_cc"] == 1,
+        df_grouped["nb_poste"] == 1,
         "Unique",
         "Multiple",
     )
-    print(df_grouped.head())
+
+    # Ajout des colonnes calculées
+    df = pd.merge(left=df, right=df_grouped, how="left", on="id_dp")
 
     return df
 
