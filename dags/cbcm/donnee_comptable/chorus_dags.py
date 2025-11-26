@@ -75,8 +75,8 @@ def chorus_donnees_comptables() -> None:
     chain(
         validate_params(),
         looking_for_files,
-        # create_projet_snapshot(nom_projet=nom_projet),
-        # get_projet_snapshot(nom_projet=nom_projet),
+        create_projet_snapshot(nom_projet=nom_projet),
+        get_projet_snapshot(nom_projet=nom_projet),
         source_files(),
         # create_tmp_tables(),
         # import_file_to_db.expand(
