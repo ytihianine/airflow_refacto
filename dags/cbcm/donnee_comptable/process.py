@@ -192,7 +192,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
 
     # Regroupement
     df_grouped = df.groupby(by=["id_ej"], as_index=False)["ej_cf_cc"].count()
-    df_grouped = df_grouped.rename(columns={"ej_cf_cc": "nb_poste_dp"})
+    df_grouped = df_grouped.rename(columns={"ej_cf_cc": "nb_poste_ej"})
 
     # Catégoriser les données
     df_grouped["unique_multi"] = np.where(
