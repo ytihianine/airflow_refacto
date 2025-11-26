@@ -57,7 +57,7 @@ def create_snapshot_id(
     nom_projet: str, execution_date: datetime, pg_conn_id: str
 ) -> None:
 
-    snapshot_id = execution_date.strftime(format="%Y%m%d_%H%M%S")
+    snapshot_id = execution_date.strftime(format="%Y%m%d_%H:%M:%S")
     query = """
         INSERT INTO conf_projets.projet_snapshot (id_projet, snapshot_id, creation_timestamp)
         SELECT
