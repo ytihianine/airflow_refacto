@@ -190,7 +190,19 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     # Suppression des doublons
     df = df.drop_duplicates(subset=["ej_cf_cc"])
 
-    # (stand-by) Détermine si multiple ou unique
+    # Regroupement
+    df_grouped = df.groupby(by=["id_ej"], as_index=False)["ej_cf_cc"].count()
+    df_grouped = df_grouped.rename(columns={"ej_cf_cc": "nb_poste_dp"})
+
+    # Catégoriser les données
+    df_grouped["unique_multi"] = np.where(
+        df_grouped["nb_poste_dp"] == 1,
+        "Unique",
+        "Multiple",
+    )
+
+    # Ajout des colonnes calculées
+    df = pd.merge(left=df, right=df_grouped, how="left", on="id_ej")
 
     # Catégoriser les données
     df["type_ej_nom"] = df.loc[:, "type_ej"].map(corr_type_ej).fillna("non determine")
