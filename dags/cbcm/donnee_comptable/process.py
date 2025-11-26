@@ -196,7 +196,7 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
 
     # Catégoriser les données
     df_grouped["unique_multi"] = np.where(
-        df_grouped["nb_poste_dp"] == 1,
+        df_grouped["nb_poste_ej"] == 1,
         "Unique",
         "Multiple",
     )
