@@ -298,7 +298,7 @@ def process_demande_paiement_carte_achat(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Filtrer les lignes
-    df = df.loc[df["statut_dp_carte_achat"] == "Pré-enregistrée"]
+    df = df.loc[df["statut_dp_carte_achat"] != "Pré-enregistrée"]
 
     # Remplacer les valeurs nulles
     df["niveau_carte_achat"] = np.where(
