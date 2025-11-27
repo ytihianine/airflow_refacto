@@ -267,6 +267,9 @@ def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
         df["annee_exercice"].astype(str) + df["societe"] + df["num_dp_flux"].astype(str)
     )
 
+    # Renommer les colonnes
+    df = df.rename(columns={"type_flux": "dp_flux_3"})
+
     return df
 
 
