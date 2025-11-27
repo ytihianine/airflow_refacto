@@ -233,11 +233,12 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     # Convertir les colonnes temporelles
     date_cols = ["date_comptable"]
     df = convert_str_cols_to_date(
-        df=df, columns=date_cols, str_date_format="%d/%m/%Y", errors="coerce"
+        df=df, columns=date_cols, str_date_format="%d.%m.%Y", errors="coerce"
     )
 
     # Catégoriser les données
     df["mois"] = df["date_comptable"].dt.month
+    df["mois_nom"] = df.loc[:, "mois"].map(corr_num_mois).fillna("Non déterminé")
     df["nat_snat_nom"] = (
         df.loc[:, "nature_sous_nature"]
         .map(corr_nature_sous_nature)
