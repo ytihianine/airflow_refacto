@@ -77,10 +77,10 @@ def process_ref_sdep(df: pd.DataFrame) -> pd.DataFrame:
 # ======================================================
 def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
     # Retirer les lignes sans valeurs
-    df = df.dropna(subset=["centre_financier", "centre_de_cout"], how="any")
+    df = df.dropna(subset=["centre_financier", "centre_cout"], how="any")
 
     # Nettoyage des données textuelles
-    txt_cols = ["centre_financier", "centre_de_cout", "couple_cf_cc", "observation"]
+    txt_cols = ["centre_financier", "centre_cout", "couple_cf_cc", "observation"]
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
     # Gestion des références vides
