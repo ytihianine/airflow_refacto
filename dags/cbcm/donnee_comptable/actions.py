@@ -38,17 +38,26 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
             "centre_financier": "Centre_financier",
         }
     ).to_dict(orient="records")
-    data = {"records": [{"fields": record} for record in new_cf_cc]}
-    print(f"Nouveau couple CF-CC sans SP: {len(data["records"])}")
-    print(f"Exemple: {data['records'][0]}")
+    print(f"Nouveau couple CF-CC sans SP: {len(new_cf_cc)}")
 
-    http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
-    request_client = RequestsClient(config=http_config)
-    grist_client = GristAPI(
-        http_client=request_client,
-        base_url="https://grist.numerique.gouv.fr",
-        workspace_id="dsci",
-        doc_id=Variable.get(key="grist_doc_id_cbcm"),
-        api_token=Variable.get(key="grist_secret_key"),
-    )
-    grist_client.post_records(tbl_name="Service_prescripteur", json=data)
+    if len(new_cf_cc) > 0:
+        print("Ajout des nouveaux couples CF-CC dans Grist")
+        data = {"records": [{"fields": record} for record in new_cf_cc]}
+
+        print(f"Exemple: {data['records'][0]}")
+
+        http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
+        request_client = RequestsClient(config=http_config)
+        grist_client = GristAPI(
+            http_client=request_client,
+            base_url="https://grist.numerique.gouv.fr",
+            workspace_id="dsci",
+            doc_id=Variable.get(key="grist_doc_id_cbcm"),
+            api_token=Variable.get(key="grist_secret_key"),
+        )
+        try:
+            grist_client.post_records(tbl_name="Service_prescripteur", json=data)
+        except Exception:
+            print("Les nouveaux couples à ajouter existent déjà dans Grist !!")
+    else:
+        print("Aucun nouveau couple CF-CC ... Skipping")
