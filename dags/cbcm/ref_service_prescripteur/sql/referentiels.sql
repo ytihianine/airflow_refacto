@@ -1,29 +1,30 @@
+DROP SCHEMA donnee_comptable CASCADE;
 CREATE SCHEMA donnee_comptable;
 
 CREATE TABLE donnee_comptable."ref_service_prescripteur_pilotage" (
-  "id" integer PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "service_prescripteur" text
 );
 
 CREATE TABLE donnee_comptable."ref_service_depense" (
-  "id" integer PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "service_depense" text
 );
 
 CREATE TABLE donnee_comptable."ref_prog" (
-  "id" integer PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "prog" text
 );
 
 CREATE TABLE donnee_comptable."ref_bop" (
-  "id" integer PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "prog" int,
   "bop" text,
   FOREIGN KEY ("prog") REFERENCES donnee_comptable."ref_prog" ("id")
 );
 
 CREATE TABLE donnee_comptable."ref_uo" (
-  "id" integer PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "prog" int,
   "bop" int,
   "uo" text,
@@ -32,7 +33,7 @@ CREATE TABLE donnee_comptable."ref_uo" (
 );
 
 CREATE TABLE donnee_comptable."ref_cc" (
-  "id" integer PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "prog" int,
   "bop" int,
   "uo" int,
@@ -43,13 +44,13 @@ CREATE TABLE donnee_comptable."ref_cc" (
 );
 
 CREATE TABLE donnee_comptable."ref_service_prescripteur_choisi" (
-  "id" integer PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "service_prescripteur" text
 );
 
 CREATE TABLE donnee_comptable."service_prescripteur" (
-  "id" integer PRIMARY KEY,
-  "centre_financer" text,
+  "id" SERIAL PRIMARY KEY,
+  "centre_financier" text,
   "centre_de_cout" text,
   "couple_cf_cc" text,
   "service_prescripteur_pilotage_" int,
