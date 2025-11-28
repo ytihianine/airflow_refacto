@@ -10,11 +10,11 @@ from utils.config.vars import AGENT, DEFAULT_PG_DATA_CONN_ID, PROXY
 
 def load_new_sp(dfs: list[pd.DataFrame]) -> None:
     # Concaténer tous les CF et CC
-    cols_to_keep = ["cf", "cc"]
+    cols_to_keep = ["centre_financier", "centre_cout"]
     df_source = pd.concat(objs=[df[cols_to_keep] for df in dfs])
 
     # Supprimer les doublons
-    df_source = df_source.drop_duplicates(subset=["cf", "cc"])  # type: ignore
+    df_source = df_source.drop_duplicates(subset=cols_to_keep)  # type: ignore
 
     # Récupérer les SP déjà connus
     db = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
@@ -22,7 +22,7 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
 
     # Réaliser une jointure
     df = pd.merge(
-        left=df_sp, right=df_source, on=["cf", "cc"], how="outer", indicator=True
+        left=df_sp, right=df_source, on=cols_to_keep, how="outer", indicator=True
     )
 
     # Conserver uniquement les lignes sans SP
