@@ -77,6 +77,7 @@ def process_ref_sdep(df: pd.DataFrame) -> pd.DataFrame:
 # ======================================================
 def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
     # Retirer les lignes sans valeurs
+    df = df.rename(columns={"centre_de_cout": "centre_cout"})
     df = df.dropna(subset=["centre_financier", "centre_cout"], how="any")
 
     # Nettoyage des données textuelles
