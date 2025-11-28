@@ -411,6 +411,8 @@ def create_action_from_multi_input_files_etl_task(
         # Action to perform
         if action_kwargs:
             merged_kwargs = {**action_kwargs}
-        action_func(dfs=dfs, *action_args, **merged_kwargs)
+            action_func(dfs=dfs, *action_args, **merged_kwargs)
+        else:
+            action_func(dfs=dfs, *action_args)
 
     return _task
