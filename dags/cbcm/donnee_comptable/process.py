@@ -76,12 +76,12 @@ corr_nature_sous_nature = {
 def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
     """fichier INFBUD57"""
     # Remplacer les valeurs nulles
-    df[["centre_financer", "centre_cout"]] = df[
-        ["centre_financer", "centre_cout"]
+    df[["centre_financier", "centre_cout"]] = df[
+        ["centre_financier", "centre_cout"]
     ].fillna("Ind")
 
     # Nettoyer les champs textuels
-    txt_cols = ["centre_financer", "centre_cout"]
+    txt_cols = ["centre_financier", "centre_cout"]
     df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Retirer les lignes sans date de réplication
@@ -97,7 +97,7 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
     df["delai_traitement_da"] = (
         df["date_replication"] - df["date_creation_da"]
     ).dt.days
-    df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
+    df["cf_cc"] = df["centre_financier"] + "_" + df["centre_cout"]
 
     # Catégoriser les données
     df["mois"] = df["date_creation_da"].dt.month
@@ -165,12 +165,12 @@ def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
 def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     """fichier Z_LIST_EJ"""
     # Remplacer les valeurs nulles
-    df[["centre_financer", "centre_cout"]] = df[
-        ["centre_financer", "centre_cout"]
+    df[["centre_financier", "centre_cout"]] = df[
+        ["centre_financier", "centre_cout"]
     ].fillna("Ind")
 
     # Nettoyer les champs textuels
-    txt_cols = ["centre_financer", "centre_cout", "type_ej"]
+    txt_cols = ["centre_financier", "centre_cout", "type_ej"]
     df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Convertir les colonnes temporelles
@@ -180,9 +180,9 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Ajouter les colonnes complémentaires
-    df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
+    df["cf_cc"] = df["centre_financier"] + "_" + df["centre_cout"]
     df["ej_cf_cc"] = (
-        df["id_ej"].astype(str) + "_" + df["centre_financer"] + "_" + df["centre_cout"]
+        df["id_ej"].astype(str) + "_" + df["centre_financier"] + "_" + df["centre_cout"]
     )
     df["annee_exercice"] = df.loc[:, "date_creation_ej"].dt.year
     df["mois_ej"] = df.loc[:, "date_creation_ej"].dt.month
@@ -216,10 +216,10 @@ def process_engagement_juridique(df: pd.DataFrame) -> pd.DataFrame:
 def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZDEP53"""
     # Remplacer les valeurs nulles
-    df[["centre_financer"]] = df[["centre_financer"]].fillna("Ind")
+    df[["centre_financier"]] = df[["centre_financier"]].fillna("Ind")
 
     # Nettoyer les champs textuels
-    txt_cols = ["centre_financer", "societe", "statut_piece"]
+    txt_cols = ["centre_financier", "societe", "statut_piece"]
     df = normalize_whitespace_columns(df, columns=txt_cols)
 
     # Filtrer les lignes
@@ -332,7 +332,7 @@ def process_delai_global_paiement(df: pd.DataFrame) -> pd.DataFrame:
         "type_piece",
         "nature_sous_nature",
         "centre_cout",
-        "centre_financer",
+        "centre_financier",
         "service_executant",
         "societe",
     ]
@@ -340,15 +340,15 @@ def process_delai_global_paiement(df: pd.DataFrame) -> pd.DataFrame:
 
     # Remplacer les valeurs nulles
     df["centre_cout"] = df["centre_cout"].replace({"#": "Ind"})
-    df[["centre_financer", "centre_cout"]] = df[
-        ["centre_financer", "centre_cout"]
+    df[["centre_financier", "centre_cout"]] = df[
+        ["centre_financier", "centre_cout"]
     ].fillna("Ind")
 
     # Filtrer les lignes
     df = df.loc[df["societe"].isin(["ADCE", "CSND"])]
 
     # Ajouter les colonnes complémentaires
-    df["cf_cc"] = df["centre_financer"] + "_" + df["centre_cout"]
+    df["cf_cc"] = df["centre_financier"] + "_" + df["centre_cout"]
     df["mois_nom"] = df.loc[:, "periode_comptable"].map(corr_num_mois).fillna("inconnu")
 
     # Arrondir les valeurs
