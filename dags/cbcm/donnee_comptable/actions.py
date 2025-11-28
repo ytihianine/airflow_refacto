@@ -32,9 +32,12 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
     df = df.loc[df["_merge"] == "right_only", cols_to_keep]
 
     # Intégrer ces lignes dans Grist
-    new_cf_cc = df.rename(columns={"centre_cout": "centre_de_cout"}).to_dict(
-        orient="records"
-    )
+    new_cf_cc = df.rename(
+        columns={
+            "centre_cout": "Centre_de_cout",
+            "centre_financier": "Centre_financier",
+        }
+    ).to_dict(orient="records")
     data = {"records": [{"fieds": record} for record in new_cf_cc]}
     print(f"Nouveau couple CF-CC sans SP: {len(data["records"])}")
     print(f"Exemple: {data['records'][0]}")
