@@ -389,6 +389,11 @@ def create_action_from_multi_input_files_etl_task(
         Callable: Airflow task function
     """
 
+    if action_args is None:
+        action_args = ()
+    if action_kwargs is None:
+        action_kwargs = {}
+
     @task(task_id=task_id)
     def _task(**context) -> None:
         # Get project name from context
@@ -408,11 +413,6 @@ def create_action_from_multi_input_files_etl_task(
             df_info(df=df, df_name=f"{sel} - Source normalisée")
             dfs.append(df)
 
-        # Action to perform
-        if action_kwargs:
-            merged_kwargs = {**action_kwargs}
-            action_func(dfs=dfs, *action_args, **merged_kwargs)
-        else:
-            action_func(dfs=dfs, *action_args)
+        action_func(dfs=dfs, *action_args, **action_kwargs)
 
     return _task
