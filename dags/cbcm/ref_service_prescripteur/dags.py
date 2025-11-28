@@ -35,7 +35,7 @@ LINK_DOC_DATA = "Non-défini"  # noqa
 # Définition du DAG
 @dag(
     dag_id="chorus_service_prescripteur",
-    schedule_interval="*/15 8-19 * * 1-5",
+    schedule_interval="*/7 8-19 * * 1-5",
     max_active_runs=1,
     max_consecutive_failed_dag_runs=2,
     catchup=False,
