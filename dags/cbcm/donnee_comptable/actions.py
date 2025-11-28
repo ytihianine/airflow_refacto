@@ -38,7 +38,7 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
             "centre_financier": "Centre_financier",
         }
     ).to_dict(orient="records")
-    data = {"records": [{"fieds": record} for record in new_cf_cc]}
+    data = {"records": [{"fields": record} for record in new_cf_cc]}
     print(f"Nouveau couple CF-CC sans SP: {len(data["records"])}")
     print(f"Exemple: {data['records'][0]}")
 
