@@ -30,9 +30,7 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
 
     # Conserver uniquement les lignes sans SP
     df = df.loc[
-        (df["_merge"] == "right_only")
-        & (df["centre_financier"] != "Ind")
-        & (df["centre_cout"] != "Ind"),
+        (df["_merge"] == "right_only"),
         cols_to_keep,
     ]
 
