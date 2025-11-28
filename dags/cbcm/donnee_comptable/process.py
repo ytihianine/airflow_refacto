@@ -126,6 +126,11 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_demande_achat_journal_pieces(df: pd.DataFrame) -> pd.DataFrame:
     """fichier ZJDP"""
+    # Remplacer les valeurs nulles
+    df[["centre_financier", "centre_cout"]] = df[
+        ["centre_financier", "centre_cout"]
+    ].fillna("Ind")
+
     # Nettoyer les champs textuels
     txt_cols = ["societe", "centre_cout", "centre_financier"]
     df = normalize_whitespace_columns(df, columns=txt_cols)
