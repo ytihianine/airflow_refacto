@@ -18,7 +18,7 @@
 # httpx_internet_client = HttpxAPIClient(proxy=PROXY, user_agent=AGENT)
 # grist_api = GristAPI(
 #     api_client=httpx_internet_client,
-#     base_url="https://grist.numerique.gouv.fr",
+#     base_url=DEFAULT_GRIST_HOST,
 #     workspace_id="dsci",
 #     doc_id=Variable.get("grist_doc_id_gestion_interne"),
 #     api_token=Variable.get("grist_secret_key"),

@@ -38,3 +38,6 @@ DEFAULT_PG_DATA_CONN_ID = "db_data_store"
 DEFAULT_PG_CONFIG_CONN_ID = "db_depose_fichier"
 DEFAULT_S3_CONN_ID = "minio_bucket_dsci"
 DEFAULT_S3_BUCKET = "dsci"
+
+# Grist
+DEFAULT_GRIST_HOST = "https://grist.numerique.gouv.fr"

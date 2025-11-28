@@ -6,6 +6,8 @@ from airflow.models import Variable
 from infra.mails.default_smtp import create_airflow_callback, MailStatus
 from dags.sg.dsci.hooks.process import create_ics_file
 
+from utils.config.vars import DEFAULT_GRIST_HOST
+
 # Mails
 to = ["yanis.tihianine@finances.gouv.fr"]
 cc = []
@@ -50,7 +52,7 @@ def hooks_check():
         httpx_internet_client = HttpxAPIClient(proxy=PROXY, user_agent=AGENT)
         grist_api = GristAPI(
             api_client=httpx_internet_client,
-            base_url="https://grist.numerique.gouv.fr",
+            base_url=DEFAULT_GRIST_HOST,
             workspace_id="docs",
             doc_id="biWSFf9kY2xrsF9WaSTTGG",
             api_token=Variable.get("grist_secret_key"),

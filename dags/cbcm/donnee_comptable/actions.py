@@ -5,7 +5,7 @@ import pandas as pd
 
 from infra.grist.client import GristAPI
 from infra.database.factory import create_db_handler
-from utils.config.vars import AGENT, DEFAULT_PG_DATA_CONN_ID, PROXY
+from utils.config.vars import AGENT, DEFAULT_GRIST_HOST, DEFAULT_PG_DATA_CONN_ID, PROXY
 
 
 def load_new_sp(dfs: list[pd.DataFrame]) -> None:
@@ -50,7 +50,7 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
         request_client = RequestsClient(config=http_config)
         grist_client = GristAPI(
             http_client=request_client,
-            base_url="https://grist.numerique.gouv.fr",
+            base_url=DEFAULT_GRIST_HOST,
             workspace_id="dsci",
             doc_id=Variable.get(key="grist_doc_id_cbcm"),
             api_token=Variable.get(key="grist_secret_key"),

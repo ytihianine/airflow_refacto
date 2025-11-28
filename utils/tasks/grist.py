@@ -10,7 +10,13 @@ from utils.config.dag_params import get_project_name
 from utils.config.tasks import get_selecteur_config
 
 from utils.config.types import FileHandlerType
-from utils.config.vars import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID, PROXY, AGENT
+from utils.config.vars import (
+    DEFAULT_GRIST_HOST,
+    DEFAULT_S3_BUCKET,
+    DEFAULT_S3_CONN_ID,
+    PROXY,
+    AGENT,
+)
 
 
 @task(task_id="download_grist_doc_to_s3", retries=1, retry_delay=timedelta(seconds=20))
@@ -18,7 +24,7 @@ def download_grist_doc_to_s3(
     selecteur: str,
     workspace_id: str,
     doc_id_key: str,
-    grist_host: str = "https://grist.numerique.gouv.fr",
+    grist_host: str = DEFAULT_GRIST_HOST,
     api_token_key: str = "grist_secret_key",
     use_proxy: bool = True,
     **context,

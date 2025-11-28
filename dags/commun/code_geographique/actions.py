@@ -5,7 +5,7 @@ from airflow.models.variable import Variable
 
 from infra.grist.client import GristAPI
 from infra.http_client.adapters import ClientConfig, HttpxClient
-from utils.config.vars import AGENT, PROXY
+from utils.config.vars import AGENT, DEFAULT_GRIST_HOST, PROXY
 from utils.dataframe import df_info
 
 
@@ -96,7 +96,7 @@ def code_iso_region() -> pd.DataFrame:
     # Grist
     grist_api = GristAPI(
         http_client=api_client,
-        base_url="https://grist.numerique.gouv.fr",
+        base_url=DEFAULT_GRIST_HOST,
         workspace_id="dsci",
         doc_id=Variable.get("grist_doc_id_data_commune"),
         api_token=Variable.get("grist_secret_key"),
@@ -121,7 +121,7 @@ def code_iso_departement() -> pd.DataFrame:
     # Grist
     grist_api = GristAPI(
         http_client=api_client,
-        base_url="https://grist.numerique.gouv.fr",
+        base_url=DEFAULT_GRIST_HOST,
         workspace_id="dsci",
         doc_id=Variable.get("grist_doc_id_data_commune"),
         api_token=Variable.get("grist_secret_key"),
