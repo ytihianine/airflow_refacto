@@ -84,6 +84,11 @@ def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
     txt_cols = ["centre_financier", "centre_cout", "couple_cf_cc", "observation"]
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
+    # Convertir les colonnes date
+    date_cols = ["date_creation", "date_derniere_maj"]
+    for date_col in date_cols:
+        df[date_col] = pd.to_datetime(df[date_col], unit="s")
+
     # Gestion des références vides
     num_cols = [
         "service_prescripteur_pilotage_",
@@ -93,6 +98,7 @@ def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
         "designation_bop",
         "designation_uo",
         "designation_cc",
+        "doublon",
     ]
     df = convert_to_numeric(df=df, columns=num_cols, errors="coerce")
     df[num_cols] = df[num_cols].replace({0: pd.NA})
