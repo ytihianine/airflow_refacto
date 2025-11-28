@@ -46,6 +46,7 @@ def process_ref_cc(df: pd.DataFrame) -> pd.DataFrame:
     # Gestion des références vides
     num_cols = ["prog", "bop", "uo"]
     df = convert_to_numeric(df=df, columns=num_cols, errors="coerce")
+    df[num_cols] = df[num_cols].replace({0: pd.NA})
 
     return df
 
