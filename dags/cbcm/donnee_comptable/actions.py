@@ -29,11 +29,7 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
     df = df.loc[df["_merge"] == "right_only"]
 
     # Intégrer ces lignes dans Grist
-    data = {
-        "records": [
-            {"fieds": record} for record in df.to_dict(orient="records", index=False)
-        ]
-    }
+    data = {"records": [{"fieds": record} for record in df.to_dict(orient="records")]}
     print(data)
     test_data = {
         "records": [
