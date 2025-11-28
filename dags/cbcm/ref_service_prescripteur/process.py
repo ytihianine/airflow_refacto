@@ -94,5 +94,6 @@ def process_service_prescripteur(df: pd.DataFrame) -> pd.DataFrame:
         "designation_cc",
     ]
     df = convert_to_numeric(df=df, columns=num_cols, errors="coerce")
+    df[num_cols] = df[num_cols].replace({0: pd.NA})
 
     return df
