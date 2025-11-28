@@ -46,4 +46,4 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
         doc_id=Variable.get(key="grist_doc_id_cbcm"),
         api_token=Variable.get(key="grist_secret_key"),
     )
-    grist_client.post_records(tbl_name="Service_prescripteur", data=test_data)
+    grist_client.post_records(tbl_name="Service_prescripteur", json=test_data)
