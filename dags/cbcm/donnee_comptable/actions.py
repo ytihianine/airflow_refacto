@@ -26,16 +26,12 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
     )
 
     # Conserver uniquement les lignes sans SP
-    df = df.loc[df["_merge"] == "right_only"]
+    df = df.loc[df["_merge"] == "right_only", cols_to_keep]
 
     # Intégrer ces lignes dans Grist
     data = {"records": [{"fieds": record} for record in df.to_dict(orient="records")]}
-    print(data)
-    test_data = {
-        "records": [
-            {"fields": {"Centre_financier": "test", "Centre_de_cout": "Auto implement"}}
-        ]
-    }
+    print(len(data["records"]))
+    print(data["records"][0])
 
     http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
     request_client = RequestsClient(config=http_config)
@@ -46,4 +42,4 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
         doc_id=Variable.get(key="grist_doc_id_cbcm"),
         api_token=Variable.get(key="grist_secret_key"),
     )
-    grist_client.post_records(tbl_name="Service_prescripteur", json=test_data)
+    # grist_client.post_records(tbl_name="Service_prescripteur", json=data)
