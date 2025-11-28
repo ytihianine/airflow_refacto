@@ -3,9 +3,13 @@ from airflow.models.baseoperator import chain
 
 from utils.tasks.validation import create_validate_params_task
 from utils.config.types import ALL_PARAM_PATHS
-from utils.tasks.etl import create_file_etl_task
+from utils.tasks.etl import (
+    create_action_from_multi_input_files_etl_task,
+    create_file_etl_task,
+)
 
 from dags.cbcm.donnee_comptable import process
+from dags.cbcm.donnee_comptable import actions
 
 
 validate_params = create_validate_params_task(
@@ -73,3 +77,16 @@ def source_files() -> None:
             delai_global_paiement(),
         ]
     )
+
+
+add_new_sp = create_action_from_multi_input_files_etl_task(
+    task_id="add_new_sp",
+    input_selecteurs=[
+        "demande_achat",
+        "engagement_juridique",
+        "demande_achat_journal_pieces",
+        "demande_paiement_carte_achat",
+        "demande_paiement_sfp",
+    ],
+    action_func=actions.load_new_sp,
+)

@@ -26,7 +26,7 @@ from utils.tasks.s3 import (
 from utils.config.tasks import get_s3_keys_source, get_projet_config
 from utils.config.dag_params import create_default_args, create_dag_params
 
-from dags.cbcm.donnee_comptable.tasks import source_files, validate_params
+from dags.cbcm.donnee_comptable.tasks import source_files, validate_params, add_new_sp
 
 
 # Mails
@@ -78,6 +78,7 @@ def chorus_donnees_comptables() -> None:
         create_projet_snapshot(nom_projet=nom_projet),
         get_projet_snapshot(nom_projet=nom_projet),
         source_files(),
+        add_new_sp(),
         # create_tmp_tables(),
         # import_file_to_db.expand(
         #     selecteur_config=get_projet_config(nom_projet=nom_projet)
