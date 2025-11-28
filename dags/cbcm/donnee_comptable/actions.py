@@ -19,7 +19,7 @@ def load_new_sp(dfs: list[pd.DataFrame]) -> None:
     # Récupérer les SP déjà connus
     db = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
     df_sp = db.fetch_df(
-        query="SELECT DISTINCT centre_financier, centre_de_cout FROM donnee_comptable.service_prescripteur;"
+        query="SELECT DISTINCT centre_financier, centre_cout FROM donnee_comptable.service_prescripteur;"
     )
     print(f"Nombre de SP connus: {len(df_sp)}")
 
