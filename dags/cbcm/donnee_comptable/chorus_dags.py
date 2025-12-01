@@ -79,18 +79,18 @@ def chorus_donnees_comptables() -> None:
         get_projet_snapshot(nom_projet=nom_projet),
         source_files(),
         add_new_sp(),
-        # create_tmp_tables(),
-        # import_file_to_db.expand(
-        #     selecteur_config=get_projet_config(nom_projet=nom_projet)
-        # ),
-        # ensure_partition(),
-        # copy_tmp_table_to_real_table(
-        #     load_strategy=LoadStrategy.APPEND,
-        # ),
-        # refresh_views(),
+        create_tmp_tables(),
+        import_file_to_db.expand(
+            selecteur_config=get_projet_config(nom_projet=nom_projet)
+        ),
+        ensure_partition(),
+        copy_tmp_table_to_real_table(
+            load_strategy=LoadStrategy.APPEND,
+        ),
+        refresh_views(),
         # copy_s3_files(bucket="dsci"),
         # del_s3_files(bucket="dsci"),
-        # delete_tmp_tables(),
+        delete_tmp_tables(),
         # set_dataset_last_update_date(
         #     dataset_ids=[49, 50, 51, 52, 53, 54],
         # ),
