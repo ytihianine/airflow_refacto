@@ -496,7 +496,7 @@ def _process_and_import_file(
     et la table de destination sont dans le même ordre !
     """
     # Define hooks
-    s3_handler = create_default_s3_handler()
+    s3_handler = create_default_s3_handler(connection_id=s3_conn_id)
     local_handler = create_local_handler(base_path=None)
 
     # Check if old file already exists in local system
