@@ -2,13 +2,17 @@ import os
 import sqlite3
 import pandas as pd
 import numpy as np
-from dags.applications.configuration_projets import process
 
 import psycopg2
 from psycopg2.extensions import register_adapter, AsIs
 from psycopg2.extras import execute_values
 
-register_adapter(np.int64, AsIs)
+from utils.control.structures import normalize_grist_dataframe
+
+from dags.applications.configuration_projets import process
+
+
+register_adapter(typ=np.int64, callable=AsIs)
 
 
 # Tbl order is important due to tbl dependancy !
@@ -37,21 +41,23 @@ pg_conn = psycopg2.connect(
 pg_cur = pg_conn.cursor()
 # for each tbl
 for tbl in tbl_ordered:
+    print(f"Start processing table <{tbl["tbl_name"]}>")
     # read data for sqlite file
     df = pd.read_sql_query(
         sql=f"SELECT * FROM {tbl["tbl_name"].capitalize()}", con=sqlite_conn
     )
     # apply process function
+    df = normalize_grist_dataframe(df=df)
     df = tbl["process_func"](df=df)
-    df = df.drop(df.filter(regex="^(grist|manual)").columns, axis=1)
+    # df = df.drop(df.filter(regex="^(grist|manual)").columns, axis=1)
     df = df.fillna(np.nan).replace([np.nan], [None])
-    df = df.convert_dtypes()
+    # df = df.convert_dtypes()
     print(df.columns)
     print(df.dtypes)
     print(df.isnull().sum())
     # Get tbl columns and order them
     fetch_query = f"SELECT * FROM {schema}.{tbl["tbl_name"]} LIMIT 0;"
-    pg_cur.execute(fetch_query)
+    pg_cur.execute(query=fetch_query)
     sorted_cols = sorted([col.name for col in pg_cur.description])
     print(sorted_cols)
 
@@ -61,7 +67,8 @@ for tbl in tbl_ordered:
         f"INSERT INTO {schema}.{tbl["tbl_name"]} ({", ".join(sorted_cols)}) VALUES %s"
     )
     print(insert_query)
-    execute_values(pg_cur, insert_query, insert_records)
+    execute_values(cur=pg_cur, sql=insert_query, argslist=insert_records)
+    print(f"End processing table <{tbl["tbl_name"]}>\n")
 
 pg_conn.commit()
 pg_conn.close()
