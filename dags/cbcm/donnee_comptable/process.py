@@ -356,6 +356,7 @@ def process_delai_global_paiement(df: pd.DataFrame) -> pd.DataFrame:
     # Ajouter les colonnes complémentaires
     df["cf_cc"] = df["centre_financier"] + "_" + df["centre_cout"]
     df["mois_nom"] = df.loc[:, "periode_comptable"].map(corr_num_mois).fillna("inconnu")
+    df["id"] = list(df.reset_index(drop=True).index.values)
 
     # Arrondir les valeurs
     df["delai_global_paiement"] = df["delai_global_paiement"].round(2)
