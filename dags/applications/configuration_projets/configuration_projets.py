@@ -69,7 +69,7 @@ def configuration_projets():
             doc_id_key="grist_doc_id_gestion_interne",
         ),
         process_data(),
-        create_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID),
+        create_tmp_tables(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID, reset_id_seq=False),
         import_files_to_db(pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID, keep_file_id_col=True),
         copy_tmp_table_to_real_table(
             load_strategy=LoadStrategy.FULL_LOAD, pg_conn_id=DEFAULT_PG_CONFIG_CONN_ID

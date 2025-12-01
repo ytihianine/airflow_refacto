@@ -4,21 +4,21 @@ CREATE SCHEMA IF NOT EXISTS conf_projets;
 DROP TABLE IF EXISTS conf_projets.ref_direction CASCADE;
 DROP TABLE IF EXISTS conf_projets.ref_direction;
 CREATE TABLE IF NOT EXISTS conf_projets.ref_direction (
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   direction TEXT
 );
 
 DROP TABLE IF EXISTS conf_projets.ref_service CASCADE;
 DROP TABLE IF EXISTS conf_projets.ref_service;
 CREATE TABLE IF NOT EXISTS conf_projets.ref_service (
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   id_direction INT NOT NULL REFERENCES conf_projets.ref_direction(id),
   service TEXT NOT NULL
 );
 
 DROP TABLE IF EXISTS conf_projets.projet CASCADE;
 CREATE TABLE IF NOT EXISTS conf_projets.projet(
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   nom_projet text,
   id_direction INT NOT NULL REFERENCES conf_projets.ref_direction(id),
   id_service INT NOT NULL REFERENCES conf_projets.ref_service(id)
@@ -36,7 +36,7 @@ CREATE TABLE conf_projets.projet_snapshot (
 
 DROP TABLE IF EXISTS conf_projets.selecteur CASCADE;
 CREATE TABLE IF NOT EXISTS conf_projets.selecteur(
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   id_projet int REFERENCES conf_projets.projet(id),
   type_selecteur text,
   selecteur text
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS conf_projets.selecteur(
 
 DROP TABLE IF EXISTS conf_projets.source CASCADE;
 CREATE TABLE IF NOT EXISTS conf_projets.source(
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   id_projet int REFERENCES conf_projets.projet(id),
   type_source text,
   id_selecteur int REFERENCES conf_projets.selecteur(id),
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS conf_projets.source(
 
 DROP TABLE IF EXISTS conf_projets.correspondance_colonne CASCADE;
 CREATE TABLE IF NOT EXISTS conf_projets.correspondance_colonne (
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   id_projet int REFERENCES conf_projets.projet(id),
   id_selecteur int REFERENCES conf_projets.selecteur(id),
   colname_source text,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS conf_projets.correspondance_colonne (
 
 DROP TABLE IF EXISTS conf_projets.colonnes_requises CASCADE;
 CREATE TABLE IF NOT EXISTS conf_projets.colonnes_requises (
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   id_projet int REFERENCES conf_projets.projet(id),
   id_selecteur int REFERENCES conf_projets.selecteur(id),
   id_correspondance_colonne int REFERENCES conf_projets.correspondance_colonne(id)
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS conf_projets.colonnes_requises (
 
 DROP TABLE IF EXISTS conf_projets.storage_path CASCADE;
 CREATE TABLE IF NOT EXISTS conf_projets.storage_path (
-  id bigserial PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   id_projet int NOT NULL REFERENCES conf_projets.projet(id),
   id_selecteur int REFERENCES conf_projets.selecteur(id),
   filename text,
@@ -143,3 +143,21 @@ CREATE VIEW conf_projets.vue_cols_requises AS
   INNER JOIN conf_projets.selecteur cpselec ON cpselec.id = cpcr.id_selecteur
   INNER JOIN conf_projets.correspondance_colonne cpcc ON cpcc.id = cpcr.id_correspondance_colonne
 ;
+
+CREATE OR REPLACE VIEW conf_projets.vue_source
+AS SELECT cpsel.id,
+    cpp.nom_projet,
+    cpp.id_direction,
+    cprd.direction,
+    cpp.id_service,
+    cprs.service,
+    cpsel.selecteur,
+    cpsource.nom_source,
+    cpsp.s3_bucket,
+    cpsp.s3_key
+   FROM conf_projets.projet cpp
+     JOIN conf_projets.ref_direction cprd ON cpp.id_direction = cprd.id
+     JOIN conf_projets.ref_service cprs ON cpp.id_service = cprs.id
+     JOIN conf_projets.selecteur cpsel ON cpp.id = cpsel.id_projet
+     JOIN conf_projets.source cpsource ON cpsel.id = cpsource.id_selecteur AND cpsource.type_source = 'Fichier'::text
+     JOIN conf_projets.storage_path cpsp ON cpsel.id = cpsp.id_selecteur;
