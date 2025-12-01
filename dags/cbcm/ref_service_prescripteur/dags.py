@@ -64,7 +64,7 @@ def chorus_service_prescripteur() -> None:
             selecteur="grist_doc", workspace_id="dsci", doc_id_key="grist_doc_id_cbcm"
         ),
         grist_source(),
-        create_tmp_tables(),
+        create_tmp_tables(reset_id_seq=False),
         import_file_to_db.partial(keep_file_id_col=True).expand(
             selecteur_config=get_projet_config(nom_projet=nom_projet),
         ),
