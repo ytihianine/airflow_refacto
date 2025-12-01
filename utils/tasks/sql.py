@@ -437,15 +437,25 @@ def sort_db_colnames(
     Returns:
         Sorted list of column names
     """
-    db = create_db_handler(pg_conn_id)
-    df = db.fetch_df(f"SELECT * FROM {schema}.tmp_{tbl_name} LIMIT 0")
+    db = create_db_handler(connection_id=pg_conn_id)
+    df = db.fetch_df(
+        query="""SELECT isc.table_catalog, isc.table_schema, isc.table_name, isc.column_name
+            FROM information_schema.columns isc
+            WHERE
+                isc.column_default NOT LIKE 'nextval%' OR isc.column_default IS NULL
+                AND isc.table_schema = %(schema)s
+                AND isc.table_name =  %(tbl_name)s
+            ORDER BY table_schema ASC, table_name ASC, column_name ASC;
+        """,
+        parameters={"schema": schema, "tbl_name": tbl_name},
+    )
 
-    cols = df.columns.tolist()
-    if not keep_file_id_col:
-        cols = [col for col in cols if col != "id"]
+    cols = df.loc[:, "column_name"].tolist()
+    if keep_file_id_col:
+        logging.info(msg="Parameter keep_file_id_col is deprecated")
 
     sorted_cols = sorted(cols)
-    logging.info(f"Sorted columns for table {tbl_name}: {sorted_cols}")
+    logging.info(msg=f"Sorted columns for table {tbl_name}: {sorted_cols}")
     return sorted_cols
 
 
