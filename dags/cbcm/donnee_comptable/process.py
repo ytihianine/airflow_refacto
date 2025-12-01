@@ -226,8 +226,12 @@ def process_demande_paiement(df: pd.DataFrame) -> pd.DataFrame:
     # Nettoyer les champs textuels
     txt_cols = ["centre_financier", "societe", "statut_piece", "montant_dp"]
     df = normalize_whitespace_columns(df, columns=txt_cols)
-    df["montant_dp"] = (
-        df["montant_dp"].replace({",": "."}).str.split().str.join("").astype(float)
+    df["montant_dp"] = pd.to_numeric(
+        arg=df["montant_dp"]
+        .str.split()
+        .str.join("")
+        .str.replace(",", ".", regex=False),
+        errors="raise",
     )
 
     # Filtrer les lignes
