@@ -443,11 +443,11 @@ def sort_db_colnames(
             FROM information_schema.columns isc
             WHERE
                 isc.column_default NOT LIKE 'nextval%' OR isc.column_default IS NULL
-                AND isc.table_schema = %(schema)s
-                AND isc.table_name =  %(tbl_name)s
+                AND isc.table_schema = %s
+                AND isc.table_name =  %s
             ORDER BY table_schema ASC, table_name ASC, column_name ASC;
         """,
-        parameters={"schema": schema, "tbl_name": tbl_name},
+        parameters=(schema, tbl_name),
     )
 
     cols = df.loc[:, "column_name"].tolist()
