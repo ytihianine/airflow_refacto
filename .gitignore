@@ -1,4 +1,4 @@
-# Complément
+# Compléments
 values.yaml
 *.csv
 *.xls
@@ -9,6 +9,7 @@ mypy.py
 *.grist
 *.db
 *.sqlite
+*.parquet
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
