@@ -45,7 +45,7 @@ LINK_DOC_DATA = (
         prod_schema="sircom",
         lien_pipeline=LINK_DOC_PIPELINE,
         lien_donnees=LINK_DOC_DATA,
-        mail_enable=True,
+        mail_enable=False,
         mail_to=["brigitte.lekime@finances.gouv.fr"],
     ),
     on_failure_callback=create_airflow_callback(
