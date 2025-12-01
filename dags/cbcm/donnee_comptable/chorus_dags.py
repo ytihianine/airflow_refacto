@@ -88,8 +88,8 @@ def chorus_donnees_comptables() -> None:
             load_strategy=LoadStrategy.APPEND,
         ),
         refresh_views(),
-        # copy_s3_files(bucket="dsci"),
-        # del_s3_files(bucket="dsci"),
+        copy_s3_files(bucket="dsci"),
+        del_s3_files(bucket="dsci"),
         delete_tmp_tables(),
         # set_dataset_last_update_date(
         #     dataset_ids=[49, 50, 51, 52, 53, 54],
