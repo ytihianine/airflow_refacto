@@ -498,6 +498,7 @@ def _process_and_import_file(
     local_filepath: str,
     tbl_name: str,
     pg_conn_id: str,
+    db_schema: str,
     s3_conn_id: str = DEFAULT_S3_CONN_ID,
     keep_file_id_col: bool = False,
 ) -> None:
@@ -526,7 +527,10 @@ def _process_and_import_file(
     )
 
     sorted_db_colnames = sort_db_colnames(
-        tbl_name=tbl_name, keep_file_id_col=keep_file_id_col, pg_conn_id=pg_conn_id
+        tbl_name=tbl_name,
+        keep_file_id_col=keep_file_id_col,
+        pg_conn_id=pg_conn_id,
+        schema=db_schema,
     )
     # Loading file to db
     if are_lists_egal(list_A=sorted_df_cols, list_B=sorted_db_colnames):
@@ -558,6 +562,7 @@ def import_files_to_db(
     **context,
 ) -> None:
     nom_projet = get_project_name(context=context)
+    schema = get_db_info(context=context)["prod_schema"]
 
     projet_config = get_projet_config(nom_projet=nom_projet)
 
@@ -577,6 +582,7 @@ def import_files_to_db(
                 local_filepath=local_filepath,
                 tbl_name=tbl_name,
                 pg_conn_id=pg_conn_id,
+                db_schema=schema,
                 s3_conn_id=s3_conn_id,
                 keep_file_id_col=keep_file_id_col,
             )
@@ -588,8 +594,10 @@ def import_file_to_db(
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     s3_conn_id: str = DEFAULT_S3_CONN_ID,
     keep_file_id_col: bool = False,
+    **context,
 ) -> None:
     selecteur = selecteur_config.selecteur
+    schema = get_db_info(context=context)["prod_schema"]
     context = get_current_context()
     context["import_task_name"] = selecteur  # type: ignore
 
@@ -606,6 +614,7 @@ def import_file_to_db(
             local_filepath=local_filepath,
             tbl_name=tbl_name,
             pg_conn_id=pg_conn_id,
+            db_schema=schema,
             s3_conn_id=s3_conn_id,
             keep_file_id_col=keep_file_id_col,
         )
