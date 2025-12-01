@@ -98,6 +98,7 @@ def process_demande_achat(df: pd.DataFrame) -> pd.DataFrame:
         df["date_replication"] - df["date_creation_da"]
     ).dt.days
     df["cf_cc"] = df["centre_financier"] + "_" + df["centre_cout"]
+    df["id"] = list(df.reset_index(drop=True).index.values)
 
     # Catégoriser les données
     df["mois"] = df["date_creation_da"].dt.month
@@ -278,6 +279,7 @@ def process_demande_paiement_flux(df: pd.DataFrame) -> pd.DataFrame:
     df["id_dp"] = (
         df["annee_exercice"].astype(str) + df["societe"] + df["num_dp_flux"].astype(str)
     )
+    df["id"] = list(df.reset_index(drop=True).index.values)
 
     # Renommer les colonnes
     df = df.rename(columns={"type_flux": "dp_flux_3"})
