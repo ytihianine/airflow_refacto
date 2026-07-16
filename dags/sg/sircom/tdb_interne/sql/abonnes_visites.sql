@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS sircom.visites_intranet_sg (
 CREATE TABLE IF NOT EXISTS sircom.ouverture_lettres_alize (
     id INT PRIMARY KEY,
     annee INTEGER,
+    semestre TEXT,
+    date DATE,
     nombre_agent INTEGER,
     taux_ouverture FLOAT,
     is_last_value BOOLEAN
