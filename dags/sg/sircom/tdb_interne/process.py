@@ -445,6 +445,10 @@ def process_ouverture_lettre_alize(df: pd.DataFrame) -> pd.DataFrame:
             "nombre_d_agents": "nombre_agent",
         }
     )
+    df["date"] = list(map(generate_date, df["annee"], df["semestre"]))
+    df["date"] = df["date"].astype("datetime64[s]")
+    df = tag_last_value_rows(df=df, colname_max_value="date")
+    # Clean
     df = df.replace("", None)
     df = df.dropna(subset=["taux_ouverture"])
 
@@ -509,18 +513,12 @@ def process_notes_veilles(df: pd.DataFrame) -> pd.DataFrame:
             "nombre_de_signalements": "nombre_signalements",
         }
     )
-    # Conv de l'annee en string
-    df["annee"] = df["annee"].astype(str).str.strip()
-    df["semestre_temp"] = "Total"
-    df["date"] = list(map(generate_date, df["annee"], df["semestre_temp"]))
+    df["date"] = list(map(generate_date, df["annee"], df["semestre"]))
     df["date"] = df["date"].astype("datetime64[s]")
 
-    # Supp la col temporaire
-    df = df.drop(columns=["semestre_temp", "annee"])
+    # Clean
     df = df.dropna(subset=["date"])
-
     cols_numeriques = ["nombre_note", "nombre_signalements"]
-
     for col in cols_numeriques:
         df[col] = pd.to_numeric(df[col], errors="coerce")
         df[col] = df[col].fillna(0).astype(int)
@@ -585,10 +583,10 @@ def process_recommandation_strat(df: pd.DataFrame) -> pd.DataFrame:
             "nombre_de_recommandations": "nombre_recommandation",
         }
     )
-    df["annee"] = df["annee"].astype(str).str.strip()
-    df["date"] = pd.to_datetime(df["annee"], format="%Y", errors="coerce").astype("datetime64[s]")
-    df = df.drop(columns=["annee"])
-    df = df.dropna(subset=["date"])  # del invalide date
+    df["date"] = list(map(generate_date, df["annee"], df["semestre"]))
+    df["date"] = df["date"].astype("datetime64[s]")
+    # Clean
+    df = df.dropna(subset=["nombre_recommandation"])
     cols_numeriques = ["nombre_recommandation"]
     for col in cols_numeriques:
         df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -603,10 +601,8 @@ def process_recommandation_strat(df: pd.DataFrame) -> pd.DataFrame:
 def process_projets_graphiques(df: pd.DataFrame) -> pd.DataFrame:
     df = drop_additionals_columns(df=df)
     df = df.rename(columns={"nombre_de_projets_graphiques_realises": "nombre_graphique_realise"})
-    df["date"] = pd.to_datetime(df["annee"].astype(str).str.strip(), format="%Y", errors="coerce").astype("datetime64[s]")
-    df = df.drop(columns=["annee"])
-    df = df.dropna(subset=["date"])
-
+    df["date"] = list(map(generate_date, df["annee"], df["semestre"]))
+    df["date"] = df["date"].astype("datetime64[s]")
     # Definitions variables
     col_total = "nombre_graphique_realise"
     cols_directions = [

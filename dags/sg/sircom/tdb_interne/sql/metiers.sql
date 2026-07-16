@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS sircom.creation_graphique (
 );
 CREATE TABLE IF NOT EXISTS sircom.notes_veilles (
     id INT PRIMARY KEY,
+    annee INTEGER,
+    semestre TEXT,
     date DATE,
     nombre_note INTEGER,
     nombre_signalements INTEGER,
@@ -57,6 +59,8 @@ CREATE TABLE IF NOT EXISTS sircom.notes_veilles (
 );
 CREATE TABLE IF NOT EXISTS sircom.projets_graphiques(
     id INT PRIMARY KEY,
+    annee INTEGER,
+    semestre TEXT,
     date DATE,
     commanditaire TEXT,
     nombre_projets_graphique INTEGER,
@@ -65,8 +69,10 @@ CREATE TABLE IF NOT EXISTS sircom.projets_graphiques(
 );
 CREATE TABLE IF NOT EXISTS sircom.recommandation_strat(
     id INT PRIMARY KEY,
-    nombre_recommandation INTEGER,
+    annee INTEGER,
+    semestre TEXT,
     date DATE,
+    nombre_recommandation INTEGER,
     is_last_value BOOLEAN
 
 );
