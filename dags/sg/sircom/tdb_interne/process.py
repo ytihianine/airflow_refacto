@@ -621,7 +621,7 @@ def process_projets_graphiques(df: pd.DataFrame) -> pd.DataFrame:
 
     df = pd.melt(
         frame=df,
-        id_vars=["date", col_total],
+        id_vars=["date", "annee", "semestre", col_total],
         value_vars=cols_directions,
         var_name="commanditaire",
         value_name="nombre_projets_graphique",
