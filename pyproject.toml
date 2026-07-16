@@ -72,7 +72,7 @@ dev = [
 
 [tool.black]
 
-line-length = 130
+line-length = 120
 target-version = ["py312"]
 
 
@@ -82,7 +82,7 @@ target-version = ["py312"]
 
 [tool.ruff]
 
-line-length = 130
+line-length = 120
 target-version = "py312"
 
 src = [
