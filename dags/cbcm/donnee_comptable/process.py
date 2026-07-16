@@ -449,7 +449,9 @@ def process_demande_paiement_complet(
     # Ajout des colonnes calculées
     df["montant_poste"] = df["montant_poste_journal_pieces"].combine_first(df["montant_dp"]).fillna(DEFAULT_NULL_CC_CF)
     df["centre_financier"] = (
-        df["centre_financier_journal_pieces"].combine_first(df["centre_financier_demande_paiement"]).fillna(DEFAULT_NULL_CC_CF)
+        df["centre_financier_journal_pieces"]
+        .combine_first(df["centre_financier_demande_paiement"])
+        .fillna(DEFAULT_NULL_CC_CF)
     )
     df["centre_cout"] = df["centre_cout"].fillna(DEFAULT_NULL_CC_CF)
 

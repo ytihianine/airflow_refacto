@@ -165,7 +165,9 @@ class RequestsClient(HttpInterface):
                     "HTTPAdapter",
                     self._session.get_adapter(url="https://"),
                 )
-                https_adapter.proxy_manager_for(self.config.http_proxy).proxy_headers["User-Agent"] = self.config.user_agent
+                https_adapter.proxy_manager_for(self.config.http_proxy).proxy_headers[
+                    "User-Agent"
+                ] = self.config.user_agent
 
     def _handle_response(self, response: requests.Response) -> HTTPResponse:
         try:

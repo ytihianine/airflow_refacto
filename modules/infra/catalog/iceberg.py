@@ -153,7 +153,9 @@ class IcebergCatalog:
         # Cast each column to the type stored in the table schema so that, for example,
         # an integer column (long) is written as double when the table expects double.
         table_arrow_schema = table.schema().as_arrow()
-        cast_fields = [(table_arrow_schema.field(f.name) if f.name in table_arrow_schema.names else f) for f in pa_data.schema]
+        cast_fields = [
+            (table_arrow_schema.field(f.name) if f.name in table_arrow_schema.names else f) for f in pa_data.schema
+        ]
         pa_data = pa_data.cast(pa.schema(cast_fields))
 
         # Logic to write data to a table in the Iceberg catalog
@@ -201,7 +203,9 @@ class IcebergCatalog:
             logging.info(msg=f"Purging table {table_name} - data will be removed")
             self.catalog.purge_table(identifier=table_name)
         else:
-            logging.info(msg=f"Dropping table {table_name} - data will not be removed from s3. Set purge=True to delete data")
+            logging.info(
+                msg=f"Dropping table {table_name} - data will not be removed from s3. Set purge=True to delete data"
+            )
             self.catalog.drop_table(identifier=table_name)
 
     def list_tables(self, namespace: str, pattern: str | None = None) -> list[Identifier]:

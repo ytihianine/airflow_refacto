@@ -53,7 +53,9 @@ class SQLiteAdapter(DBInterface):
         except Exception as e:
             raise DatabaseError(f"Error executing query: {e!s}") from e
 
-    def fetch_one(self, query: str, parameters: tuple[Any, ...] | dict[str, Any] | None = None) -> dict[str, Any] | None:
+    def fetch_one(
+        self, query: str, parameters: tuple[Any, ...] | dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
         """Fetch a single row as a dictionary."""
         try:
             start_time = time.time()

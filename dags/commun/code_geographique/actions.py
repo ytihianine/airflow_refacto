@@ -58,7 +58,11 @@ def departements() -> pd.DataFrame:
     response = api_client.get(endpoint=url_departement)
     raw_departements = response.json()["data"]
     df = pd.DataFrame(raw_departements)
-    df = df.set_axis([colname.lower() for colname in df.columns], axis="columns").rename(columns={"__id": "id"}).fillna(np.nan)
+    df = (
+        df.set_axis([colname.lower() for colname in df.columns], axis="columns")
+        .rename(columns={"__id": "id"})
+        .fillna(np.nan)
+    )
     df_info(df=df, df_name="DF departements - Fin")
     return df
 
@@ -71,7 +75,11 @@ def regions() -> pd.DataFrame:
     response = api_client.get(endpoint=url_region)
     raw_regions = response.json()["data"]
     df = pd.DataFrame(raw_regions)
-    df = df.set_axis([colname.lower() for colname in df.columns], axis="columns").rename(columns={"__id": "id"}).fillna(np.nan)
+    df = (
+        df.set_axis([colname.lower() for colname in df.columns], axis="columns")
+        .rename(columns={"__id": "id"})
+        .fillna(np.nan)
+    )
     df_info(df=df, df_name="DF regions - Fin")
     return df
 
@@ -129,9 +137,7 @@ def code_iso_departement() -> pd.DataFrame:
 def region_geojson() -> pd.DataFrame:
     # API Client
     http_client = make_httpx_client()
-    url_region_geojson = (
-        "https://raw.githubusercontent.com/gregoiredavid/france-geojson/refs/heads/master/regions-avec-outre-mer.geojson"
-    )
+    url_region_geojson = "https://raw.githubusercontent.com/gregoiredavid/france-geojson/refs/heads/master/regions-avec-outre-mer.geojson"
 
     response = http_client.get(endpoint=url_region_geojson)
     geojson = response.json()
@@ -158,9 +164,7 @@ def region_geojson() -> pd.DataFrame:
 def departement_geojson() -> pd.DataFrame:
     # API Client
     http_client = make_httpx_client()
-    url_departement_geojson = (
-        "https://raw.githubusercontent.com/gregoiredavid/france-geojson/refs/heads/master/departements-avec-outre-mer.geojson"
-    )
+    url_departement_geojson = "https://raw.githubusercontent.com/gregoiredavid/france-geojson/refs/heads/master/departements-avec-outre-mer.geojson"
 
     response = http_client.get(endpoint=url_departement_geojson)
     geojson = response.json()

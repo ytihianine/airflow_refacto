@@ -238,7 +238,8 @@ class GristAPI:
             batch = records[start:end]
 
             logging.info(
-                msg=f"Sending batch {batch_index + 1}/{total_batches} " f"({len(batch)} records, indexes {start}-{end-1})"
+                msg=f"Sending batch {batch_index + 1}/{total_batches} "
+                f"({len(batch)} records, indexes {start}-{end-1})"
             )
 
             batch_payload = {"records": batch}

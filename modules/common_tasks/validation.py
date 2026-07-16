@@ -71,7 +71,9 @@ def validate_dag_parameters(**context: Mapping[str, Any]) -> None:
             try:
                 DagStatus[dag_status.upper()]
             except KeyError:
-                errors.append(f"Invalid dag_status: {dag_status}. Must be one of: {', '.join([s.name for s in DagStatus])}")
+                errors.append(
+                    f"Invalid dag_status: {dag_status}. Must be one of: {', '.join([s.name for s in DagStatus])}"
+                )
         elif isinstance(dag_status, int):
             valid_values = [s.value for s in DagStatus]
             if dag_status not in valid_values:

@@ -2,7 +2,6 @@ from collections.abc import Mapping
 from typing import Any
 
 import pandas as pd
-
 from dags.sg.srh.mentorat_merci.enums import ChoixDirection
 
 correspondance_objectifs = {

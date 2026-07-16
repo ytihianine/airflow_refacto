@@ -148,9 +148,7 @@ class PolarisCatalog:
         realm: str | None = None,
     ):
         realm = realm if realm else self.realm
-        assign_endpoint = (
-            f"{self.url}/{self.api_management_endpoint}/principal-roles/{principal_role_name}/catalog-roles/{catalog_name}"
-        )
+        assign_endpoint = f"{self.url}/{self.api_management_endpoint}/principal-roles/{principal_role_name}/catalog-roles/{catalog_name}"
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
@@ -168,9 +166,7 @@ class PolarisCatalog:
         realm: str | None = None,
     ) -> None:
         realm = realm if realm else self.realm
-        grant_endpoint = (
-            f"{self.url}/{self.api_management_endpoint}/catalogs/{catalog_name}/catalog-roles/{catalog_role_name}/grants"
-        )
+        grant_endpoint = f"{self.url}/{self.api_management_endpoint}/catalogs/{catalog_name}/catalog-roles/{catalog_role_name}/grants"
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",

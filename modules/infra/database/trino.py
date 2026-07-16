@@ -74,7 +74,9 @@ class TrinoAdapter(DBInterface):
     # Read operations
     # ------------------------------------------------------------------
 
-    def fetch_one(self, query: str, parameters: tuple[Any, ...] | dict[str, Any] | None = None) -> dict[str, Any] | None:
+    def fetch_one(
+        self, query: str, parameters: tuple[Any, ...] | dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
         """Fetch a single row as a dictionary."""
         try:
             start_time = time.time()

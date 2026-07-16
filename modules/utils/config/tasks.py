@@ -89,7 +89,9 @@ def column_mapping_dict(df_cols_map: pd.DataFrame, selecteur: str | None = None)
 @db_retry
 def get_list_contact(nom_projet: str, db: DBInterface | None = None) -> list[Contact]:
     if not nom_projet:
-        raise ValueError("Variable nom_projet is required to fetch contact information. Current value is None or empty.")
+        raise ValueError(
+            "Variable nom_projet is required to fetch contact information. Current value is None or empty."
+        )
 
     db = _get_db(db)
 
@@ -222,7 +224,9 @@ def _get_selecteur_storage_info(
         List of SelecteurStorageInfo objects
     """
     if not nom_projet:
-        raise ValueError("Variable nom_projet is required to fetch selecteur storage info. Current value is None or empty.")
+        raise ValueError(
+            "Variable nom_projet is required to fetch selecteur storage info. Current value is None or empty."
+        )
 
     db = _get_db(db)
 

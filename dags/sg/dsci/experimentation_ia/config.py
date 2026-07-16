@@ -6,7 +6,9 @@ storage_options = {
     "experimentateurs": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, keep_file_id_col=False),
     # Questionnaire 1
     "questionnaire_1": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, keep_file_id_col=False),
-    "questionnaire_1_cas_usage": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False),
+    "questionnaire_1_cas_usage": SelecteurStorageOptions(
+        load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
+    ),
     "questionnaire_1_besoins_accompagnement": SelecteurStorageOptions(
         load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
     ),
@@ -21,7 +23,9 @@ storage_options = {
     "questionnaire_2_formation_suivie": SelecteurStorageOptions(
         load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
     ),
-    "questionnaire_2_freins": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False),
+    "questionnaire_2_freins": SelecteurStorageOptions(
+        load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
+    ),
     "questionnaire_2_impact_identifie": SelecteurStorageOptions(
         load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
     ),
@@ -31,7 +35,9 @@ storage_options = {
     "questionnaire_2_participation": SelecteurStorageOptions(
         load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
     ),
-    "questionnaire_2_taches": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False),
+    "questionnaire_2_taches": SelecteurStorageOptions(
+        load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
+    ),
     "questionnaire_2_typologie_erreurs": SelecteurStorageOptions(
         load_strategy=LoadStrategy.APPEND, tbl_order=5, keep_file_id_col=False
     ),

@@ -136,8 +136,12 @@ def process_bacs(df: pd.DataFrame) -> pd.DataFrame:
             commentaire_general=df["commentaire_general"].str.split().str.join(" "),
         )
         .assign(
-            soumis_decret_bacs=lambda df: (df["split_decret_bacs"].str[0].str.lower().replace({"oui": True, "non": False})),
-            raison_soumis_decret_bacs=lambda df: (df["split_decret_bacs"].str[1].str.replace("(", "").str.replace(")", "")),
+            soumis_decret_bacs=lambda df: (
+                df["split_decret_bacs"].str[0].str.lower().replace({"oui": True, "non": False})
+            ),
+            raison_soumis_decret_bacs=lambda df: (
+                df["split_decret_bacs"].str[1].str.replace("(", "").str.replace(")", "")
+            ),
         )
         .drop(columns=["split_decret_bacs"])
     )
@@ -157,8 +161,12 @@ def process_bails(df: pd.DataFrame) -> pd.DataFrame:
     df = df.loc[:, cols_to_keep]
 
     df = df.assign(
-        date_debut_bail=df["date_debut_bail"].apply(lambda x: datetime.strptime(x, "%d/%m/%Y") if isinstance(x, str) else pd.NaT),
-        date_fin_bail=df["date_fin_bail"].apply(lambda x: datetime.strptime(x, "%d/%m/%Y") if isinstance(x, str) else pd.NaT),
+        date_debut_bail=df["date_debut_bail"].apply(
+            lambda x: datetime.strptime(x, "%d/%m/%Y") if isinstance(x, str) else pd.NaT
+        ),
+        date_fin_bail=df["date_fin_bail"].apply(
+            lambda x: datetime.strptime(x, "%d/%m/%Y") if isinstance(x, str) else pd.NaT
+        ),
         type_contrat=df["type_contrat"].str.split().str.join(" "),
     )
 
@@ -394,7 +402,9 @@ def process_exploitation(df: pd.DataFrame) -> pd.DataFrame:
     commentaire_cols = [colname for colname in df.columns if colname.endswith("commentaire")]
     df_commentaire = df.loc[:, common_col + commentaire_cols]
     df_commentaire = df_commentaire.melt(id_vars=common_col, var_name="composant_bien", value_name="commentaire")
-    df_commentaire = df_commentaire.assign(composant_bien=lambda df: (df["composant_bien"].str.replace("_commentaire", "")))
+    df_commentaire = df_commentaire.assign(
+        composant_bien=lambda df: (df["composant_bien"].str.replace("_commentaire", ""))
+    )
 
     # Traitement partie "constaté"
     etat_cols = [colname for colname in df.columns if colname.endswith("etat")]
@@ -419,7 +429,9 @@ def process_exploitation(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_localisation(df_oad_carac: pd.DataFrame, df_oad_indic: pd.DataFrame, df_biens: pd.DataFrame) -> pd.DataFrame:
+def process_localisation(
+    df_oad_carac: pd.DataFrame, df_oad_indic: pd.DataFrame, df_biens: pd.DataFrame
+) -> pd.DataFrame:
     # Merging data from both sources
     df = pd.merge(left=df_oad_carac, right=df_oad_indic, on="code_bat_ter", how="left")
 

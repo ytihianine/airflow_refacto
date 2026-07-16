@@ -30,7 +30,9 @@ if __name__ == "__main__":
         try:
             # Récupérer la liste des partitions
             partition_names = get_partitions(schema=config.schema, curseur=pg_cur)
-            partition_names = [partition for partition in partition_names if partition[1].startswith(config.tbl_to_keep)]
+            partition_names = [
+                partition for partition in partition_names if partition[1].startswith(config.tbl_to_keep)
+            ]
             drop_partitions(
                 partitions=partition_names,
                 cursor=pg_cur,

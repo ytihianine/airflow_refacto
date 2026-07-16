@@ -68,7 +68,9 @@ def get_selecteur_config(
 
 
 @task_group()
-def config_projet_group(nom_projet: str, storage_options: Mapping[str, SelecteurStorageOptions] | None = None, **context) -> None:
+def config_projet_group(
+    nom_projet: str, storage_options: Mapping[str, SelecteurStorageOptions] | None = None, **context
+) -> None:
     """
     Groupe de tâches pour récupérer la configuration du projet
 

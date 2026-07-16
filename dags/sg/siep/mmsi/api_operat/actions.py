@@ -75,7 +75,9 @@ def liste_declaration(cle_tiers: str | None = None, cle_utilisateur: str | None 
     # Main part
     api_result = []
     for idx, id_structure in enumerate(ID_STRUCTURES):
-        logging.info(msg=f"({idx+1}/{len(ID_STRUCTURES)}) Récupération des déclarations pour la structure {id_structure}")
+        logging.info(
+            msg=f"({idx+1}/{len(ID_STRUCTURES)}) Récupération des déclarations pour la structure {id_structure}"
+        )
         token = get_token(
             api_client=httpx_internet_client,
             url=BASE_URL,
@@ -84,14 +86,18 @@ def liste_declaration(cle_tiers: str | None = None, cle_utilisateur: str | None 
             cle_utilisateur=cle_utilisateur,
         )
         lst_declarations = get_liste_declarations(api_client=httpx_internet_client, url=BASE_URL, token=token)
-        result_with_structure = [result | {"id_structure": id_structure} for result in lst_declarations.get("resultat", [])]
+        result_with_structure = [
+            result | {"id_structure": id_structure} for result in lst_declarations.get("resultat", [])
+        ]
         api_result.extend(result_with_structure)
 
     df = pd.DataFrame(data=api_result)
     return df
 
 
-def consommation_by_id(df: pd.DataFrame, cle_tiers: str | None = None, cle_utilisateur: str | None = None) -> pd.DataFrame:
+def consommation_by_id(
+    df: pd.DataFrame, cle_tiers: str | None = None, cle_utilisateur: str | None = None
+) -> pd.DataFrame:
     if cle_tiers is None:
         cle_tiers = str(Variable.get(key="cle_tiers_api_operat"))
     if cle_utilisateur is None:

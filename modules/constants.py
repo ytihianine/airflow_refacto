@@ -64,5 +64,9 @@ NO_PROCESS_MSG = "No complementary actions needed ! Skipping ..."
 FF_MAIL_DISABLED_MSG = "Mail feature flag is disabled ! Skipping mail sending ..."
 FF_S3_DISABLED_MSG = "S3 feature flag is disabled ! Skipping S3 operations ..."
 FF_DB_DISABLED_MSG = "Database feature flag is disabled ! Skipping database operations ..."
-FF_CONVERT_DISABLED_MSG = "File conversion to parquet feature flag is disabled ! Skipping File conversion operations ..."
-FF_DOWNLOAD_GRIST_DOC_DISABLED_MSG = "Download Grist Doc feature flag is disabled ! Skipping Grist document download ..."
+FF_CONVERT_DISABLED_MSG = (
+    "File conversion to parquet feature flag is disabled ! Skipping File conversion operations ..."
+)
+FF_DOWNLOAD_GRIST_DOC_DISABLED_MSG = (
+    "Download Grist Doc feature flag is disabled ! Skipping Grist document download ..."
+)

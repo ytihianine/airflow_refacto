@@ -483,12 +483,14 @@ def process_facture_annuelle_unpivot_comparaison(df: pd.DataFrame) -> pd.DataFra
     df_filtered = df[(df["annee"] >= 2019)].copy()
 
     # Agrégation des montants par année
-    factures_par_annee = df_filtered.groupby(["code_bat_gestionnaire", "annee", "fluide", "type_facture"], as_index=False)[
-        "montant_facture"
-    ].sum()
+    factures_par_annee = df_filtered.groupby(
+        ["code_bat_gestionnaire", "annee", "fluide", "type_facture"], as_index=False
+    )["montant_facture"].sum()
 
     # Création du référentiel complet (toutes les combinaisons bâtiment/fluide/type_facture)
-    referentiel_complet = factures_par_annee.loc[:, ["code_bat_gestionnaire", "fluide", "type_facture"]].drop_duplicates()
+    referentiel_complet = factures_par_annee.loc[
+        :, ["code_bat_gestionnaire", "fluide", "type_facture"]
+    ].drop_duplicates()
 
     # Liste de toutes les années disponibles
     annees_disponibles = pd.DataFrame(data={"annee": factures_par_annee.loc[:, "annee"].unique()})
@@ -563,7 +565,9 @@ def process_conso_statut_batiment(df: pd.DataFrame) -> pd.DataFrame:
     df_statut = (
         df.groupby(by=["code_bat_gestionnaire", "annee"])["statut_du_fluide"]
         .apply(
-            func=lambda x: (Statuts.complet.value if (x.str.upper() == Statuts.complet.value).all() else Statuts.incomplet.value)
+            func=lambda x: (
+                Statuts.complet.value if (x.str.upper() == Statuts.complet.value).all() else Statuts.incomplet.value
+            )
         )
         .reset_index()
     )

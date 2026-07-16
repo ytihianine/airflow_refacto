@@ -128,7 +128,8 @@ class ETLTask(ABC):
 
         if self.target not in runtime.selecteurs:
             raise ValueError(
-                f"Target '{self.target}' not found in runtime selecteurs. " f"Available: {list(runtime.selecteurs.keys())}"
+                f"Target '{self.target}' not found in runtime selecteurs. "
+                f"Available: {list(runtime.selecteurs.keys())}"
             )
         target_selecteur = runtime.selecteurs[self.target]
 
