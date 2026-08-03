@@ -107,6 +107,6 @@ def export_database(db_conn_id: str, **context) -> None:
                 logging.info(msg=f"Successfully dumped {db_name} to S3 with key {dest_tmp_key}")
 
     databases = list_databases(db_conn_id=db_conn_id)
-    export_db = export_database.expand(db_name=databases)
+    export_db = export_database.partial(db_conn_id=db_conn_id).expand(db_name=databases)
 
     chain(databases, export_db)
