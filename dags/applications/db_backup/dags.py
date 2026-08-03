@@ -41,7 +41,8 @@ def sauvegarde_database() -> None:
     """Task order"""
     chain(
         validate_dag_parameters(),
-        export_database.expand(db_conn_id=["db_config", "db_data_store"]),
+        export_database(db_conn_id="db_config"),
+        export_database(db_conn_id="db_data_store"),
         copy_s3_files(storage_options=storage_options),
         del_s3_files(storage_options=storage_options),
     )
