@@ -34,7 +34,7 @@ def sauvegarde_database() -> None:
     """Task order"""
     chain(
         validate_dag_parameters(),
-        update_admin_ownership(db_conn_id="db_config"),
+        update_admin_ownership(db_conn_id="db_config_superset"),
     )
 
 
