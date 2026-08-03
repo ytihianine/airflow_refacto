@@ -81,6 +81,7 @@ def export_database(db_conn_id: str) -> None:
                         "--no-privileges",
                         db_name,
                     ],
+                    env=env,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
