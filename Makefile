@@ -14,7 +14,6 @@ else
 endif
 
 UV := $(VENV_BIN)/uv
-PYTHON := $(VENV_BIN)/python
 
 .PHONY: help install-sys-packages create-py-env install-airflow install-packages \
         install-pre-commit setup-git setup-dev-env init-env-files clean
