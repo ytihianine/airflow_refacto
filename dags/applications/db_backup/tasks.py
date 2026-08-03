@@ -3,7 +3,7 @@ import logging
 import os
 import subprocess
 
-from airflow.sdk import chain, task, task_group
+from airflow.sdk import chain, get_current_context, task, task_group
 
 # from modules.constants import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
 # from modules.enums.filesystem import FileHandlerType
@@ -38,8 +38,11 @@ def export_database(db_conn_id: str) -> None:
 
         return result["datname"].values.tolist()
 
-    @task
+    @task(map_index_template="{{ db_name }}")
     def export_database(db_conn_id: str, db_name: str, **context) -> None:
+        context = get_current_context()
+        context["db_name"] = db_name  # pyright: ignore[reportGeneralTypeIssues]
+
         # Variables
         nom_projet = get_project_name(context=context)
         projet_info = get_projet_s3_info(nom_projet=nom_projet)
@@ -53,10 +56,10 @@ def export_database(db_conn_id: str) -> None:
         #     bucket=DEFAULT_S3_BUCKET,
         # )
         conn = db_handler.get_uri()
-        logging.debug(msg=f"{db_handler.get_conn()}")
+        logging.info(msg=f"{db_handler.get_conn()}")
 
         split_conn_dsn = conn.split(sep="://")[1].split(sep="/")[0].split(sep="@")
-        logging.debug(msg=split_conn_dsn)
+        logging.info(msg=split_conn_dsn)
         credentials = split_conn_dsn[0].split(sep=":")
         username = credentials[0]
         connexion = split_conn_dsn[1].split(sep=":")
