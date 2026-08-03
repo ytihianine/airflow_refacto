@@ -6,15 +6,15 @@ ENV_NAME := env
 
 # OS detection
 ifeq ($(OS),Windows_NT)
-    PYTHON := python
+    GLOBAL_PYTHON := python
     VENV_BIN := $(ENV_NAME)/Scripts
 else
-    PYTHON := python3
+    GLOBAL_PYTHON := python3
     VENV_BIN := $(ENV_NAME)/bin
 endif
 
 UV := $(VENV_BIN)/uv
-PYTHON := $(VENV_BIN)/python
+VENV_PYTHON := $(VENV_BIN)/python
 
 .PHONY: help install-sys-packages create-py-env install-airflow install-packages \
         install-pre-commit setup-git setup-dev-env init-env-files clean
@@ -39,15 +39,15 @@ install-sys-packages: ## Installer les packages système nécessaires (libxml2-d
 
 create-py-env: ## Créer un nouvel environnement python
 	@echo "Création d'un environnement"
-	$(PYTHON) -m venv $(ENV_NAME)
+	$(GLOBAL_PYTHON) -m venv $(ENV_NAME)
 	@echo "L'environnement a été créé"
-	@echo "Exécuter dans votre terminal: source $(ENV_NAME)/bin/activate"
+	@echo "Exécuter dans votre terminal: source $(VENV_BIN)/activate"
 
 install-packages: ## Installer les packages python complémentaires
 	@echo "Installation de uv et des dépendances depuis pyproject.toml"
-	$(PYTHON) -m pip install uv
+	$(VENV_PYTHON) -m pip install uv
 	$(UV) pip install \
-		--python $(PYTHON) \
+		--python $(VENV_PYTHON) \
 		--group default \
 		--group airflow \
 		--group airflow-providers \
