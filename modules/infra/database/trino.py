@@ -63,6 +63,10 @@ class TrinoAdapter(DBInterface):
                 raise DatabaseError(f"Error connecting to Trino: {e!s}") from e
         return self._conn
 
+    @property
+    def connection(self) -> dict[str, Any]:
+        return {"host": self.conn.host, "port": self.conn.port}
+
     def get_uri(self) -> str:
         """Return a Trino URI."""
         return f"{self.http_scheme}://{self.user}@{self.host}:{self.port}/{self.catalog}"

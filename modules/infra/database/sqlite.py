@@ -35,6 +35,10 @@ class SQLiteAdapter(DBInterface):
                 raise DatabaseError(f"Error connecting to SQLite DB: {e!s}") from e
         return self._conn
 
+    @property
+    def connection(self) -> dict[str, Any]:
+        return {"path": self.db_path}
+
     def get_uri(self) -> str:
         """Return a SQLite URI."""
         return f"sqlite:///{self.db_path}"

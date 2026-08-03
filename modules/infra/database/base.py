@@ -9,6 +9,10 @@ import pandas as pd
 class DBInterface(ABC):
     """Base class for database operations."""
 
+    @property
+    @abstractmethod
+    def connection(self) -> dict[str, Any]: ...
+
     @abstractmethod
     def get_uri(self) -> str:
         """Get the database URI."""

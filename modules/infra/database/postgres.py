@@ -14,6 +14,7 @@ from .base import DBInterface
 from .exceptions import DatabaseError
 
 if TYPE_CHECKING:
+    from airflow.providers.common.sql.hooks.sql import DbApiHook
     from sqlalchemy.engine.base import Engine
 
 
@@ -62,11 +63,11 @@ class PgAdapter(DBInterface):
                 "password": password,
             }
 
-        self._hook: Any | None = None
+        self._hook: DbApiHook | None = None
         self._engine: Engine | None = None
 
     @property
-    def hook(self) -> Any:
+    def hook(self) -> DbApiHook:
         """Lazy initialization of PostgresHook (Airflow mode only)."""
         if not self._use_airflow:
             raise RuntimeError("hook is not available in local mode. Use get_conn() instead.")
@@ -87,6 +88,12 @@ class PgAdapter(DBInterface):
                 uri = f"postgresql://{p['user']}:{p['password']}@{p['host']}:{p['port']}/{p['dbname']}"
                 self._engine = create_engine(uri)
         return self._engine
+
+    @property
+    def connection(self) -> dict[str, Any]:
+        if self._use_airflow:
+            return self.hook.connection
+        return self._local_params
 
     def get_uri(self) -> str:
         """Get the database URI."""
