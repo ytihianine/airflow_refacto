@@ -92,7 +92,7 @@ class PgAdapter(DBInterface):
     @property
     def connection(self) -> dict[str, Any]:
         if self._use_airflow:
-            return self.hook.connection
+            return self.hook.connection.to_dict()
         return self._local_params
 
     def get_uri(self) -> str:
