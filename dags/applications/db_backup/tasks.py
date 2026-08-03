@@ -1,83 +1,112 @@
+import gzip
+import logging
 import os
 import subprocess
-from pathlib import Path
 
-from airflow.sdk import Variable, task
-from modules.constants import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
-from modules.enums.filesystem import FileHandlerType
+from airflow.sdk import chain, task, task_group
+
+# from modules.constants import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
+# from modules.enums.filesystem import FileHandlerType
+# from modules.infra.file_system.factory import create_file_handler
 from modules.infra.database.factory import create_db_handler
-from modules.infra.file_system.factory import create_file_handler
 from modules.utils.config.dag_params import get_project_name
-from modules.utils.config.tasks import get_list_selecteur_storage_info
+from modules.utils.config.tasks import get_projet_s3_info
 
 
-@task
-def dump_databases(**context) -> None:
-    """
-    Perform a PostgreSQL pg_dumpall command and store the result in a local file.
-    """
-    # config
-    nom_projet = get_project_name(context=context)
-    selecteur_storage_info = get_list_selecteur_storage_info(nom_projet=nom_projet)
+@task_group
+def export_database(db_conn_id: str, **context) -> None:
+    @task
+    def list_databases(db_conn_id: str) -> list[str]:
+        # Variables
+        db_handler = create_db_handler(connection_id=db_conn_id)
 
-    # Variables
-    db_handler = create_db_handler(connection_id="db_data_store")
+        query = """
+            select
+                datname
+            from
+                pg_database
+            where
+                datistemplate is false
+                and datname not in ('postgres', 'defaultdb')
+            ;
+        """
+        result = db_handler.fetch_df(query=query)
 
-    # Hooks
-    s3_handler = create_file_handler(
-        handler_type=FileHandlerType.S3,
-        connection_id=DEFAULT_S3_CONN_ID,
-        bucket=DEFAULT_S3_BUCKET,
-    )
-    local_handler = create_file_handler(handler_type=FileHandlerType.LOCAL)
-    conn = db_handler.get_uri()
+        if result.empty:
+            logging.warning(msg="Aucun nom de base de données n'a été récupéré.")
+            return []
 
-    split_conn_dsn = conn.split(sep="://")[1].split(sep="/")[0].split(sep="@")
-    print(split_conn_dsn)
-    credentials = split_conn_dsn[0].split(sep=":")
-    username = credentials[0]
-    connexion = split_conn_dsn[1].split(sep=":")
-    host = connexion[0]
-    port = connexion[1]
+        return result["datname"].values.tolist()
 
-    # Environment variable for password - to avoid password prompt
-    env = os.environ.copy()
-    env["PGPASSWORD"] = Variable.get(key="db_main_password")
+    @task
+    def export_database(db_conn_id: str, db_name: str) -> None:
+        # Variables
+        nom_projet = get_project_name(context=context)
+        projet_info = get_projet_s3_info(nom_projet=nom_projet)
+        dest_tmp_key = projet_info.key_tmp + f"/{db_name}_dump.sql.gz"
 
-    for config in selecteur_storage_info:
-        local_path = Path("/tmp") / config.filename
-        db_name = config.id_source
-        dest_tmp_key = config.get_full_s3_key(with_tmp_segment=True)
+        # Hooks
+        db_handler = create_db_handler(connection_id=db_conn_id)
+        # s3_handler = create_file_handler(
+        #     handler_type=FileHandlerType.S3,
+        #     connection_id=DEFAULT_S3_CONN_ID,
+        #     bucket=DEFAULT_S3_BUCKET,
+        # )
+        conn = db_handler.get_uri()
+        logging.debug(msg=f"{db_handler.get_conn()}")
 
-        # Construct pg_dump command (without file output)
-        command = [
-            "pg_dump",
-            f"--host={host}",
-            f"--port={port}",
-            f"--username={username}",
-            "-Fc",  # Custom format
-            "--no-owner",
-            "-d",
-            db_name,
-        ]
+        split_conn_dsn = conn.split(sep="://")[1].split(sep="/")[0].split(sep="@")
+        logging.debug(msg=split_conn_dsn)
+        credentials = split_conn_dsn[0].split(sep=":")
+        username = credentials[0]
+        connexion = split_conn_dsn[1].split(sep=":")
+        host = connexion[0]
+        port = connexion[1]
 
-        print(f"Executing dump for database: {db_name}")
+        # Environment variable for password - to avoid password prompt
+        env = os.environ.copy()
+        env["PGPASSWORD"] = "fake"
 
-        # Local + S3 dump
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env) as proc:
-            # Capture output and wait for process to finish
-            stdout, stderr = proc.communicate()
+        # Export database and load it to MinIO
+        logging.info(msg=f"Executing dump for database: {db_name}")
+        output_file = f"/tmp/{db_name}_dump.sql.gz"
+        with gzip.open(output_file, "wb", compresslevel=9) as gz:
+            proc = subprocess.Popen(
+                [
+                    "pg_dump",
+                    "--host",
+                    host,
+                    "--port",
+                    str(port),
+                    "--username",
+                    username,
+                    "--format=plain",
+                    "--no-owner",
+                    "--no-privileges",
+                    db_name,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
 
-            if proc.returncode != 0:
-                raise ValueError(f"Error dumping {db_name}: {stderr.decode().strip() or 'Unknown error'}")
+            try:
+                for chunk in iter(lambda: proc.stdout.read(1024 * 1024), b""):  # type: ignore
+                    gz.write(data=chunk)  # pyright: ignore[reportCallIssue]
 
-            # --- 1. Write dump locally (atomic write via file_handler) ---
-            local_handler.write(file_path=local_path, content=stdout)
+                stderr = proc.stderr.read()  # type: ignore
+                rc = proc.wait()
 
-            # --- 2. Upload local dump to S3 ---
-            with open(file=local_path, mode="rb") as f:
-                s3_handler.write(file_path=dest_tmp_key, content=f)
+                if rc != 0:
+                    raise RuntimeError(f"pg_dump failed with exit code {rc}\n" f"{stderr.decode()}")
 
-            print(f"Successfully dumped {db_name} to local: {local_path}, and uploaded to S3: {dest_tmp_key}")
+            finally:
+                if proc.stdout:
+                    proc.stdout.close()
+                if proc.stderr:
+                    proc.stderr.close()
+                logging.info(msg=f"Successfully dumped {db_name} to S3 with key {dest_tmp_key}")
 
-            local_handler.delete(file_path=local_path)
+    databases = list_databases(db_conn_id=db_conn_id)
+    export_db = export_database.expand(db_name=databases)
+
+    chain(databases, export_db)
