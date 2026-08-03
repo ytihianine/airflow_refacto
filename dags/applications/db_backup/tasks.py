@@ -2,13 +2,13 @@ import gzip
 import logging
 import os
 import subprocess
+import tempfile
 
 from airflow.sdk import chain, get_current_context, task, task_group
-
-# from modules.constants import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
-# from modules.enums.filesystem import FileHandlerType
-# from modules.infra.file_system.factory import create_file_handler
+from modules.constants import DEFAULT_S3_BUCKET, DEFAULT_S3_CONN_ID
+from modules.enums.filesystem import FileHandlerType
 from modules.infra.database.factory import create_db_handler
+from modules.infra.file_system.factory import create_file_handler
 from modules.utils.config.dag_params import get_project_name
 from modules.utils.config.tasks import get_projet_s3_info
 
@@ -50,64 +50,53 @@ def export_database(db_conn_id: str) -> None:
 
         # Hooks
         db_handler = create_db_handler(connection_id=db_conn_id)
-        # s3_handler = create_file_handler(
-        #     handler_type=FileHandlerType.S3,
-        #     connection_id=DEFAULT_S3_CONN_ID,
-        #     bucket=DEFAULT_S3_BUCKET,
-        # )
-        conn = db_handler.get_uri()
+        s3_handler = create_file_handler(
+            handler_type=FileHandlerType.S3,
+            connection_id=DEFAULT_S3_CONN_ID,
+            bucket=DEFAULT_S3_BUCKET,
+        )
+        conn = db_handler.get_conn()
         logging.info(msg=f"{db_handler.get_conn()}")
-
-        split_conn_dsn = conn.split(sep="://")[1].split(sep="/")[0].split(sep="@")
-        logging.info(msg=split_conn_dsn)
-        credentials = split_conn_dsn[0].split(sep=":")
-        username = credentials[0]
-        connexion = split_conn_dsn[1].split(sep=":")
-        host = connexion[0]
-        port = connexion[1]
 
         # Environment variable for password - to avoid password prompt
         env = os.environ.copy()
-        env["PGPASSWORD"] = "fake"
+        env["PGPASSWORD"] = conn.password
 
         # Export database and load it to MinIO
         logging.info(msg=f"Executing dump for database: {db_name}")
-        output_file = f"/tmp/{db_name}_dump.sql.gz"
-        with gzip.open(output_file, "wb", compresslevel=9) as gz:
-            proc = subprocess.Popen(
-                [
-                    "pg_dump",
-                    "--host",
-                    host,
-                    "--port",
-                    str(port),
-                    "--username",
-                    username,
-                    "--format=plain",
-                    "--no-owner",
-                    "--no-privileges",
-                    db_name,
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+
+        with tempfile.NamedTemporaryFile(suffix=".sql.gz") as tmp:
+            with gzip.open(tmp.name, "wb", compresslevel=9) as gz:
+                proc = subprocess.Popen(
+                    [
+                        "pg_dump",
+                        "--host",
+                        conn.host,
+                        "--port",
+                        str(conn.port),
+                        "--username",
+                        conn.username,
+                        "--format=plain",
+                        "--no-owner",
+                        "--no-privileges",
+                        db_name,
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+
+                for chunk in iter(
+                    lambda: proc.stdout.read(1024 * 1024), b""
+                ):  # pyright: ignore[reportOptionalMemberAccess]
+                    gz.write(data=chunk)
+
+            tmp.flush()
+
+            s3_handler.write(
+                file_path=dest_tmp_key,
+                content=tmp.name,
             )
-
-            try:
-                for chunk in iter(lambda: proc.stdout.read(1024 * 1024), b""):  # type: ignore
-                    gz.write(data=chunk)  # pyright: ignore[reportCallIssue]
-
-                stderr = proc.stderr.read()  # type: ignore
-                rc = proc.wait()
-
-                if rc != 0:
-                    raise RuntimeError(f"pg_dump failed with exit code {rc}\n" f"{stderr.decode()}")
-
-            finally:
-                if proc.stdout:
-                    proc.stdout.close()
-                if proc.stderr:
-                    proc.stderr.close()
-                logging.info(msg=f"Successfully dumped {db_name} to S3 with key {dest_tmp_key}")
+            logging.info(msg=f"Successfully dumped {db_name} to S3 with key {dest_tmp_key}")
 
     databases = list_databases(db_conn_id=db_conn_id)
     export_db = export_database.partial(db_conn_id=db_conn_id).expand(db_name=databases)
