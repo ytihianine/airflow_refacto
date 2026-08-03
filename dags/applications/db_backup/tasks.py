@@ -55,8 +55,8 @@ def export_database(db_conn_id: str) -> None:
             connection_id=DEFAULT_S3_CONN_ID,
             bucket=DEFAULT_S3_BUCKET,
         )
-        conn = db_handler.get_conn()
-        logging.info(msg=f"{conn.to_dict()}")
+        conn = db_handler.connection
+        logging.info(msg=f"{conn}")
 
         # Environment variable for password - to avoid password prompt
         env = os.environ.copy()
