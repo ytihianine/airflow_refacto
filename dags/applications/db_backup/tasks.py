@@ -75,7 +75,7 @@ def export_database(db_conn_id: str) -> None:
                         "--port",
                         str(conn["port"]),
                         "--username",
-                        conn["username"],
+                        conn["login"],
                         "--format=plain",
                         "--no-owner",
                         "--no-privileges",
