@@ -92,11 +92,11 @@ def export_database(db_conn_id: str) -> None:
                     gz.write(data=chunk)
 
             tmp.flush()
-
-            s3_handler.write(
-                file_path=dest_tmp_key,
-                content=tmp.name,
-            )
+            with open(file=tmp.name, mode="rb") as f:
+                s3_handler.write(
+                    file_path=dest_tmp_key,
+                    content=f.read(),
+                )
             logging.info(msg=f"Successfully dumped {db_name} to S3 with key {dest_tmp_key}")
 
     databases = list_databases(db_conn_id=db_conn_id)
