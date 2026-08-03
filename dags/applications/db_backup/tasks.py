@@ -60,7 +60,7 @@ def export_database(db_conn_id: str) -> None:
 
         # Environment variable for password - to avoid password prompt
         env = os.environ.copy()
-        env["PGPASSWORD"] = conn.password
+        env["PGPASSWORD"] = conn["password"]
 
         # Export database and load it to MinIO
         logging.info(msg=f"Executing dump for database: {db_name}")
@@ -71,11 +71,11 @@ def export_database(db_conn_id: str) -> None:
                     [
                         "pg_dump",
                         "--host",
-                        conn.host,
+                        conn["host"],
                         "--port",
-                        str(conn.port),
+                        str(conn["port"]),
                         "--username",
-                        conn.username,
+                        conn["username"],
                         "--format=plain",
                         "--no-owner",
                         "--no-privileges",
