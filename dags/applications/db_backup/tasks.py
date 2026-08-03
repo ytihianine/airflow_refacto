@@ -86,8 +86,8 @@ def export_database(db_conn_id: str) -> None:
                 )
 
                 for chunk in iter(
-                    lambda: proc.stdout.read(1024 * 1024), b""
-                ):  # pyright: ignore[reportOptionalMemberAccess]
+                    lambda: proc.stdout.read(1024 * 1024), b""  # pyright: ignore[reportOptionalMemberAccess]
+                ):
                     gz.write(data=chunk)
 
             tmp.flush()
