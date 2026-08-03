@@ -33,7 +33,7 @@ default = [
 airflow = [
     "apache-airflow==3.2.2",
     "apache-airflow-core==3.2.2",
-    "apache-airflow-task-sdk==1.2.2",
+    "apache-airflow-task-sdk==1.3.0",
 ]
 
 # ---- Airflow providers -----------------------------------------------------
