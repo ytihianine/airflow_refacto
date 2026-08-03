@@ -14,7 +14,7 @@ from modules.utils.config.tasks import get_projet_s3_info
 
 
 @task_group
-def export_database(db_conn_id: str, **context) -> None:
+def export_database(db_conn_id: str) -> None:
     @task
     def list_databases(db_conn_id: str) -> list[str]:
         # Variables
@@ -39,7 +39,7 @@ def export_database(db_conn_id: str, **context) -> None:
         return result["datname"].values.tolist()
 
     @task
-    def export_database(db_conn_id: str, db_name: str) -> None:
+    def export_database(db_conn_id: str, db_name: str, **context) -> None:
         # Variables
         nom_projet = get_project_name(context=context)
         projet_info = get_projet_s3_info(nom_projet=nom_projet)
