@@ -9,10 +9,10 @@ class ApiOperat:
     """Class to hold the credentials for the API Operat."""
 
     # Credentials for the API Operat
-    client_id_api_operat: str | None
-    client_secret_api_operat: str | None
-    cle_tiers: str | None
-    cle_utilisateur: str | None
+    client_id_api_operat: str | None = None
+    client_secret_api_operat: str | None = None
+    cle_tiers: str | None = None
+    cle_utilisateur: str | None = None
 
     # Endpoints for the API Operat
     base_url: str = "https://api-externe.ademe.fr"
