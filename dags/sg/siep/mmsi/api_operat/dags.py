@@ -11,6 +11,7 @@ from modules.common_tasks.s3 import (
 from modules.common_tasks.sql import (
     copy_tmp_table_to_real_table,
     create_tmp_tables,
+    get_projet_snapshot,
     import_file_to_db,
 )
 from modules.common_tasks.validation import validate_dag_parameters
@@ -49,6 +50,7 @@ def api_operat_ademe() -> None:
     # Ordre des tâches
     chain(
         validate_dag_parameters(),
+        get_projet_snapshot(nom_projet="Outil aide diagnostic"),
         source(),
         output(),
         create_tmp_tables(),
