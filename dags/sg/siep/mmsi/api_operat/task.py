@@ -1,6 +1,7 @@
 from airflow.sdk import task_group
 from airflow.sdk.bases.operator import chain
 from dags.sg.siep.mmsi.api_operat import actions, process
+from dags.sg.siep.mmsi.api_operat.types import ApiOperat
 from modules.common_tasks.etl import create_task
 from modules.types.dags import ETLStep, TaskConfig
 
@@ -13,6 +14,7 @@ def source() -> None:
         steps=[
             ETLStep(
                 fn=actions.liste_declaration,
+                kwargs={"api_operat": ApiOperat()},
                 use_context=False,
             ),
         ],
@@ -27,6 +29,7 @@ def source() -> None:
         steps=[
             ETLStep(
                 fn=actions.consommation_by_id,
+                kwargs={"api_operat": ApiOperat()},
                 use_context=False,
                 read_data=True,
             ),
