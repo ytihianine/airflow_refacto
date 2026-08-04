@@ -73,7 +73,10 @@ def consommation_by_id(df: pd.DataFrame, api_operat: ApiOperat) -> pd.DataFrame:
     api_result = []
     for _index, (_, row) in enumerate(df.iterrows(), start=1):
         logging.info(
-            msg=f"({_index}/{len(df)}) Récupération des consommations pour la structure {row['id_structure']} - idConso : {row['idConsommation']}"
+            msg=(
+                f"({_index}/{len(df)}) Récupération des consommations pour la structure "
+                f"{row['id_structure']} - idConso : {row['idConsommation']}"
+            )
         )
         if row["idConsommation"] == -1:
             logging.warning(msg=f"Aucune idConsommation pour la structure {row['id_structure']}")
