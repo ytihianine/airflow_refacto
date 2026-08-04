@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from airflow.sdk import dag
 from airflow.sdk.bases.operator import chain
-from dags.sg.siep.mmsi.api_operat.task import output, source
+from dags.sg.siep.mmsi.api_operat.task import output  # , source
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
     copy_s3_files,
@@ -51,7 +51,7 @@ def api_operat_ademe() -> None:
     chain(
         validate_dag_parameters(),
         get_projet_snapshot(nom_projet="Outil aide diagnostic"),
-        source(),
+        # source(),
         output(),
         create_tmp_tables(),
         import_file_to_db.expand(selecteur_config=selecteur_configs),
