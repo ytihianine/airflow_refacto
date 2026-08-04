@@ -1,4 +1,3 @@
-BASE_URL = "https://api-externe.ademe.fr"
 ID_STRUCTURES = [
     "ETAT_MIN_EF",
     "ETAT_REG_ARA",

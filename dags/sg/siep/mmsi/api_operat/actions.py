@@ -1,8 +1,8 @@
 import logging
 
 import pandas as pd
-from airflow.sdk import Variable
-from dags.sg.siep.mmsi.api_operat.config import BASE_URL, ID_STRUCTURES
+from dags.sg.siep.mmsi.api_operat.config import ID_STRUCTURES
+from dags.sg.siep.mmsi.api_operat.types import ApiOperat
 from modules.constants import AGENT, PROXY
 from modules.infra.http_client.adapters import ClientConfig, HttpxClient
 
@@ -10,64 +10,28 @@ from modules.infra.http_client.adapters import ClientConfig, HttpxClient
 # ================
 # API Fonctions
 # ================
-def build_header() -> dict[str, str]:
-    return {
-        "Content-type": "application/json",
-        "client_id": Variable.get(key="client_id_api_operat"),
-        "client_secret": Variable.get(key="client_secret_api_operat"),
-    }
+def get_liste_declarations(api_client: HttpxClient, api_operat: ApiOperat, token: str) -> dict:
+    route = api_operat.base_url + api_operat.endpoint_consommations
 
-
-def get_token(
-    api_client: HttpxClient,
-    url: str,
-    id_structure_assujettie: str,
-    cle_tiers: str,
-    cle_utilisateur: str,
-) -> str:
-    endpoint = "/api/v1/operat/authentification"
-
-    body = {
-        "cleTiers": cle_tiers,
-        "idStructureAssujettie": id_structure_assujettie,
-        "cleUtilisateur": cle_utilisateur,
-    }
-    headers = build_header()
-
-    result = api_client.post(endpoint=url + endpoint, json=body, headers=headers)
-
-    return result.json()["token"]
-
-
-def get_liste_declarations(api_client: HttpxClient, url: str, token: str) -> dict:
-    endpoint = "/api/v1/operat/consommations"
-    headers = build_header() | {"Authorization": f"Bearer {token}"}
-
-    result = api_client.get(endpoint=url + endpoint, headers=headers)
+    result = api_client.get(endpoint=route, headers=api_operat.build_header(token=token))
     try:
         return result.json()
     except Exception:
         return {"resultat": [{"idConsommation": -1}]}
 
 
-def get_consommation_by_id(api_client: HttpxClient, url: str, token: str, id_consommation: str) -> dict:
-    endpoint = "/api/v1/operat/consommation/"
-    full_url = url + endpoint + id_consommation
-    headers = build_header() | {"Authorization": f"Bearer {token}"}
+def get_consommation_by_id(api_client: HttpxClient, api_operat: ApiOperat, token: str, id_consommation: str) -> dict:
+    route = api_operat.base_url + api_operat.endpoint_consommation_by_id + id_consommation
+    headers = api_operat.build_header(token=token)
 
-    result = api_client.get(endpoint=full_url, headers=headers)
+    result = api_client.get(endpoint=route, headers=headers)
     return result.json()
 
 
 # ================
 # Fonctions de processing pour les tâches
 # ================
-def liste_declaration(cle_tiers: str | None = None, cle_utilisateur: str | None = None) -> pd.DataFrame:
-    if cle_tiers is None:
-        cle_tiers = str(Variable.get(key="cle_tiers_api_operat"))
-    if cle_utilisateur is None:
-        cle_utilisateur = str(Variable.get(key="cle_utilisateur_api_operat"))
-
+def liste_declaration(api_operat: ApiOperat) -> pd.DataFrame:
     # Http client
     client_config = ClientConfig(user_agent=AGENT, proxy=PROXY)
     httpx_internet_client = HttpxClient(config=client_config)
@@ -78,14 +42,11 @@ def liste_declaration(cle_tiers: str | None = None, cle_utilisateur: str | None 
         logging.info(
             msg=f"({idx+1}/{len(ID_STRUCTURES)}) Récupération des déclarations pour la structure {id_structure}"
         )
-        token = get_token(
+        token = api_operat.get_token(
             api_client=httpx_internet_client,
-            url=BASE_URL,
             id_structure_assujettie=id_structure,
-            cle_tiers=cle_tiers,
-            cle_utilisateur=cle_utilisateur,
         )
-        lst_declarations = get_liste_declarations(api_client=httpx_internet_client, url=BASE_URL, token=token)
+        lst_declarations = get_liste_declarations(api_client=httpx_internet_client, api_operat=api_operat, token=token)
         result_with_structure = [
             result | {"id_structure": id_structure} for result in lst_declarations.get("resultat", [])
         ]
@@ -95,14 +56,7 @@ def liste_declaration(cle_tiers: str | None = None, cle_utilisateur: str | None 
     return df
 
 
-def consommation_by_id(
-    df: pd.DataFrame, cle_tiers: str | None = None, cle_utilisateur: str | None = None
-) -> pd.DataFrame:
-    if cle_tiers is None:
-        cle_tiers = str(Variable.get(key="cle_tiers_api_operat"))
-    if cle_utilisateur is None:
-        cle_utilisateur = str(Variable.get(key="cle_utilisateur_api_operat"))
-
+def consommation_by_id(df: pd.DataFrame, api_operat: ApiOperat) -> pd.DataFrame:
     # Http client
     client_config = ClientConfig(user_agent=AGENT, proxy=PROXY)
     httpx_internet_client = HttpxClient(config=client_config)
@@ -111,25 +65,22 @@ def consommation_by_id(
     _token_registry = {}
     for idx, id_structure in enumerate(ID_STRUCTURES):
         logging.info(msg=f"({idx+1}/{len(ID_STRUCTURES)}) Récupération du token pour la structure {id_structure}")
-        _token_registry[id_structure] = get_token(
+        _token_registry[id_structure] = api_operat.get_token(
             api_client=httpx_internet_client,
-            url=BASE_URL,
             id_structure_assujettie=id_structure,
-            cle_tiers=cle_tiers,
-            cle_utilisateur=cle_utilisateur,
         )
 
     api_result = []
-    for index, row in df.iterrows():
+    for _index, (_, row) in enumerate(df.iterrows(), start=1):
         logging.info(
-            msg=f"({index+1}/{len(df)}) Récupération des consommations pour la structure {row["id_structure"]} - idConso : {row["idConsommation"]}"
+            msg=f"({_index}/{len(df)}) Récupération des consommations pour la structure {row['id_structure']} - idConso : {row['idConsommation']}"
         )
         if row["idConsommation"] == -1:
-            logging.warning(msg="Aucune idConsommation pour cette structure")
+            logging.warning(msg=f"Aucune idConsommation pour la structure {row['id_structure']}")
         else:
             detail_conso = get_consommation_by_id(
                 api_client=httpx_internet_client,
-                url=BASE_URL,
+                api_operat=api_operat,
                 token=_token_registry[row["id_structure"]],
                 id_consommation=str(row["idConsommation"]),
             )
