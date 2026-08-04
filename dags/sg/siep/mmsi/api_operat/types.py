@@ -32,12 +32,12 @@ class ApiOperat:
 
     def get_cle_tiers(self) -> str:
         if self.cle_tiers is None:
-            return str(Variable.get(key="cle_tiers"))
+            return str(Variable.get(key="cle_tiers_api_operat"))
         return self.cle_tiers
 
     def get_cle_utilisateur(self) -> str:
         if self.cle_utilisateur is None:
-            return str(Variable.get(key="cle_utilisateur"))
+            return str(Variable.get(key="cle_utilisateur_api_operat"))
         return self.cle_utilisateur
 
     def build_header(self, token: str | None = None) -> dict[str, str]:
