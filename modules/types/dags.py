@@ -22,11 +22,11 @@ class TaskConfig:
     retry_delay: timedelta | float = 0
     retry_exponential_backoff: bool = False
     max_retry_delay: timedelta | float | None = None
-    on_execute_callback: None | TaskStateChangeCallback | list[TaskStateChangeCallback] = None
-    on_failure_callback: None | TaskStateChangeCallback | list[TaskStateChangeCallback] = None
-    on_success_callback: None | TaskStateChangeCallback | list[TaskStateChangeCallback] = None
-    on_retry_callback: None | TaskStateChangeCallback | list[TaskStateChangeCallback] = None
-    on_skipped_callback: None | TaskStateChangeCallback | list[TaskStateChangeCallback] = None
+    on_execute_callback: TaskStateChangeCallback | list[TaskStateChangeCallback] | None = None
+    on_failure_callback: TaskStateChangeCallback | list[TaskStateChangeCallback] | None = None
+    on_success_callback: TaskStateChangeCallback | list[TaskStateChangeCallback] | None = None
+    on_retry_callback: TaskStateChangeCallback | list[TaskStateChangeCallback] | None = None
+    on_skipped_callback: TaskStateChangeCallback | list[TaskStateChangeCallback] | None = None
 
 
 @dataclass
