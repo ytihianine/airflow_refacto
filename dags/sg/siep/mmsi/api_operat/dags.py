@@ -35,7 +35,7 @@ nom_projet = "API Opera"
     default_args=create_default_args(retries=1, retry_delay=timedelta(minutes=1)),
     params=create_dag_params(
         nom_projet=nom_projet,
-        dag_status=DagStatus.DEV,
+        dag_status=DagStatus.RUN,
         db_params=DBParams(prod_schema="siep"),
         feature_flags=FeatureFlagsEnable(db=True, mail=False, s3=True, convert_files=False, download_grist_doc=False),
     ),
