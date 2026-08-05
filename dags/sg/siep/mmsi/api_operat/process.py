@@ -16,6 +16,8 @@ def process_declarations(df: pd.DataFrame) -> pd.DataFrame:
         "statut": "statut",
     }
     df = df.rename(columns=colnames_mapping)
+
+    df = df.loc[:, colnames_mapping.values()]
     return df
 
 
@@ -170,6 +172,7 @@ def process_detail_conso(df: pd.DataFrame) -> pd.DataFrame:
 
     df = pd.json_normalize(data=df["detail"].tolist())
     df = df.rename(columns=colnames_mapping)
+    df = df.loc[:, colnames_mapping.values()]
 
     # Convertir les données au bon format
     df["date_debut_conso_reference"] = pd.to_datetime(df["date_debut_conso_reference"], format="%d/%m/%Y")
