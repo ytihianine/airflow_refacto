@@ -258,9 +258,19 @@ def process_detail_conso_indicateur(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(columns=colnames_mapping)
 
     # Pivoter les colonnes pour obtenir le format souhaité
+    col_nom = [col for col in df.columns if col.startswith("nomIndicateur")]
+    col_valeur = [col for col in df.columns if col.startswith("valeurIndicateur")]
     df = df.melt(
-        id_vars=["id_consommation"],
-        var_name="nom_indicateur",
+        id_vars=["id_consommation", *col_valeur],
+        value_vars=col_nom,
+        var_name="numero_indicateur",
+        value_name="nom_indicateur",
+    )
+
+    df = df.melt(
+        id_vars=["id_consommation", "numero_indicateur", "nom_indicateur"],
+        value_vars=col_valeur,
+        var_name="numero_valeur_indicateur",
         value_name="valeur_indicateur",
     )
 
