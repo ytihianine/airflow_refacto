@@ -17,7 +17,7 @@ UV := $(VENV_BIN)/uv
 VENV_PYTHON := $(VENV_BIN)/python
 
 .PHONY: help install-sys-packages create-py-env install-airflow install-packages \
-        install-pre-commit setup-git setup-dev-env init-env-files clean
+        install-pre-commit init-git setup-dev-env init-env-files clean
 
 help: ## Afficher l'aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
@@ -58,11 +58,11 @@ install-pre-commit: ## Installer les pre-commits
 	@echo "Installation des pre-commits"
 	$(VENV_BIN)/pre-commit install
 
-setup-git: ## Initialiser la configuration git
+init-git: ## Initialiser la configuration git
 	@echo "Init git config"
 	git config --global credential.helper 'cache --timeout=360000'
 
-setup-dev-env: create-py-env install-packages install-pre-commit setup-git ## Installer tout l'environnement de développement
+setup-dev-env: create-py-env install-packages install-pre-commit init-git ## Installer tout l'environnement de développement
 
 init-env-files: ## Initialiser les fichiers d'environnement des scripts
 	@echo "Initialisation des fichiers d'environnement"
