@@ -1,19 +1,6 @@
 import logging
-from typing import Any
 
-import numpy as np
 import pandas as pd
-
-
-def split_declaration_and_adresse_efa(declarations: list) -> tuple[list, list]:
-    rows_declaration = []
-    rows_adresse_efa = []
-
-    for declaration in declarations:
-        rows_adresse_efa.append(declaration.pop("adresseEfa", None) | {"idOccupantEfa": declaration["idOccupantEfa"]})
-        rows_declaration.append(declaration)
-
-    return rows_declaration, rows_adresse_efa
 
 
 def process_declarations(df: pd.DataFrame) -> pd.DataFrame:
@@ -44,9 +31,9 @@ def process_adresse_efa(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_detail_conso(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
+def process_detail_conso(df: pd.DataFrame) -> pd.DataFrame:
     colnames_mapping = {
-        "consoId": "id_consommation_api",
+        "consoId": "id_consommation",
         "refOperatEfa": "ref_operat_efa",
         "anneeDeclaree": "annee_declaree",
         "dateDebutConsoReference": "date_debut_conso_reference",
@@ -193,7 +180,7 @@ def process_detail_conso(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
         "conservationDocConsoGazoleNonRoutierLitre": "conservation_doc_conso_gazole_non_routier_litre",
     }
 
-    df = pd.DataFrame(data=raw_data)
+    df = pd.json_normalize(data=df["detail"].tolist())
     df = df.rename(columns=colnames_mapping)
 
     # Convertir les données au bon format
@@ -204,8 +191,8 @@ def process_detail_conso(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
         for col in default_cols
         if col
         not in [
-            "id_consommation_api",
-            "refOperatEfa",
+            "id_consommation",
+            "ref_operat_efa",
             "annee_declaree",
             "date_debut_conso_reference",
             "categorie_activite_principale",
@@ -216,15 +203,15 @@ def process_detail_conso(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
         logging.info(msg=f"Colname: {col}")
         logging.info(msg=f"Avant: {df[col].unique()}")
         df[col] = df[col].str.replace(",", ".")
-        df[col] = df[col].replace("", np.nan)
         logging.info(msg=f"Après: {df[col].unique()}")
-        df[col] = pd.to_numeric(df[col], downcast="float", errors="ignore")  # type: ignore
+        df[col] = pd.to_numeric(arg=df[col], downcast="float")
 
     return df
 
 
-def process_detail_conso_activite(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
+def process_detail_conso_activite(df: pd.DataFrame) -> pd.DataFrame:
     colnames_mapping = {
+        "consoId": "id_consommation",
         "sousCategorieActivite": "sous_categorie_activite",
         "surfacePlancherM2": "surface_plancher_m2",
         "dateDebutActivite": "date_debut_activite",
@@ -234,82 +221,49 @@ def process_detail_conso_activite(raw_data: list[dict[str, Any]]) -> pd.DataFram
         "logistiqueDeFroid": "logistique_de_froid",
         "froidCommercial": "froid_commercial",
         "conservationDocCollections": "conservation_doc_collections",
-        "nbJoursOccupesMois1": "nb_jours_occupes_mois_1",
-        "nbJoursOccupesMois2": "nb_jours_occupes_mois_2",
-        "nbJoursOccupesMois3": "nb_jours_occupes_mois_3",
-        "nbJoursOccupesMois4": "nb_jours_occupes_mois_4",
-        "nbJoursOccupesMois5": "nb_jours_occupes_mois_5",
-        "nbJoursOccupesMois6": "nb_jours_occupes_mois_6",
-        "nbJoursOccupesMois7": "nb_jours_occupes_mois_7",
-        "nbJoursOccupesMois8": "nb_jours_occupes_mois_8",
-        "nbJoursOccupesMois9": "nb_jours_occupes_mois_9",
-        "nbJoursOccupesMois10": "nb_jours_occupes_mois_10",
-        "nbJoursOccupesMois11": "nb_jours_occupes_mois_11",
-        "nbJoursOccupesMois12": "nb_jours_occupes_mois_12",
-        "nbJoursOccupesMois13": "nb_jours_occupes_mois_13",
-    }
-    default_value = {
-        "nbJoursOccupesMois1": None,
-        "nbJoursOccupesMois2": None,
-        "nbJoursOccupesMois3": None,
-        "nbJoursOccupesMois4": None,
-        "nbJoursOccupesMois5": None,
-        "nbJoursOccupesMois6": None,
-        "nbJoursOccupesMois7": None,
-        "nbJoursOccupesMois8": None,
-        "nbJoursOccupesMois9": None,
-        "nbJoursOccupesMois10": None,
-        "nbJoursOccupesMois11": None,
-        "nbJoursOccupesMois12": None,
-        "nbJoursOccupesMois13": None,
     }
 
-    for elem in raw_data:
-        logging.info(msg=f"I am the elem: {elem}")
-        nb_jours_occupes = elem.pop("nbJoursOccupes", default_value)
-        elem = elem | nb_jours_occupes
+    # Normaliser les colonnes de détail et les convertir en colonnes séparées
+    df = pd.json_normalize(data=df["detail"].tolist())
+    df = df.loc[:, ["consoId", "activites"]]
+    df = df.explode(column="activites", ignore_index=True)
+    df = df.join(
+        other=pd.json_normalize(data=df["activites"].tolist()),
+    ).drop("activites", axis=1)
 
-    df = pd.DataFrame(data=raw_data)
+    # Renommer les colonnes
+    df = df.rename(columns=colnames_mapping)
 
     # Conversion des colonnes au data type attendu
-    df["dateDebutActivite"] = pd.to_datetime(df["dateFinActivite"], format="%d/%m/%Y")
-    df["dateFinActivite"] = pd.to_datetime(df["dateFinActivite"], format="%d/%m/%Y")
-    df["surfacePlancherM2"] = df["surfacePlancherM2"].str.replace(",", ".")
-    df["surfacePlancherM2"] = pd.to_numeric(df["surfacePlancherM2"], downcast="float", errors="coerce")
-    df = df.rename(columns=colnames_mapping)
+    df["date_debut_activite"] = pd.to_datetime(df["date_debut_activite"], format="%d/%m/%Y")
+    df["date_fin_activite"] = pd.to_datetime(df["date_fin_activite"], format="%d/%m/%Y")
+    df["surface_plancher_m2"] = df["surface_plancher_m2"].str.replace(",", ".")
+    df["surface_plancher_m2"] = pd.to_numeric(arg=df["surface_plancher_m2"], downcast="float", errors="coerce")
 
     return df
 
 
-def process_detail_conso_indicateur(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
-    max_num = max(
-        [
-            int(key.replace("nomIndicateur", ""))
-            for key in raw_data[0]
-            if key.startswith("nomIndicateur") and key.replace("nomIndicateur", "").isdigit()
-        ]
+def process_detail_conso_indicateur(df: pd.DataFrame) -> pd.DataFrame:
+    df = pd.json_normalize(data=df["detail"].tolist())
+
+    # Renommer les colonnes
+    colnames_mapping = {
+        "consoId": "id_consommation",
+    }
+
+    # Récupérer les colonnes de détail et les normaliser en tant que colonnes séparées
+    df = df.loc[:, ["consoId", "indicateurs"]]
+    df = df.explode(column="indicateurs", ignore_index=True)
+    df = df.join(
+        other=pd.json_normalize(data=df["indicateurs"].tolist()),
+    ).drop("indicateurs", axis=1)
+    df = df.rename(columns=colnames_mapping)
+
+    # Pivoter les colonnes pour obtenir le format souhaité
+    df = df.melt(
+        id_vars=["id_consommation"],
+        var_name="nom_indicateur",
+        value_name="valeur_indicateur",
     )
-
-    raw_data_formated = []
-    for elem in raw_data:
-        for i in range(1, max_num):
-            nom_key = f"nomIndicateur{i}"
-            valeur_key = f"valeurIndicateur{i}"
-
-            nom_indicateur = elem.get(nom_key, "").strip()
-            valeur = elem.get(valeur_key, "").strip()
-            id_consommation = elem.get("id_consommation", None)
-
-            if nom_indicateur and valeur:
-                raw_data_formated.append(
-                    {
-                        "num_indicateur": i,
-                        "nom_indicateur": nom_indicateur,
-                        "valeur_indicateur": valeur,
-                        "id_consommation": id_consommation,
-                    }
-                )
-
-    df = pd.DataFrame(data=raw_data_formated)
 
     return df

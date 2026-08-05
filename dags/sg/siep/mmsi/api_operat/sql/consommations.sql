@@ -160,21 +160,7 @@ CREATE TABLE IF NOT EXISTS siep.declaration_ademe_activite (
     refroidissement TEXT,
     logistique_de_froid TEXT,
     froid_commercial TEXT,
-    conservation_doc_collections TEXT,
-    nb_jours_occupes_mois_1 DOUBLE PRECISION,
-    nb_jours_occupes_mois_2 DOUBLE PRECISION,
-    nb_jours_occupes_mois_3 DOUBLE PRECISION,
-    nb_jours_occupes_mois_4 DOUBLE PRECISION,
-    nb_jours_occupes_mois_5 DOUBLE PRECISION,
-    nb_jours_occupes_mois_6 DOUBLE PRECISION,
-    nb_jours_occupes_mois_7 DOUBLE PRECISION,
-    nb_jours_occupes_mois_8 DOUBLE PRECISION,
-    nb_jours_occupes_mois_9 DOUBLE PRECISION,
-    nb_jours_occupes_mois_10 DOUBLE PRECISION,
-    nb_jours_occupes_mois_11 DOUBLE PRECISION,
-    nb_jours_occupes_mois_12 DOUBLE PRECISION,
-    nb_jours_occupes_mois_13 DOUBLE PRECISION,
-    total_nb_jours_occupes DOUBLE PRECISION
+    conservation_doc_collections TEXT
 );
 
 
