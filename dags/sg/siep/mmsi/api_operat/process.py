@@ -274,4 +274,7 @@ def process_detail_conso_indicateur(df: pd.DataFrame) -> pd.DataFrame:
         value_name="valeur_indicateur",
     )
 
+    df["valeur_indicateur"] = df["valeur_indicateur"].str.replace(",", ".")
+    df["valeur_indicateur"] = pd.to_numeric(arg=df["valeur_indicateur"], errors="coerce")
+
     return df
