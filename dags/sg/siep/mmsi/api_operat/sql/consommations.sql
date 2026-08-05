@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS siep.declaration_ademe_detail;
-CREATE TABLE IF NOT EXISTS siep.declaration_ademe_detail (
+DROP TABLE IF EXISTS siep.ademe_declaration_detail;
+CREATE TABLE IF NOT EXISTS siep.ademe_declaration_detail (
     id SERIAL PRIMARY KEY,
-    id_consommation INTEGER REFERENCES siep.declaration_ademe(id_consommation),
+    id_consommation INTEGER REFERENCES siep.ademe_declaration(id_consommation),
     ref_operat_efa TEXT,
     annee_declaree TEXT,
     date_debut_conso_reference DATE,
@@ -148,10 +148,10 @@ CREATE TABLE IF NOT EXISTS siep.declaration_ademe_detail (
     conservation_doc_conso_gazole_non_routier_litre DOUBLE PRECISION
 );
 
-DROP TABLE IF EXISTS siep.declaration_ademe_activite;
-CREATE TABLE IF NOT EXISTS siep.declaration_ademe_activite (
+DROP TABLE IF EXISTS siep.ademe_declaration_activite;
+CREATE TABLE IF NOT EXISTS siep.ademe_declaration_activite (
     id SERIAL PRIMARY KEY,
-    id_consommation INTEGER REFERENCES siep.declaration_ademe(id_consommation),
+    id_consommation INTEGER REFERENCES siep.ademe_declaration(id_consommation),
     sous_categorie_activite TEXT,
     surface_plancher_m2 INTEGER,
     date_debut_activite DATE,
@@ -164,10 +164,10 @@ CREATE TABLE IF NOT EXISTS siep.declaration_ademe_activite (
 );
 
 
-DROP TABLE IF EXISTS siep.declaration_ademe_indicateur;
-CREATE TABLE IF NOT EXISTS siep.declaration_ademe_indicateur (
+DROP TABLE IF EXISTS siep.ademe_declaration_indicateur;
+CREATE TABLE IF NOT EXISTS siep.ademe_declaration_indicateur (
     id SERIAL PRIMARY KEY,
-    id_consommation INTEGER REFERENCES siep.declaration_ademe(id_consommation),
+    id_consommation INTEGER REFERENCES siep.ademe_declaration(id_consommation),
     num_indicateur INTEGER,
     nom_indicateur TEXT,
     valeur_indicateur DOUBLE PRECISION

@@ -19,18 +19,6 @@ def process_declarations(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_adresse_efa(df: pd.DataFrame) -> pd.DataFrame:
-    colnames_mapping = {
-        "idOccupantEfa": "id_occupant_efa",
-        "numeroNomVoie": "numero_nom_voie",
-        "codePostal": "code_postal",
-        "commune": "commune",
-    }
-    df = df.drop_duplicates(subset=["idOccupantEfa"])
-    df = df.rename(columns=colnames_mapping)
-    return df
-
-
 def process_detail_conso(df: pd.DataFrame) -> pd.DataFrame:
     colnames_mapping = {
         "consoId": "id_consommation",

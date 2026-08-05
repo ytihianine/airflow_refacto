@@ -60,19 +60,6 @@ def output() -> None:
         ],
         export_output=True,
     )
-    adresses_efa = create_task(
-        task_config=TaskConfig(task_id="adresse_efa"),
-        input_selecteurs=["declarations"],
-        output_selecteur="adresse_efa",
-        steps=[
-            ETLStep(
-                fn=process.process_adresse_efa,
-                use_context=False,
-                read_data=True,
-            ),
-        ],
-        export_output=True,
-    )
     activite = create_task(
         task_config=TaskConfig(task_id="activite"),
         input_selecteurs=["consommations"],
@@ -115,7 +102,6 @@ def output() -> None:
 
     chain(
         declarations(),
-        adresses_efa(),
         activite(),
         indicateur(),
         detail(),
