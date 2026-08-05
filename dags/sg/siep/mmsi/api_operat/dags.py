@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from airflow.sdk import dag
 from airflow.sdk.bases.operator import chain
+from dags.sg.siep.mmsi.api_operat.config import storage_options
 from dags.sg.siep.mmsi.api_operat.task import output  # , source
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
@@ -46,11 +47,12 @@ nom_projet = "API Opera"
     on_success_callback=create_send_mail_callback(mail_status=MailStatus.SUCCESS),
 )
 def api_operat_ademe() -> None:
-    selecteur_configs = get_selecteur_config(storage_options={})
+    selecteur_configs = get_selecteur_config(storage_options=storage_options)
 
     # Ordre des tâches
     chain(
         validate_dag_parameters(),
+        selecteur_configs,
         get_projet_snapshot(nom_projet="Outil aide diagnostic"),
         # source(),
         output(),
