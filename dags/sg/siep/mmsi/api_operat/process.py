@@ -4,6 +4,10 @@ import pandas as pd
 
 
 def process_declarations(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.join(
+        other=pd.json_normalize(data=df["adresseEfa"].tolist()),
+    ).drop("adresseEfa", axis=1)
+
     colnames_mapping = {
         "idConsommation": "id_consommation",
         "anneeDeclaree": "annee_declaree",
@@ -14,6 +18,9 @@ def process_declarations(df: pd.DataFrame) -> pd.DataFrame:
         "idOccupantEfa": "id_occupant_efa",
         "idImportConsommations": "id_import_consommations",
         "statut": "statut",
+        "numeroNomVoie": "numero_nom_voie",
+        "codePostal": "code_postal",
+        "commune": "commune",
     }
     df = df.rename(columns=colnames_mapping)
 
