@@ -53,7 +53,7 @@ def api_operat_ademe() -> None:
         get_projet_snapshot(nom_projet="Outil aide diagnostic"),
         # source(),
         output(),
-        create_tmp_tables(),
+        create_tmp_tables(reset_id_seq=False),
         import_file_to_db.expand(selecteur_config=selecteur_configs),
         copy_tmp_table_to_real_table(),
         copy_s3_files(),
