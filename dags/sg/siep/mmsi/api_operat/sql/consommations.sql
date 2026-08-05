@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS siep.ademe_declaration_detail;
+DROP TABLE IF EXISTS siep.ademe_declaration_detail CASCADE;
 CREATE TABLE IF NOT EXISTS siep.ademe_declaration_detail (
-    id SERIAL PRIMARY KEY,
-    id_consommation INTEGER REFERENCES siep.ademe_declaration(id_consommation),
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    id_consommation INTEGER,
     ref_operat_efa TEXT,
     annee_declaree TEXT,
     date_debut_conso_reference DATE,
@@ -145,30 +145,46 @@ CREATE TABLE IF NOT EXISTS siep.ademe_declaration_detail (
     conservation_doc_conso_bois_buches_stere DOUBLE PRECISION,
     conservation_doc_conso_reseau_chaleur_kwh DOUBLE PRECISION,
     conservation_doc_conso_reseau_froid_kwh DOUBLE PRECISION,
-    conservation_doc_conso_gazole_non_routier_litre DOUBLE PRECISION
-);
+    conservation_doc_conso_gazole_non_routier_litre DOUBLE PRECISION,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+	snapshot_id TEXT,
+    PRIMARY KEY (id_row, import_timestamp),
+    FOREIGN KEY (id_consommation, import_timestamp) REFERENCES siep.ademe_declaration(id_consommation, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE IF EXISTS siep.ademe_declaration_activite;
+DROP TABLE IF EXISTS siep.ademe_declaration_activite CASCADE;
 CREATE TABLE IF NOT EXISTS siep.ademe_declaration_activite (
-    id SERIAL PRIMARY KEY,
-    id_consommation INTEGER REFERENCES siep.ademe_declaration(id_consommation),
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    id_consommation INTEGER,
     sous_categorie_activite TEXT,
-    surface_plancher_m2 INTEGER,
+    surface_plancher_m2 DOUBLE PRECISION,
     date_debut_activite DATE,
     date_fin_activite DATE,
     chauffage TEXT,
     refroidissement TEXT,
     logistique_de_froid TEXT,
     froid_commercial TEXT,
-    conservation_doc_collections TEXT
-);
+    conservation_doc_collections TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+	snapshot_id TEXT,
+    PRIMARY KEY (id_row, import_timestamp),
+    FOREIGN KEY (id_consommation, import_timestamp) REFERENCES siep.ademe_declaration(id_consommation, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 
-DROP TABLE IF EXISTS siep.ademe_declaration_indicateur;
+DROP TABLE IF EXISTS siep.ademe_declaration_indicateur CASCADE;
 CREATE TABLE IF NOT EXISTS siep.ademe_declaration_indicateur (
-    id SERIAL PRIMARY KEY,
-    id_consommation INTEGER REFERENCES siep.ademe_declaration(id_consommation),
-    num_indicateur INTEGER,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    id_consommation INTEGER,
+    numero_indicateur TEXT,
     nom_indicateur TEXT,
-    valeur_indicateur DOUBLE PRECISION
-);
+    numero_valeur_indicateur TEXT,
+    valeur_indicateur DOUBLE PRECISION,
+    import_timestamp TIMESTAMP NOT NULL,
+    import_date DATE NOT NULL,
+	snapshot_id TEXT,
+    PRIMARY KEY (id_row, import_timestamp),
+    FOREIGN KEY (id_consommation, import_timestamp) REFERENCES siep.ademe_declaration(id_consommation, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);

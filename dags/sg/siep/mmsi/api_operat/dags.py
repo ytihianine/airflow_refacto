@@ -11,6 +11,7 @@ from modules.common_tasks.s3 import (
 from modules.common_tasks.sql import (
     copy_tmp_table_to_real_table,
     create_tmp_tables,
+    ensure_partition,
     get_projet_snapshot,
     import_file_to_db,
 )
@@ -55,6 +56,7 @@ def api_operat_ademe() -> None:
         output(),
         create_tmp_tables(reset_id_seq=False),
         import_file_to_db.expand(selecteur_config=selecteur_configs),
+        ensure_partition.expand(selecteur_config=selecteur_configs),
         copy_tmp_table_to_real_table(),
         copy_s3_files(),
         del_s3_files(),

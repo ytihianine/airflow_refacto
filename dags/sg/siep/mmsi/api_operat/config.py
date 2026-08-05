@@ -1,3 +1,16 @@
+from modules.enums.database import LoadStrategy
+from modules.types.projet import SelecteurStorageOptions
+
+storage_options = {
+    "activite": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=1),
+    "consommations": SelecteurStorageOptions(write_to_db=False),
+    "declaration_ademe": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=0),
+    "declarations": SelecteurStorageOptions(write_to_db=False),
+    "detail": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=1),
+    "indicateur": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=1),
+}
+
+
 ID_STRUCTURES = [
     "ETAT_MIN_EF",
     # "ETAT_REG_ARA",
@@ -31,5 +44,3 @@ ID_STRUCTURES = [
     # "451930051",
     # "180053027",
 ]
-
-storage_options = {}
