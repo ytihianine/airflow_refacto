@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import Any
 from urllib.parse import urljoin
@@ -81,6 +82,7 @@ class HttpInterface(ABC):
         reraise=True,
     )
     def get(self, url: str, params: dict[str, Any] | None = None, **kwargs) -> HTTPResponse:
+        logging.info(msg=f"Making GET request to {url}.")
         return self.request(method="GET", url=url, params=params, **kwargs)
 
     @retry(
@@ -96,6 +98,7 @@ class HttpInterface(ABC):
         json: dict[str, Any] | None = None,
         **kwargs,
     ) -> HTTPResponse:
+        logging.info(msg=f"Making POST request to {url}.")
         return self.request(method="POST", url=url, data=data, json=json, **kwargs)
 
     @retry(
@@ -111,6 +114,7 @@ class HttpInterface(ABC):
         json: dict[str, Any] | None = None,
         **kwargs,
     ) -> HTTPResponse:
+        logging.info(msg=f"Making PUT request to {url}.")
         return self.request(method="PUT", url=url, data=data, json=json, **kwargs)
 
     @retry(
@@ -126,6 +130,7 @@ class HttpInterface(ABC):
         json: dict[str, Any] | None = None,
         **kwargs,
     ) -> HTTPResponse:
+        logging.info(msg=f"Making PATCH request to {url}.")
         return self.request(method="PATCH", url=url, data=data, json=json, **kwargs)
 
     @retry(
@@ -135,6 +140,7 @@ class HttpInterface(ABC):
         reraise=True,
     )
     def delete(self, url: str, **kwargs) -> HTTPResponse:
+        logging.info(msg=f"Making DELETE request to {url}.")
         return self.request(method="DELETE", url=url, **kwargs)
 
     @abstractmethod
