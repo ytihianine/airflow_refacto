@@ -7,7 +7,7 @@ from modules.constants import (
     PROXY,
 )
 from modules.infra.database.factory import create_db_handler
-from modules.infra.grist.client import GristAPI
+from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import RequestsClient
 from modules.infra.http_client.config import ClientConfig
 
@@ -192,16 +192,18 @@ def load_new_cf_cc(df_get_all_cf_cc: pd.DataFrame, df_sp: pd.DataFrame) -> None:
     # Intégrer ces lignes dans Grist
     http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
     request_client = RequestsClient(config=http_config)
-    grist_client = GristAPI(
+    grist_client = GristClient(
         http_client=request_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=Variable.get(key="grist_doc_id_cbcm"),
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get(key="grist_secret_key"),
     )
+    doc_id = Variable.get(key="grist_doc_id_cbcm")
+    if doc_id is None:
+        raise ValueError("doc_id is None. Please check the configuration.")
     grist_client.send_dataframe_to_grist(
         df=df,
-        tbl_name="Service_prescripteur",
+        doc_id=doc_id,
+        table_id="Service_prescripteur",
         rename_columns={
             "centre_cout": "Centre_de_cout",
             "centre_financier": "Centre_financier",
@@ -241,16 +243,18 @@ def load_demande_achat(df_get_demande_achat: pd.DataFrame, df_demande_achat_sp_m
     print(df.columns)
     http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
     request_client = RequestsClient(config=http_config)
-    grist_client = GristAPI(
+    grist_client = GristClient(
         http_client=request_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=Variable.get(key="grist_doc_id_cbcm"),
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get(key="grist_secret_key"),
     )
+    doc_id = Variable.get(key="grist_doc_id_cbcm")
+    if doc_id is None:
+        raise ValueError("doc_id is None. Please check the configuration.")
     grist_client.send_dataframe_to_grist(
         df=df,
-        tbl_name="Demande_achat_sp_manuel",
+        doc_id=doc_id,
+        table_id="Demande_achat_sp_manuel",
         rename_columns={
             "id_da": "id_da",
             "centre_financier": "Centre_financier",
@@ -292,16 +296,18 @@ def load_demande_paiement_complet(
     print(df.columns)
     http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
     request_client = RequestsClient(config=http_config)
-    grist_client = GristAPI(
+    grist_client = GristClient(
         http_client=request_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=Variable.get(key="grist_doc_id_cbcm"),
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get(key="grist_secret_key"),
     )
+    doc_id = Variable.get(key="grist_doc_id_cbcm")
+    if doc_id is None:
+        raise ValueError("doc_id is None. Please check the configuration.")
     grist_client.send_dataframe_to_grist(
         df=df,
-        tbl_name="Demande_paiement_sp_manuel",
+        doc_id=doc_id,
+        table_id="Demande_paiement_sp_manuel",
         rename_columns={
             "id_da": "id_da",
             "centre_financier": "Centre_financier",
@@ -340,16 +346,18 @@ def load_delai_global_paiement(
     print(df.columns)
     http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
     request_client = RequestsClient(config=http_config)
-    grist_client = GristAPI(
+    grist_client = GristClient(
         http_client=request_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=Variable.get(key="grist_doc_id_cbcm"),
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get(key="grist_secret_key"),
     )
+    doc_id = Variable.get(key="grist_doc_id_cbcm")
+    if doc_id is None:
+        raise ValueError("doc_id is None. Please check the configuration.")
     grist_client.send_dataframe_to_grist(
         df=df,
-        tbl_name="Delai_global_paiement_sp_manuel",
+        doc_id=doc_id,
+        table_id="Delai_global_paiement_sp_manuel",
         rename_columns={
             "id_da": "id_da",
             "centre_financier": "Centre_financier",
@@ -389,16 +397,18 @@ def load_engagement_juridique(
     print(df.columns)
     http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
     request_client = RequestsClient(config=http_config)
-    grist_client = GristAPI(
+    grist_client = GristClient(
         http_client=request_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=Variable.get(key="grist_doc_id_cbcm"),
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get(key="grist_secret_key"),
     )
+    doc_id = Variable.get(key="grist_doc_id_cbcm")
+    if doc_id is None:
+        raise ValueError("doc_id is None. Please check the configuration.")
     grist_client.send_dataframe_to_grist(
         df=df,
-        tbl_name="Engagement_juridique_sp_manuel",
+        doc_id=doc_id,
+        table_id="Engagement_juridique_sp_manuel",
         rename_columns={
             "id_da": "id_da",
             "centre_financier": "Centre_financier",

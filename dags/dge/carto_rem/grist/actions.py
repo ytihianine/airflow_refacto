@@ -10,7 +10,7 @@ from modules.constants import (
     PROXY,
 )
 from modules.infra.database.factory import create_db_handler
-from modules.infra.grist.client import GristAPI
+from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import RequestsClient
 from modules.infra.http_client.config import ClientConfig
 from modules.utils.config.dag_params import get_db_info, get_project_name
@@ -70,16 +70,20 @@ def load_agent(
     print(df.columns)
     http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
     request_client = RequestsClient(config=http_config)
-    grist_client = GristAPI(
+    grist_client = GristClient(
         http_client=request_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=grist_doc_info.id_source,
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get(key="grist_secret_key"),
     )
+    doc_id = grist_doc_info.id_source
+    if doc_id is None:
+        raise ValueError(
+            f"doc_id is None for selecteur {grist_doc_selecteur} in project {nom_projet}. Please check the configuration."
+        )
     grist_client.send_dataframe_to_grist(
         df=df,
-        tbl_name="Agent",
+        doc_id=doc_id,
+        table_id="Agent",
         rename_columns={
             "matricule_agent": "Matricule_agent",
             "nom_usuel": "Nom_usuel",

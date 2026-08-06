@@ -301,19 +301,13 @@ Client spécialisé pour interagir avec l'API Grist.
 
 ### Classe principale
 
-#### `GristAPI`
-Client pour les opérations Grist :
-- `get_records()` : Récupération des enregistrements d'une table
-- `post_records()` : Insertion d'enregistrements (par batchs)
-- `put_records()` : Mise à jour d'enregistrements
-- `patch_records()` : Mise à jour partielle d'enregistrements
-- `send_dataframe_to_grist()` : Envoi d'un DataFrame vers une table Grist (batchs de 400 par défaut)
-- `get_df_from_records()` : Récupération des enregistrements sous forme de DataFrame
+#### `GristClient`
+Client pour les opérations Grist
 
 ### Initialisation
 
 ```python
-from modules.infra.grist.client import GristAPI
+from modules.infra.grist.client import GristClient
 from modules.infra.http_client.factory import create_http_client
 from modules.infra.http_client.config import ClientConfig
 from modules.enums.http import HttpHandlerType
@@ -321,18 +315,17 @@ from modules.enums.http import HttpHandlerType
 config = ClientConfig(timeout=30)
 http_client = create_http_client(client_type=HttpHandlerType.REQUEST, config=config)
 
-grist = GristAPI(
+grist = GristClient(
     http_client=http_client,
-    base_url="https://grist.example.com",
-    workspace_id="workspace_id",
-    doc_id="document_id",
+    grist_host="https://grist.example.com",
     api_token="your_token"
 )
 
 # Utilisation
-df = grist.get_df_from_records(tbl_name="TableName")
-grist.send_dataframe_to_grist(tbl_name="TableName", df=my_dataframe)
-grist.post_records(tbl_name="TableName", records=records_data)
+doc_id = "your_doc_id"
+df = grist.get_df_from_records(doc_id=doc_id, table_id="TableName")
+grist.send_dataframe_to_grist(doc_id=doc_id, table_id="TableName", df=my_dataframe)
+grist.post_records(doc_id=doc_id, table_id="TableName", records=records_data)
 ```
 
 ## 6. Module Mails (`infra/mails/`)

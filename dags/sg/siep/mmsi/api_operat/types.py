@@ -64,6 +64,6 @@ class ApiOperat:
         }
         headers = self.build_header()
 
-        result = api_client.post(endpoint=self.base_url + endpoint, json=body, headers=headers)
+        result = api_client.post(url=self.base_url + endpoint, json=body, headers=headers)
 
         return result.json()["token"]

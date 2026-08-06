@@ -3,7 +3,7 @@ import pandas as pd
 from airflow.models.variable import Variable
 from dags.commun.code_geographique import process
 from modules.constants import AGENT, DEFAULT_GRIST_HOST, PROXY
-from modules.infra.grist.client import GristAPI
+from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import ClientConfig, RequestsClient
 from modules.utils.logs import df_info
 
@@ -28,7 +28,7 @@ def communes() -> pd.DataFrame:
     url_communes = "/".join([BASE_URL, ID_DATASET_COMMUNE, "data", PAGE_SIZE])
     url_communes_outre_mer = "/".join([BASE_URL, ID_DATASET_COMMUNE_OUTRE_MER, "data", PAGE_SIZE])
     # Communes métropoles
-    response = api_client.get(endpoint=url_communes)
+    response = api_client.get(url=url_communes)
     raw_communes = response.json()["data"]
     df = pd.DataFrame(raw_communes)
     df_info(df=df, df_name="DF Communes - Init")
@@ -36,7 +36,7 @@ def communes() -> pd.DataFrame:
     df_info(df=df, df_name="DF Communes - Fin")
 
     # Communes outre-mers
-    response_outre_mer = api_client.get(endpoint=url_communes_outre_mer)
+    response_outre_mer = api_client.get(url=url_communes_outre_mer)
     raw_communes_outre_mer = response_outre_mer.json()["data"]
     df_outre_mer = pd.DataFrame(raw_communes_outre_mer)
     df_info(df=df_outre_mer, df_name="DF Communes outres mers - Init")
@@ -55,7 +55,7 @@ def departements() -> pd.DataFrame:
     api_client = make_httpx_client()
     # URL
     url_departement = "/".join([BASE_URL, ID_DATASET_DEPARTEMENT, "data", PAGE_SIZE])
-    response = api_client.get(endpoint=url_departement)
+    response = api_client.get(url=url_departement)
     raw_departements = response.json()["data"]
     df = pd.DataFrame(raw_departements)
     df = (
@@ -72,7 +72,7 @@ def regions() -> pd.DataFrame:
     api_client = make_httpx_client()
     # URL
     url_region = "/".join([BASE_URL, ID_DATASET_REGION, "data", PAGE_SIZE])
-    response = api_client.get(endpoint=url_region)
+    response = api_client.get(url=url_region)
     raw_regions = response.json()["data"]
     df = pd.DataFrame(raw_regions)
     df = (
@@ -88,15 +88,16 @@ def code_iso_region() -> pd.DataFrame:
     # API Client
     api_client = make_httpx_client()
     # Grist
-    grist_api = GristAPI(
+    grist_api = GristClient(
         http_client=api_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=Variable.get("grist_doc_id_data_commune"),
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get("grist_secret_key"),
     )
+    doc_id = Variable.get("grist_doc_id_data_commune")
+    if doc_id is None:
+        raise ValueError("doc_id is None. Please check the configuration.")
 
-    df = grist_api.get_df_from_records(tbl_name="Code_ISO_3166_2")
+    df = grist_api.get_df_from_records(doc_id=doc_id, table_id="Code_ISO_3166_2")
 
     df_info(df=df, df_name="DF ISO - Initial")
 
@@ -113,15 +114,16 @@ def code_iso_departement() -> pd.DataFrame:
     # API Client
     api_client = make_httpx_client()
     # Grist
-    grist_api = GristAPI(
+    grist_api = GristClient(
         http_client=api_client,
-        base_url=DEFAULT_GRIST_HOST,
-        workspace_id="dsci",
-        doc_id=Variable.get("grist_doc_id_data_commune"),
+        grist_host=DEFAULT_GRIST_HOST,
         api_token=Variable.get("grist_secret_key"),
     )
+    doc_id = Variable.get("grist_doc_id_data_commune")
+    if doc_id is None:
+        raise ValueError("doc_id is None. Please check the configuration.")
 
-    df = grist_api.get_df_from_records(tbl_name="Code_ISO_3166_2")
+    df = grist_api.get_df_from_records(doc_id=doc_id, table_id="Code_ISO_3166_2")
 
     df_info(df=df, df_name="DF ISO - Initial")
 
@@ -139,7 +141,7 @@ def region_geojson() -> pd.DataFrame:
     http_client = make_httpx_client()
     url_region_geojson = "https://raw.githubusercontent.com/gregoiredavid/france-geojson/refs/heads/master/regions-avec-outre-mer.geojson"
 
-    response = http_client.get(endpoint=url_region_geojson)
+    response = http_client.get(url=url_region_geojson)
     geojson = response.json()
 
     region_rows = []
@@ -166,7 +168,7 @@ def departement_geojson() -> pd.DataFrame:
     http_client = make_httpx_client()
     url_departement_geojson = "https://raw.githubusercontent.com/gregoiredavid/france-geojson/refs/heads/master/departements-avec-outre-mer.geojson"
 
-    response = http_client.get(endpoint=url_departement_geojson)
+    response = http_client.get(url=url_departement_geojson)
     geojson = response.json()
 
     departement_rows = []

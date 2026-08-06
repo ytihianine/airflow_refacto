@@ -13,7 +13,7 @@ from modules.infra.http_client.adapters import ClientConfig, HttpxClient
 def get_liste_declarations(api_client: HttpxClient, api_operat: ApiOperat, token: str) -> dict:
     route = api_operat.base_url + api_operat.endpoint_consommations
 
-    result = api_client.get(endpoint=route, headers=api_operat.build_header(token=token))
+    result = api_client.get(url=route, headers=api_operat.build_header(token=token))
     try:
         return result.json()
     except Exception:
@@ -24,7 +24,7 @@ def get_consommation_by_id(api_client: HttpxClient, api_operat: ApiOperat, token
     route = api_operat.base_url + api_operat.endpoint_consommation_by_id + id_consommation
     headers = api_operat.build_header(token=token)
 
-    result = api_client.get(endpoint=route, headers=headers)
+    result = api_client.get(url=route, headers=headers)
     return result.json()
 
 

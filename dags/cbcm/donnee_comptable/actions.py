@@ -9,7 +9,7 @@ from modules.constants import (
     PROXY,
 )
 from modules.infra.database.factory import create_db_handler
-from modules.infra.grist.client import GristAPI
+from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import RequestsClient
 from modules.infra.http_client.config import ClientConfig
 
@@ -67,15 +67,16 @@ def load_new_sp(
 
         http_config = ClientConfig(proxy=PROXY, user_agent=AGENT)
         request_client = RequestsClient(config=http_config)
-        grist_client = GristAPI(
+        grist_client = GristClient(
             http_client=request_client,
-            base_url=DEFAULT_GRIST_HOST,
-            workspace_id="dsci",
-            doc_id=Variable.get(key="grist_doc_id_cbcm"),
+            grist_host=DEFAULT_GRIST_HOST,
             api_token=Variable.get(key="grist_secret_key"),
         )
         try:
-            grist_client.post_records(tbl_name="Service_prescripteur", json=data)
+            doc_id = Variable.get(key="grist_doc_id_cbcm")
+            if doc_id is None:
+                raise ValueError("doc_id is None. Please check the configuration.")
+            grist_client.update_records(doc_id=doc_id, table_id="Service_prescripteur", json=data)
         except Exception:
             logging.info(msg="Les nouveaux couples à ajouter existent déjà dans Grist !!")
     else:

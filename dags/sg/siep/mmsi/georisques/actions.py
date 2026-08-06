@@ -97,7 +97,7 @@ def get_risque(http_client: HttpInterface, url: str, query_param: str) -> HTTPRe
         HTTPResponse ou None en cas d'échec après tous les retries
     """
     full_url = f"{url}?{query_param}"
-    response = http_client.get(endpoint=full_url, timeout=180, check_response_statut=False)
+    response = http_client.get(url=full_url, timeout=180, check_response_statut=False)
 
     # Return response if successful (200) or non-retryable error
     if response and response.status_code == 200:
