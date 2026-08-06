@@ -21,7 +21,7 @@ class ConcreteHttpClient(HttpInterface):
     def request(
         self,
         method: str,
-        endpoint: str,
+        url: str,
         params: dict[str, Any] | None = None,
         data: Any | None = None,
         json: dict[str, Any] | None = None,
@@ -32,7 +32,7 @@ class ConcreteHttpClient(HttpInterface):
     ) -> HTTPResponse:
         self.last_call = {
             "method": method,
-            "endpoint": endpoint,
+            "url": url,
             "params": params,
             "data": data,
             "json": json,

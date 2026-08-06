@@ -62,7 +62,7 @@ class HttpInterface(ABC):
     def request(
         self,
         method: str,
-        endpoint: str,
+        url: str,
         params: dict[str, Any] | None = None,
         data: Any | None = None,
         json: dict[str, Any] | None = None,
@@ -80,8 +80,8 @@ class HttpInterface(ABC):
         stop=stop_after_attempt(max_attempt_number=MAX_RETRY_ATTEMPTS),
         reraise=True,
     )
-    def get(self, endpoint: str, params: dict[str, Any] | None = None, **kwargs) -> HTTPResponse:
-        return self.request("GET", endpoint, params=params, **kwargs)
+    def get(self, url: str, params: dict[str, Any] | None = None, **kwargs) -> HTTPResponse:
+        return self.request(method="GET", url=url, params=params, **kwargs)
 
     @retry(
         retry=retry_if_exception(_is_rate_limit_error),
@@ -91,12 +91,12 @@ class HttpInterface(ABC):
     )
     def post(
         self,
-        endpoint: str,
+        url: str,
         data: Any = None,
         json: dict[str, Any] | None = None,
         **kwargs,
     ) -> HTTPResponse:
-        return self.request("POST", endpoint, data=data, json=json, **kwargs)
+        return self.request(method="POST", url=url, data=data, json=json, **kwargs)
 
     @retry(
         retry=retry_if_exception(_is_rate_limit_error),
@@ -106,12 +106,12 @@ class HttpInterface(ABC):
     )
     def put(
         self,
-        endpoint: str,
+        url: str,
         data: Any = None,
         json: dict[str, Any] | None = None,
         **kwargs,
     ) -> HTTPResponse:
-        return self.request("PUT", endpoint, data=data, json=json, **kwargs)
+        return self.request(method="PUT", url=url, data=data, json=json, **kwargs)
 
     @retry(
         retry=retry_if_exception(_is_rate_limit_error),
@@ -121,12 +121,12 @@ class HttpInterface(ABC):
     )
     def patch(
         self,
-        endpoint: str,
+        url: str,
         data: Any = None,
         json: dict[str, Any] | None = None,
         **kwargs,
     ) -> HTTPResponse:
-        return self.request("PATCH", endpoint, data=data, json=json, **kwargs)
+        return self.request(method="PATCH", url=url, data=data, json=json, **kwargs)
 
     @retry(
         retry=retry_if_exception(_is_rate_limit_error),
@@ -134,8 +134,8 @@ class HttpInterface(ABC):
         stop=stop_after_attempt(MAX_RETRY_ATTEMPTS),
         reraise=True,
     )
-    def delete(self, endpoint: str, **kwargs) -> HTTPResponse:
-        return self.request("DELETE", endpoint, **kwargs)
+    def delete(self, url: str, **kwargs) -> HTTPResponse:
+        return self.request(method="DELETE", url=url, **kwargs)
 
     @abstractmethod
     def close(self) -> None:

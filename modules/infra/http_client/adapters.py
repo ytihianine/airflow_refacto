@@ -98,7 +98,7 @@ class HttpxClient(HttpInterface):
     def request(
         self,
         method: str,
-        endpoint: str,
+        url: str,
         params: dict[str, Any] | None = None,
         data: Any | None = None,
         json: dict[str, Any] | None = None,
@@ -107,7 +107,7 @@ class HttpxClient(HttpInterface):
         check_response_statut: bool = True,
         **kwargs,
     ) -> HTTPResponse:
-        url = self._build_url(endpoint)
+        url = self._build_url(url)
         self._handle_rate_limit()
 
         try:
@@ -195,7 +195,7 @@ class RequestsClient(HttpInterface):
     def request(
         self,
         method: str,
-        endpoint: str,
+        url: str,
         params: dict[str, Any] | None = None,
         data: Any | None = None,
         json: dict[str, Any] | None = None,
@@ -204,7 +204,7 @@ class RequestsClient(HttpInterface):
         check_response_statut: bool = True,
         **kwargs,
     ) -> HTTPResponse:
-        url = self._build_url(endpoint)
+        url = self._build_url(url)
 
         try:
             response = self._session.request(
