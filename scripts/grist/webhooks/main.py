@@ -1,7 +1,8 @@
 from collections.abc import Iterable, Sequence
 
-from modules.constants import custom_logger
+from modules.constants import DEFAULT_GRIST_HOST, custom_logger
 from modules.enums.http import HttpHandlerType
+from modules.infra.grist.client import GristClient
 from modules.infra.http_client.config import ClientConfig
 from modules.infra.http_client.factory import create_http_client
 from scripts.settings import get_settings
@@ -20,16 +21,10 @@ if __name__ == "__main__":
     # External clients
     http_config = ClientConfig(user_agent=settings.http.agent, proxy=settings.http.proxy)
     http_client = create_http_client(client_type=HttpHandlerType.REQUEST, config=http_config)
-    headers = {
-        "Authorization": f"Bearer {settings.grist.token}",
-        "accept": "application/json",
-    }
+    grist_client = GristClient(http_client=http_client, grist_host=DEFAULT_GRIST_HOST, api_token=settings.grist.token)
 
     # Récupérer toutes les tables du document
-    response = http_client.get(
-        endpoint=settings.grist.host + "/api/docs/" + settings.grist.doc_id + "/tables",
-        headers=headers,
-    )
+    response = grist_client.list_tables(doc_id=settings.grist.doc_id)
     tables = [table["id"] for table in response.json()["tables"]]
     custom_logger.info(msg=f"Nombre de tables dans le document: {len(tables)}")
     custom_logger.info(msg=f"Liste des tables: {tables}")
@@ -55,8 +50,4 @@ if __name__ == "__main__":
 
     custom_logger.info(msg=f"Exemple: \n{webhooks[0]}")
 
-    http_client.post(
-        endpoint=settings.grist.host + "/api/docs/" + settings.grist.doc_id + "/webhooks",
-        headers=headers | {"Content-Type": "application/json"},
-        json={"webhooks": webhooks},
-    )
+    grist_client.create_webhook(doc_id=settings.grist.doc_id, body={"webhooks": webhooks})
