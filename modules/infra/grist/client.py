@@ -185,6 +185,9 @@ class GristClient:
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def download_doc_as(self, doc_id: str, fmt: str) -> HTTPResponse:
+        _ALLOWED_FORMATS = ["xlsx", "csv", "tsv", "dsv"]
+        if fmt not in _ALLOWED_FORMATS:
+            raise ValueError(f"Invalid format '{fmt}'. Allowed formats are: {', '.join(_ALLOWED_FORMATS)}")
         url = self._build_url(self.doc_endpoint.download_doc_as(doc_id=doc_id, format=fmt))
         return self.http_client.get(url=url, headers=self._build_headers())
 
