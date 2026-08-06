@@ -16,8 +16,6 @@ from modules.infra.grist.endpoints import (
 from modules.infra.http_client.base import HttpInterface
 from modules.infra.http_client.types import HTTPResponse
 
-logger = logging.getLogger(__name__)
-
 
 @dataclass(frozen=True)
 class GristClient:
@@ -240,18 +238,19 @@ class GristClient:
         records = payload["records"]
         total = len(records)
         total_batches = (total + batch_size - 1) // batch_size
-        logger.info(f"Starting upload of {total} records in {total_batches} batches...")
+        logging.info(msg=f"Starting upload of {total} records in {total_batches} batches...")
         for batch_index in range(total_batches):
             start = batch_index * batch_size
             end = start + batch_size
             batch = records[start:end]
-            logger.info(
-                f"Sending batch {batch_index + 1}/{total_batches} " f"({len(batch)} records, indexes {start}-{end - 1})"
+            logging.info(
+                msg=f"Sending batch {batch_index + 1}/{total_batches} "
+                f"({len(batch)} records, indexes {start}-{end - 1})"
             )
             batch_payload = {"records": batch}
             self.http_client.post(url=url, headers=headers, json=batch_payload)
-            logger.info(f"Batch {batch_index + 1}/{total_batches} completed.")
-        logger.info("All batches sent successfully.")
+            logging.info(msg=f"Batch {batch_index + 1}/{total_batches} completed.")
+        logging.info(msg="All batches sent successfully.")
 
     def update_records(
         self,
@@ -276,7 +275,7 @@ class GristClient:
         data: dict[str, Any] | None = None,
     ) -> HTTPResponse:
         url = self._build_url(self.records_endpoint.add_update_records(doc_id=doc_id, table_id=table_id))
-        logger.info(url)
+        logging.info(msg=url)
         payload = json if json is not None else data or {}
         return self.http_client.patch(url=url, headers=self._build_headers(), json=payload)
 
@@ -320,15 +319,15 @@ class GristClient:
     ) -> None:
         df_to_send = df.rename(columns=rename_columns) if rename_columns else df.copy()
         new_rows = df_to_send.to_dict(orient="records")
-        logger.info(f"Nombre de nouvelles lignes à envoyer: {len(new_rows)}")
+        logging.info(msg=f"Nombre de nouvelles lignes à envoyer: {len(new_rows)}")
         if len(new_rows) == 0:
             if skip_empty:
-                logger.info(f"Aucune nouvelle ligne à ajouter dans la table {table_id} ... Skipping")
+                logging.info(msg=f"Aucune nouvelle ligne à ajouter dans la table {table_id} ... Skipping")
                 return
             raise ValueError("DataFrame is empty. No records to send.")
         data = {"records": [{"fields": record} for record in new_rows]}
-        logger.info(f"Ajout des nouvelles lignes dans la table {table_id}")
-        logger.debug(f"Exemple: {data['records'][0]}")
+        logging.info(msg=f"Ajout des nouvelles lignes dans la table {table_id}")
+        logging.debug(msg=f"Exemple: {data['records'][0]}")
         self.add_records(
             doc_id=doc_id,
             table_id=table_id,
