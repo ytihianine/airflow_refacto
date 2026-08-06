@@ -1,21 +1,17 @@
-import logging
 from dataclasses import dataclass
 from typing import Any
 
-import pandas as pd
-
-from modules.infra.http_client.base import HttpInterface
-from modules.infra.http_client.types import HTTPResponse
 from modules.infra.grist.endpoints import (
     DocsEndpointBuilder,
     OrgsEndpointBuilder,
-    WorkspacesEndpointBuilder,
     RecordsEndpointBuilder,
-    TablesEndpointBuilder,
     SQLEndpointBuilder,
+    TablesEndpointBuilder,
     WebhooksEndpointBuilder,
+    WorkspacesEndpointBuilder,
 )
-
+from modules.infra.http_client.base import HttpInterface
+from modules.infra.http_client.types import HTTPResponse
 
 
 @dataclass(frozen=True)
@@ -127,22 +123,6 @@ class GristClient:
             headers=headers,
         )
         return response
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # def _convert_grist_to_df(self, records: dict[str, Any]) -> pd.DataFrame:
     #     results = [{"id": result["id"]} | result["fields"] for result in records["records"]]
