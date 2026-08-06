@@ -1,5 +1,8 @@
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, field
 from typing import Any
+
+import pandas as pd
 
 from modules.infra.grist.endpoints import (
     DocsEndpointBuilder,
@@ -13,373 +16,360 @@ from modules.infra.grist.endpoints import (
 from modules.infra.http_client.base import HttpInterface
 from modules.infra.http_client.types import HTTPResponse
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class GristClient:
     http_client: HttpInterface
-    base_url: str
-    workspace_id: str
-    doc_id: str
+    grist_host: str
     api_token: str
 
     # Endpoints
-    orgs_endpoint: OrgsEndpointBuilder = OrgsEndpointBuilder()
-    workspaces_endpoint: WorkspacesEndpointBuilder = WorkspacesEndpointBuilder()
-    doc_endpoint: DocsEndpointBuilder = DocsEndpointBuilder()
-    tables_endpoint: TablesEndpointBuilder = TablesEndpointBuilder()
-    records_endpoint: RecordsEndpointBuilder = RecordsEndpointBuilder()
-    sql_endpoint: SQLEndpointBuilder = SQLEndpointBuilder()
-    webhooks_endpoint: WebhooksEndpointBuilder = WebhooksEndpointBuilder()
+    orgs_endpoint: OrgsEndpointBuilder = field(default_factory=OrgsEndpointBuilder)
+    workspaces_endpoint: WorkspacesEndpointBuilder = field(default_factory=WorkspacesEndpointBuilder)
+    doc_endpoint: DocsEndpointBuilder = field(default_factory=DocsEndpointBuilder)
+    tables_endpoint: TablesEndpointBuilder = field(default_factory=TablesEndpointBuilder)
+    records_endpoint: RecordsEndpointBuilder = field(default_factory=RecordsEndpointBuilder)
+    sql_endpoint: SQLEndpointBuilder = field(default_factory=SQLEndpointBuilder)
+    webhooks_endpoint: WebhooksEndpointBuilder = field(default_factory=WebhooksEndpointBuilder)
 
-    def _build_route(self, endpoint: str) -> str:
-        """Build the full route for a given endpoint."""
-        return f"{self.base_url}/{endpoint}"
+    @property
+    def host(self) -> str:
+        return self.grist_host.rstrip("/")
+
+    def _build_url(self, endpoint: str) -> str:
+        return f"{self.host}/{endpoint.lstrip('/')}"
 
     def _build_headers(self, api_token: str | None = None) -> dict[str, str]:
-        api_token = api_token if api_token is not None else self.api_token
-
-        if api_token is None:
+        token = api_token if api_token is not None else self.api_token
+        if token is None:
             raise ValueError("API Token value must be defined at top level or at method level ! ")
-
-        headers = {
-            "Authorization": f"Bearer {api_token}",
+        return {
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
             "accept": "*/*",
         }
-
-        return headers
 
     # ==========================
     # Orgs methods
     # ==========================
     def list_orgs(self) -> HTTPResponse:
-        route = self._build_route(endpoint=self.orgs_endpoint.list_orgs())
-        headers = self._build_headers()
-
-        response = self.http_client.get(
-            endpoint=route,
-            headers=headers,
-        )
-        return response
+        url = self._build_url(self.orgs_endpoint.list_orgs())
+        return self.http_client.get(url=url, headers=self._build_headers())
 
     def get_org(self, org_id: str) -> HTTPResponse:
-        route = self._build_route(endpoint=self.orgs_endpoint.get_org(org_id=org_id))
-        headers = self._build_headers()
-
-        response = self.http_client.get(
-            endpoint=route,
-            headers=headers,
-        )
-        return response
+        url = self._build_url(self.orgs_endpoint.get_org(org_id=org_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_org(self, org_id: str, body: dict[str, Any]) -> HTTPResponse:
-        route = self._build_route(endpoint=self.orgs_endpoint.update_org(org_id=org_id))
-        headers = self._build_headers()
-
-        response = self.http_client.post(
-            endpoint=route,
-            headers=headers,
-            json=body,
-        )
-        return response
+        url = self._build_url(self.orgs_endpoint.update_org(org_id=org_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def delete_org(self, org_id: str, name: str) -> HTTPResponse:
-        route = self._build_route(endpoint=self.orgs_endpoint.delete_org(org_id=org_id, name=name))
-        headers = self._build_headers()
-
-        response = self.http_client.delete(
-            endpoint=route,
-            headers=headers,
-        )
-        return response
+        url = self._build_url(self.orgs_endpoint.delete_org(org_id=org_id, name=name))
+        return self.http_client.delete(url=url, headers=self._build_headers())
 
     def list_org_access(self, org_id: str) -> HTTPResponse:
-        route = self._build_route(endpoint=self.orgs_endpoint.list_org_access(org_id=org_id))
-        headers = self._build_headers()
-
-        response = self.http_client.get(
-            endpoint=route,
-            headers=headers,
-        )
-        return response
+        url = self._build_url(self.orgs_endpoint.list_org_access(org_id=org_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_org_access(self, org_id: str, data: dict[str, Any]) -> HTTPResponse:
-        route = self._build_route(endpoint=self.orgs_endpoint.update_org_access(org_id=org_id))
-        headers = self._build_headers()
-
-        response = self.http_client.post(
-            endpoint=route,
-            headers=headers,
-            json=data,
-        )
-        return response
+        url = self._build_url(self.orgs_endpoint.update_org_access(org_id=org_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=data)
 
     def get_org_usage(self, org_id: str) -> HTTPResponse:
-        route = self._build_route(endpoint=self.orgs_endpoint.get_org_usage(org_id=org_id))
+        url = self._build_url(self.orgs_endpoint.get_org_usage(org_id=org_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    # ==========================
+    # Workspaces methods
+    # ==========================
+    def list_workspaces(self, org_id: str) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.get_workspaces_list(org_id=org_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def create_workspace(self, org_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.create_workspace(org_id=org_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
+
+    def get_workspace(self, workspace_id: str) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.get_workspace(workspace_id=workspace_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def update_workspace(self, workspace_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.update_workspace(workspace_id=workspace_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
+
+    def delete_workspace(self, workspace_id: str) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.delete_workspace(workspace_id=workspace_id))
+        return self.http_client.delete(url=url, headers=self._build_headers())
+
+    def remove_workspace(self, workspace_id: str) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.remove_workspace(workspace_id=workspace_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def restore_workspace(self, workspace_id: str) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.restore_workspace(workspace_id=workspace_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def list_workspace_access(self, workspace_id: str) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.list_workspace_access(workspace_id=workspace_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def update_workspace_access(self, workspace_id: str, data: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.workspaces_endpoint.update_workspace_access(workspace_id=workspace_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=data)
+
+    # ==========================
+    # Docs methods
+    # ==========================
+    def create_doc(self, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.create_doc())
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
+
+    def get_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.get_doc(doc_id=doc_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def update_doc_metadata(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.update_doc_metadata(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
+
+    def delete_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.delete_doc(doc_id=doc_id))
+        return self.http_client.delete(url=url, headers=self._build_headers())
+
+    def remove_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.remove_doc(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def restore_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.restore_doc(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def move_doc(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.move_doc(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
+
+    def pin_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.pin_doc(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def unpin_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.unpin_doc(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def disable_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.disable_doc(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def enable_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.enable_doc(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
+
+    def list_doc_access(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.list_doc_access(doc_id=doc_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def update_doc_access(self, doc_id: str, data: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.update_doc_access(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=data)
+
+    def list_doc_users_for_view_as(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.list_doc_users_for_view_as(doc_id=doc_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def download_doc(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.download_doc(doc_id=doc_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def download_doc_as(self, doc_id: str, fmt: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.download_doc_as(doc_id=doc_id, format=fmt))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def download_doc_table_schema(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.doc_endpoint.download_doc_table_schema(doc_id=doc_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    # ==========================
+    # Tables methods
+    # ==========================
+    def list_tables(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(self.tables_endpoint.list_tables(doc_id=doc_id))
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def create_table(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.tables_endpoint.create_table(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
+
+    def update_table(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.tables_endpoint.update_table(doc_id=doc_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
+
+    # ==========================
+    # Records methods
+    # ==========================
+    def list_records(
+        self,
+        doc_id: str,
+        table_id: str,
+        query_params: list[str] | None = None,
+    ) -> HTTPResponse:
+        url = self._build_url(self.records_endpoint.list_records(doc_id=doc_id, table_id=table_id))
+        if query_params:
+            url = url + "?" + "&".join(query_params)
+        return self.http_client.get(url=url, headers=self._build_headers())
+
+    def add_records(
+        self,
+        doc_id: str,
+        table_id: str,
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        batch_size: int = 400,
+    ) -> None:
+        url = self._build_url(self.records_endpoint.add_records(doc_id=doc_id, table_id=table_id))
         headers = self._build_headers()
+        payload = json if json is not None else data
+        if payload is None or "records" not in payload:
+            raise ValueError("Either 'data' or 'json' must contain a 'records' list.")
+        records = payload["records"]
+        total = len(records)
+        total_batches = (total + batch_size - 1) // batch_size
+        logger.info(f"Starting upload of {total} records in {total_batches} batches...")
+        for batch_index in range(total_batches):
+            start = batch_index * batch_size
+            end = start + batch_size
+            batch = records[start:end]
+            logger.info(
+                f"Sending batch {batch_index + 1}/{total_batches} " f"({len(batch)} records, indexes {start}-{end - 1})"
+            )
+            batch_payload = {"records": batch}
+            self.http_client.post(url=url, headers=headers, json=batch_payload)
+            logger.info(f"Batch {batch_index + 1}/{total_batches} completed.")
+        logger.info("All batches sent successfully.")
 
-        response = self.http_client.get(
-            endpoint=route,
-            headers=headers,
+    def update_records(
+        self,
+        doc_id: str,
+        table_id: str,
+        query_params: list[str] | None = None,
+        data: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
+    ) -> HTTPResponse:
+        json = json or {}
+        data = data or {}
+        url = self._build_url(self.records_endpoint.update_records(doc_id=doc_id, table_id=table_id))
+        if query_params:
+            url = url + "?" + "&".join(query_params)
+        return self.http_client.put(url=url, headers=self._build_headers(), data=data, json=json)
+
+    def add_update_records(
+        self,
+        doc_id: str,
+        table_id: str,
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> HTTPResponse:
+        url = self._build_url(self.records_endpoint.add_update_records(doc_id=doc_id, table_id=table_id))
+        logger.info(url)
+        payload = json if json is not None else data or {}
+        return self.http_client.patch(url=url, headers=self._build_headers(), json=payload)
+
+    def delete_records(
+        self,
+        doc_id: str,
+        table_id: str,
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> HTTPResponse:
+        url = self._build_url(self.records_endpoint.delete_records(doc_id=doc_id, table_id=table_id))
+        payload = json if json is not None else data
+        return self.http_client.post(url=url, headers=self._build_headers(), json=payload)
+
+    def get_df_from_records(
+        self,
+        doc_id: str,
+        table_id: str,
+        query_params: list[str] | None = None,
+    ) -> pd.DataFrame:
+        response = self.list_records(doc_id=doc_id, table_id=table_id, query_params=query_params)
+        raw_data = response.json() if isinstance(response, HTTPResponse) else response
+        if not isinstance(raw_data, dict):
+            raise ValueError("The response from Grist is not a dictionary!")
+        return self._convert_grist_to_df(raw_data)
+
+    def _convert_grist_to_df(self, records: dict[str, Any]) -> pd.DataFrame:
+        results = [{"id": result["id"]} | result["fields"] for result in records["records"]]
+        if len(results) == 0:
+            raise ValueError("No data was provided. records['records'] is empty.")
+        return pd.DataFrame(data=results)  # type: ignore
+
+    def send_dataframe_to_grist(
+        self,
+        df: pd.DataFrame,
+        doc_id: str,
+        table_id: str,
+        rename_columns: dict[str, str] | None = None,
+        batch_size: int = 400,
+        skip_empty: bool = True,
+    ) -> None:
+        df_to_send = df.rename(columns=rename_columns) if rename_columns else df.copy()
+        new_rows = df_to_send.to_dict(orient="records")
+        logger.info(f"Nombre de nouvelles lignes à envoyer: {len(new_rows)}")
+        if len(new_rows) == 0:
+            if skip_empty:
+                logger.info(f"Aucune nouvelle ligne à ajouter dans la table {table_id} ... Skipping")
+                return
+            raise ValueError("DataFrame is empty. No records to send.")
+        data = {"records": [{"fields": record} for record in new_rows]}
+        logger.info(f"Ajout des nouvelles lignes dans la table {table_id}")
+        logger.debug(f"Exemple: {data['records'][0]}")
+        self.add_records(
+            doc_id=doc_id,
+            table_id=table_id,
+            json=data,
+            batch_size=batch_size,
         )
-        return response
 
-    # def _convert_grist_to_df(self, records: dict[str, Any]) -> pd.DataFrame:
-    #     results = [{"id": result["id"]} | result["fields"] for result in records["records"]]
+    # ==========================
+    # Webhooks methods
+    # ==========================
+    def list_webhooks(self, doc_id_for_call: str) -> HTTPResponse:
+        url = self._build_url(self.webhooks_endpoint.list_webhooks(doc_id=doc_id_for_call))
+        return self.http_client.get(url=url, headers=self._build_headers())
 
-    #     if len(results) == 0:
-    #         raise ValueError("No data was provided. records['records'] is empty.")
+    def create_webhook(self, doc_id_for_call: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.webhooks_endpoint.create_webhook(doc_id=doc_id_for_call))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
-    #     colonnes = [key for key, value in results[0].items()]
-    #     df = pd.DataFrame(data=results, columns=colonnes)  # type: ignore
-    #     return df
+    def update_webhook(self, doc_id_for_call: str, webhook_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.webhooks_endpoint.update_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
-    # def send_dataframe_to_grist(
-    #     self,
-    #     df: pd.DataFrame,
-    #     tbl_name: str,
-    #     rename_columns: dict[str, str] | None = None,
-    #     batch_size: int = 400,
-    #     skip_empty: bool = True,
-    #     base_url: str | None = None,
-    #     doc_id: str | None = None,
-    #     api_token: str | None = None,
-    # ) -> None:
-    #     """Send a pandas DataFrame to a Grist table.
+    def delete_webhook(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
+        url = self._build_url(self.webhooks_endpoint.delete_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id))
+        return self.http_client.delete(url=url, headers=self._build_headers())
 
-    #     Args:
-    #         df (pd.DataFrame): DataFrame to send to Grist
-    #         tbl_name (str): Name of the Grist table
-    #         rename_columns (dict[str, str], optional): Mapping to rename DataFrame columns before sending. Defaults to None.
-    #         base_url (str, optional): Grist base URL. Defaults to None (uses instance default).
-    #         doc_id (str, optional): Grist document ID. Defaults to None (uses instance default).
-    #         api_token (str, optional): API token for authentication. Defaults to None (uses instance default).
-    #         batch_size (int, optional): Number of records per batch. Defaults to 400.
-    #         skip_empty (bool, optional): Skip sending if DataFrame is empty. Defaults to True.
+    def clear_webhook_doc_queue(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
+        url = self._build_url(
+            self.webhooks_endpoint.clear_webhook_doc_queue(doc_id=doc_id_for_call, webhook_id=webhook_id)
+        )
+        return self.http_client.post(url=url, headers=self._build_headers())
 
-    #     Returns:
-    #         None
+    def clear_webhook_queue(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
+        url = self._build_url(self.webhooks_endpoint.clear_webhook_queue(doc_id=doc_id_for_call, webhook_id=webhook_id))
+        return self.http_client.post(url=url, headers=self._build_headers())
 
-    #     Notes:
-    #         The DataFrame is converted to a list of records
-    #     """
-    #     # Rename columns if mapping is provided
-    #     df_to_send = df.rename(columns=rename_columns) if rename_columns else df.copy()
+    # ==========================
+    # SQL methods
+    # ==========================
+    def execute_sql(self, doc_id_for_call: str, query: str) -> HTTPResponse:
+        url = self._build_url(self.sql_endpoint.execute_sql(doc_id=doc_id_for_call))
+        body = {"query": query}
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
-    #     # Convert DataFrame to list of records
-    #     new_rows = df_to_send.to_dict(orient="records")
-    #     logging.info(msg=f"Nombre de nouvelles lignes à envoyer: {len(new_rows)}")
-
-    #     if len(new_rows) == 0:
-    #         if skip_empty:
-    #             logging.info(msg=f"Aucune nouvelle ligne à ajouter dans la table {tbl_name} ... Skipping")
-    #             return
-    #         else:
-    #             raise ValueError("DataFrame is empty. No records to send.")
-
-    #     # Prepare data in Grist format
-    #     data = {"records": [{"fields": record} for record in new_rows]}
-    #     logging.info(msg=f"Ajout des nouvelles lignes dans la table {tbl_name}")
-    #     logging.debug(msg=f"Exemple: {data['records'][0]}")
-
-    #     # Send to Grist using post_records with batching
-    #     self.post_records(
-    #         base_url=base_url,
-    #         doc_id=doc_id,
-    #         tbl_name=tbl_name,
-    #         json=data,
-    #         api_token=api_token,
-    #         batch_size=batch_size,
-    #     )
-
-    # def get_records(
-    #     self,
-    #     base_url: str | None = None,
-    #     doc_id: str | None = None,
-    #     tbl_name: str | None = None,
-    #     query_params: list[str] | None = None,
-    #     api_token: str | None = None,
-    # ) -> HTTPResponse:
-    #     """_summary_
-
-    #     Args:
-    #         base_url (str, optional): _description_. Defaults to None.
-    #         doc_id (str, optional): _description_. Defaults to None.
-    #         tbl_name (str, optional): _description_. Defaults to None.
-    #         api_token (str, optional): _description_. Defaults to None.
-
-    #     Returns:
-    #         list[dict[str, any]]: _description_
-    #     """
-    #     url = self._build_url_records(base_url=base_url, doc_id=doc_id, tbl_name=tbl_name)
-    #     if query_params is not None:
-    #         url = url + "?" + "&".join(query_params)
-    #     headers = self._build_headers(api_token=api_token)
-    #     grist_response = self.http_client.get(endpoint=url, headers=headers)
-    #     return grist_response
-
-    # def post_records(
-    #     self,
-    #     base_url: str | None = None,
-    #     doc_id: str | None = None,
-    #     tbl_name: str | None = None,
-    #     query_params: list[str] | None = None,
-    #     data: dict[str, Any] | None = None,
-    #     json: dict[str, Any] | None = None,
-    #     api_token: str | None = None,
-    #     batch_size: int = 400,
-    # ) -> None:
-    #     """_summary_
-
-    #     Args:
-    #         base_url (str, optional): _description_. Defaults to None.
-    #         doc_id (str, optional): _description_. Defaults to None.
-    #         tbl_name (str, optional): _description_. Defaults to None.
-    #         query_params (list[str], optional): _description_. Defaults to None.
-    #         json (dict[str, any], optional): _description_. Defaults to None.
-    #         api_token (str, optional): _description_. Defaults to None.
-
-    #     Returns:
-    #         _type_: _description_
-    #     """
-    #     url = self._build_url_records(base_url=base_url, doc_id=doc_id, tbl_name=tbl_name)
-    #     if query_params is not None:
-    #         url = url + "?" + "&".join(query_params)
-
-    #     headers = self._build_headers(api_token=api_token)
-
-    #     # Determine which payload is being used
-    #     payload = json if json is not None else data
-    #     if payload is None or "records" not in payload:
-    #         raise ValueError("Either 'data' or 'json' must contain a 'records' list.")
-
-    #     records = payload["records"]
-
-    #     total = len(records)
-    #     total_batches = (total + batch_size - 1) // batch_size
-
-    #     logging.info(msg=f"Starting upload of {total} records in {total_batches} batches...")
-
-    #     # Process in batches
-    #     for batch_index in range(total_batches):
-    #         start = batch_index * batch_size
-    #         end = start + batch_size
-    #         batch = records[start:end]
-
-    #         logging.info(
-    #             msg=f"Sending batch {batch_index + 1}/{total_batches} "
-    #             f"({len(batch)} records, indexes {start}-{end-1})"
-    #         )
-
-    #         batch_payload = {"records": batch}
-
-    #         response = self.http_client.post(
-    #             endpoint=url,
-    #             headers=headers,
-    #             json=batch_payload,
-    #             data=batch_payload if data is not None else None,
-    #         )
-    #         logging.info(msg=response.status_code)
-    #         logging.info(msg=f"Batch {batch_index + 1}/{total_batches} completed.")
-
-    #     logging.info(msg="All batches sent successfully.")
-
-    # def put_records(
-    #     self,
-    #     base_url: str | None = None,
-    #     doc_id: str | None = None,
-    #     tbl_name: str | None = None,
-    #     query_params: list[str] | None = None,
-    #     data: dict[str, Any] | None = None,
-    #     json: dict[str, Any] | None = None,
-    #     api_token: str | None = None,
-    # ) -> HTTPResponse:
-    #     """_summary_
-
-    #     Args:
-    #         base_url (str, optional): _description_. Defaults to None.
-    #         doc_id (str, optional): _description_. Defaults to None.
-    #         tbl_name (str, optional): _description_. Defaults to None.
-    #         api_token (str, optional): _description_. Defaults to None.
-    #     """
-    #     json = json or {}
-    #     data = data or {}
-
-    #     url = self._build_url_records(base_url=base_url, doc_id=doc_id, tbl_name=tbl_name)
-    #     if query_params is not None:
-    #         url = url + "?" + "&".join(query_params)
-
-    #     headers = self._build_headers(api_token=api_token)
-    #     grist_response = self.http_client.put(endpoint=url, headers=headers, data=data, json=json)
-
-    #     return grist_response
-
-    # def patch_records(
-    #     self,
-    #     base_url: str | None = None,
-    #     doc_id: str | None = None,
-    #     tbl_name: str | None = None,
-    #     api_token: str | None = None,
-    # ):
-    #     """_summary_
-
-    #     Args:
-    #         base_url (str, optional): _description_. Defaults to None.
-    #         doc_id (str, optional): _description_. Defaults to None.
-    #         tbl_name (str, optional): _description_. Defaults to None.
-    #         api_token (str, optional): _description_. Defaults to None.
-    #     """
-    #     url = self._build_url_records(base_url=base_url, doc_id=doc_id, tbl_name=tbl_name)
-    #     logging.info(msg=url)
-
-    # def get_df_from_records(
-    #     self,
-    #     base_url: str | None = None,
-    #     doc_id: str | None = None,
-    #     tbl_name: str | None = None,
-    #     query_params: list[str] | None = None,
-    #     api_token: str | None = None,
-    # ) -> pd.DataFrame:
-    #     """_summary_
-
-    #     Args:
-    #         query_params (list[str]): _description_
-    #         base_url (str, optional): _description_. Defaults to None.
-    #         doc_id (str, optional): _description_. Defaults to None.
-    #         tbl_name (str, optional): _description_. Defaults to None.
-    #         api_token (str, optional): _description_. Defaults to None.
-
-    #     Returns:
-    #         pd.DataFrame: _description_
-    #     """
-    #     grist_response = self.get_records(
-    #         base_url=base_url,
-    #         doc_id=doc_id,
-    #         tbl_name=tbl_name,
-    #         api_token=api_token,
-    #         query_params=query_params,
-    #     )
-
-    #     raw_data = grist_response
-    #     if isinstance(raw_data, dict):
-    #         df = self._convert_grist_to_df(records=raw_data)
-    #         return df
-    #     else:
-    #         raise ValueError("The response from Grist is not a dictionary!")
-
-    # def get_doc_sqlite_file(
-    #     self,
-    #     base_url: str | None = None,
-    #     doc_id: str | None = None,
-    #     api_token: str | None = None,
-    # ) -> bytes:
-    #     url = self._build_url_docs(base_url=base_url, doc_id=doc_id)
-    #     headers = self._build_headers(api_token=api_token)
-    #     grist_response = self.http_client.get(endpoint=url, headers=headers, params={"nohistory": True})
-    #     if grist_response is None:
-    #         raise ValueError("The response from Grist is None!")
-
-    #     if not isinstance(grist_response, HTTPResponse):
-    #         raise ValueError("The response from Grist is not a valid HTTPResponse!")
-
-    #     return grist_response.content
+    def execute_sql_with_params(self, doc_id_for_call: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(self.sql_endpoint.execute_sql_with_query_params(doc_id=doc_id_for_call))
+        return self.http_client.post(url=url, headers=self._build_headers(), json=body)
