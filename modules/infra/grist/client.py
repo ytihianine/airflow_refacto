@@ -338,46 +338,40 @@ class GristClient:
     # ==========================
     # Webhooks methods
     # ==========================
-    def list_webhooks(self, doc_id_for_call: str) -> HTTPResponse:
-        url = self._build_url(endpoint=self.webhooks_endpoint.list_webhooks(doc_id=doc_id_for_call))
+    def list_webhooks(self, doc_id: str) -> HTTPResponse:
+        url = self._build_url(endpoint=self.webhooks_endpoint.list_webhooks(doc_id=doc_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
-    def create_webhook(self, doc_id_for_call: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(endpoint=self.webhooks_endpoint.create_webhook(doc_id=doc_id_for_call))
+    def create_webhook(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(endpoint=self.webhooks_endpoint.create_webhook(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
-    def update_webhook(self, doc_id_for_call: str, webhook_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(
-            endpoint=self.webhooks_endpoint.update_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id)
-        )
+    def update_webhook(self, doc_id: str, webhook_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(endpoint=self.webhooks_endpoint.update_webhook(doc_id=doc_id, webhook_id=webhook_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
-    def delete_webhook(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
-        url = self._build_url(
-            endpoint=self.webhooks_endpoint.delete_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id)
-        )
+    def delete_webhook(self, doc_id: str, webhook_id: str) -> HTTPResponse:
+        url = self._build_url(endpoint=self.webhooks_endpoint.delete_webhook(doc_id=doc_id, webhook_id=webhook_id))
         return self.http_client.delete(url=url, headers=self._build_headers())
 
-    def clear_webhook_doc_queue(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
+    def clear_webhook_doc_queue(self, doc_id: str, webhook_id: str) -> HTTPResponse:
         url = self._build_url(
-            endpoint=self.webhooks_endpoint.clear_webhook_doc_queue(doc_id=doc_id_for_call, webhook_id=webhook_id)
+            endpoint=self.webhooks_endpoint.clear_webhook_doc_queue(doc_id=doc_id, webhook_id=webhook_id)
         )
         return self.http_client.post(url=url, headers=self._build_headers())
 
-    def clear_webhook_queue(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
-        url = self._build_url(
-            endpoint=self.webhooks_endpoint.clear_webhook_queue(doc_id=doc_id_for_call, webhook_id=webhook_id)
-        )
+    def clear_webhook_queue(self, doc_id: str, webhook_id: str) -> HTTPResponse:
+        url = self._build_url(endpoint=self.webhooks_endpoint.clear_webhook_queue(doc_id=doc_id, webhook_id=webhook_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     # ==========================
     # SQL methods
     # ==========================
-    def execute_sql(self, doc_id_for_call: str, query: str) -> HTTPResponse:
-        url = self._build_url(endpoint=self.sql_endpoint.execute_sql(doc_id=doc_id_for_call))
+    def execute_sql(self, doc_id: str, query: str) -> HTTPResponse:
+        url = self._build_url(endpoint=self.sql_endpoint.execute_sql(doc_id=doc_id))
         body = {"query": query}
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
-    def execute_sql_with_params(self, doc_id_for_call: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(endpoint=self.sql_endpoint.execute_sql_with_query_params(doc_id=doc_id_for_call))
+    def execute_sql_with_params(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
+        url = self._build_url(endpoint=self.sql_endpoint.execute_sql_with_query_params(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
