@@ -39,7 +39,7 @@ class GristClient:
         return self.grist_host.rstrip("/")
 
     def _build_url(self, endpoint: str) -> str:
-        return f"{self.host}/{endpoint.lstrip('/')}"
+        return f"{self.host}/api/{endpoint.lstrip('/')}"
 
     def _build_headers(self, api_token: str | None = None) -> dict[str, str]:
         token = api_token if api_token is not None else self.api_token
