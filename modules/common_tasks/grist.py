@@ -15,7 +15,7 @@ from modules.constants import (
 from modules.enums.dags import FeatureFlags
 from modules.enums.filesystem import FileHandlerType
 from modules.infra.file_system.factory import create_file_handler
-from modules.infra.grist.client import GristAPI
+from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import RequestsClient
 from modules.infra.http_client.config import ClientConfig
 from modules.utils.config.dag_params import get_project_name, should_skip_task
@@ -53,6 +53,11 @@ def download_grist_doc_to_s3(
     doc_id = selecteur_config.id_source
     dest_tmp_key = selecteur_config.get_full_s3_key(with_tmp_segment=True, use_id_source=False)
 
+    if doc_id is None:
+        raise ValueError(
+            f"doc_id is None for selecteur {selecteur} in project {nom_projet}. Please check the configuration."
+        )
+
     # Instanciate Grist client
     http_config = ClientConfig()
     if use_proxy:
@@ -60,11 +65,9 @@ def download_grist_doc_to_s3(
 
     request_client = RequestsClient(config=http_config)
 
-    grist_client = GristAPI(
+    grist_client = GristClient(
         http_client=request_client,
-        base_url=grist_host,
-        workspace_id=workspace_id,
-        doc_id=doc_id,
+        grist_host=grist_host,
         api_token=Variable.get(key=api_token_key),
     )
 
@@ -76,13 +79,13 @@ def download_grist_doc_to_s3(
     )
 
     # Get document data from Grist
-    grist_response = grist_client.get_doc_sqlite_file()
+    grist_response = grist_client.download_doc(doc_id=doc_id)
 
     # Export sqlite file to S3
     print(f"Exporting file to < {dest_tmp_key} >")
     s3_handler.write(
         file_path=dest_tmp_key,
-        content=grist_response,
+        content=grist_response.content,
     )
     print("✅ Export done!")
 
