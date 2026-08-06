@@ -53,159 +53,159 @@ class GristClient:
     # Orgs methods
     # ==========================
     def list_orgs(self) -> HTTPResponse:
-        url = self._build_url(self.orgs_endpoint.list_orgs())
+        url = self._build_url(endpoint=self.orgs_endpoint.list_orgs())
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def get_org(self, org_id: str) -> HTTPResponse:
-        url = self._build_url(self.orgs_endpoint.get_org(org_id=org_id))
+        url = self._build_url(endpoint=self.orgs_endpoint.get_org(org_id=org_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_org(self, org_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.orgs_endpoint.update_org(org_id=org_id))
+        url = self._build_url(endpoint=self.orgs_endpoint.update_org(org_id=org_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def delete_org(self, org_id: str, name: str) -> HTTPResponse:
-        url = self._build_url(self.orgs_endpoint.delete_org(org_id=org_id, name=name))
+        url = self._build_url(endpoint=self.orgs_endpoint.delete_org(org_id=org_id, name=name))
         return self.http_client.delete(url=url, headers=self._build_headers())
 
     def list_org_access(self, org_id: str) -> HTTPResponse:
-        url = self._build_url(self.orgs_endpoint.list_org_access(org_id=org_id))
+        url = self._build_url(endpoint=self.orgs_endpoint.list_org_access(org_id=org_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_org_access(self, org_id: str, data: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.orgs_endpoint.update_org_access(org_id=org_id))
+        url = self._build_url(endpoint=self.orgs_endpoint.update_org_access(org_id=org_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=data)
 
     def get_org_usage(self, org_id: str) -> HTTPResponse:
-        url = self._build_url(self.orgs_endpoint.get_org_usage(org_id=org_id))
+        url = self._build_url(endpoint=self.orgs_endpoint.get_org_usage(org_id=org_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     # ==========================
     # Workspaces methods
     # ==========================
     def list_workspaces(self, org_id: str) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.get_workspaces_list(org_id=org_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.get_workspaces_list(org_id=org_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def create_workspace(self, org_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.create_workspace(org_id=org_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.create_workspace(org_id=org_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def get_workspace(self, workspace_id: str) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.get_workspace(workspace_id=workspace_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.get_workspace(workspace_id=workspace_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_workspace(self, workspace_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.update_workspace(workspace_id=workspace_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.update_workspace(workspace_id=workspace_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def delete_workspace(self, workspace_id: str) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.delete_workspace(workspace_id=workspace_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.delete_workspace(workspace_id=workspace_id))
         return self.http_client.delete(url=url, headers=self._build_headers())
 
     def remove_workspace(self, workspace_id: str) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.remove_workspace(workspace_id=workspace_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.remove_workspace(workspace_id=workspace_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def restore_workspace(self, workspace_id: str) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.restore_workspace(workspace_id=workspace_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.restore_workspace(workspace_id=workspace_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def list_workspace_access(self, workspace_id: str) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.list_workspace_access(workspace_id=workspace_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.list_workspace_access(workspace_id=workspace_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_workspace_access(self, workspace_id: str, data: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.workspaces_endpoint.update_workspace_access(workspace_id=workspace_id))
+        url = self._build_url(endpoint=self.workspaces_endpoint.update_workspace_access(workspace_id=workspace_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=data)
 
     # ==========================
     # Docs methods
     # ==========================
     def create_doc(self, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.create_doc())
+        url = self._build_url(endpoint=self.doc_endpoint.create_doc())
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def get_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.get_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.get_doc(doc_id=doc_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_doc_metadata(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.update_doc_metadata(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.update_doc_metadata(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def delete_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.delete_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.delete_doc(doc_id=doc_id))
         return self.http_client.delete(url=url, headers=self._build_headers())
 
     def remove_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.remove_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.remove_doc(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def restore_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.restore_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.restore_doc(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def move_doc(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.move_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.move_doc(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def pin_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.pin_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.pin_doc(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def unpin_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.unpin_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.unpin_doc(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def disable_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.disable_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.disable_doc(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def enable_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.enable_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.enable_doc(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def list_doc_access(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.list_doc_access(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.list_doc_access(doc_id=doc_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def update_doc_access(self, doc_id: str, data: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.update_doc_access(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.update_doc_access(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=data)
 
     def list_doc_users_for_view_as(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.list_doc_users_for_view_as(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.list_doc_users_for_view_as(doc_id=doc_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def download_doc(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.download_doc(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.download_doc(doc_id=doc_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def download_doc_as(self, doc_id: str, fmt: str) -> HTTPResponse:
         _ALLOWED_FORMATS = ["xlsx", "csv", "tsv", "dsv"]
         if fmt not in _ALLOWED_FORMATS:
             raise ValueError(f"Invalid format '{fmt}'. Allowed formats are: {', '.join(_ALLOWED_FORMATS)}")
-        url = self._build_url(self.doc_endpoint.download_doc_as(doc_id=doc_id, format=fmt))
+        url = self._build_url(endpoint=self.doc_endpoint.download_doc_as(doc_id=doc_id, format=fmt))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def download_doc_table_schema(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.doc_endpoint.download_doc_table_schema(doc_id=doc_id))
+        url = self._build_url(endpoint=self.doc_endpoint.download_doc_table_schema(doc_id=doc_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     # ==========================
     # Tables methods
     # ==========================
     def list_tables(self, doc_id: str) -> HTTPResponse:
-        url = self._build_url(self.tables_endpoint.list_tables(doc_id=doc_id))
+        url = self._build_url(endpoint=self.tables_endpoint.list_tables(doc_id=doc_id))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def create_table(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.tables_endpoint.create_table(doc_id=doc_id))
+        url = self._build_url(endpoint=self.tables_endpoint.create_table(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def update_table(self, doc_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.tables_endpoint.update_table(doc_id=doc_id))
+        url = self._build_url(endpoint=self.tables_endpoint.update_table(doc_id=doc_id))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     # ==========================
@@ -217,7 +217,7 @@ class GristClient:
         table_id: str,
         query_params: list[str] | None = None,
     ) -> HTTPResponse:
-        url = self._build_url(self.records_endpoint.list_records(doc_id=doc_id, table_id=table_id))
+        url = self._build_url(endpoint=self.records_endpoint.list_records(doc_id=doc_id, table_id=table_id))
         if query_params:
             url = url + "?" + "&".join(query_params)
         return self.http_client.get(url=url, headers=self._build_headers())
@@ -230,7 +230,7 @@ class GristClient:
         data: dict[str, Any] | None = None,
         batch_size: int = 400,
     ) -> None:
-        url = self._build_url(self.records_endpoint.add_records(doc_id=doc_id, table_id=table_id))
+        url = self._build_url(endpoint=self.records_endpoint.add_records(doc_id=doc_id, table_id=table_id))
         headers = self._build_headers()
         payload = json if json is not None else data
         if payload is None or "records" not in payload:
@@ -262,7 +262,7 @@ class GristClient:
     ) -> HTTPResponse:
         json = json or {}
         data = data or {}
-        url = self._build_url(self.records_endpoint.update_records(doc_id=doc_id, table_id=table_id))
+        url = self._build_url(endpoint=self.records_endpoint.update_records(doc_id=doc_id, table_id=table_id))
         if query_params:
             url = url + "?" + "&".join(query_params)
         return self.http_client.put(url=url, headers=self._build_headers(), data=data, json=json)
@@ -274,7 +274,7 @@ class GristClient:
         json: dict[str, Any] | None = None,
         data: dict[str, Any] | None = None,
     ) -> HTTPResponse:
-        url = self._build_url(self.records_endpoint.add_update_records(doc_id=doc_id, table_id=table_id))
+        url = self._build_url(endpoint=self.records_endpoint.add_update_records(doc_id=doc_id, table_id=table_id))
         logging.info(msg=url)
         payload = json if json is not None else data or {}
         return self.http_client.patch(url=url, headers=self._build_headers(), json=payload)
@@ -286,7 +286,7 @@ class GristClient:
         json: dict[str, Any] | None = None,
         data: dict[str, Any] | None = None,
     ) -> HTTPResponse:
-        url = self._build_url(self.records_endpoint.delete_records(doc_id=doc_id, table_id=table_id))
+        url = self._build_url(endpoint=self.records_endpoint.delete_records(doc_id=doc_id, table_id=table_id))
         payload = json if json is not None else data
         return self.http_client.post(url=url, headers=self._build_headers(), json=payload)
 
@@ -300,7 +300,7 @@ class GristClient:
         raw_data = response.json() if isinstance(response, HTTPResponse) else response
         if not isinstance(raw_data, dict):
             raise ValueError("The response from Grist is not a dictionary!")
-        return self._convert_grist_to_df(raw_data)
+        return self._convert_grist_to_df(records=raw_data)
 
     def _convert_grist_to_df(self, records: dict[str, Any]) -> pd.DataFrame:
         results = [{"id": result["id"]} | result["fields"] for result in records["records"]]
@@ -339,39 +339,45 @@ class GristClient:
     # Webhooks methods
     # ==========================
     def list_webhooks(self, doc_id_for_call: str) -> HTTPResponse:
-        url = self._build_url(self.webhooks_endpoint.list_webhooks(doc_id=doc_id_for_call))
+        url = self._build_url(endpoint=self.webhooks_endpoint.list_webhooks(doc_id=doc_id_for_call))
         return self.http_client.get(url=url, headers=self._build_headers())
 
     def create_webhook(self, doc_id_for_call: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.webhooks_endpoint.create_webhook(doc_id=doc_id_for_call))
+        url = self._build_url(endpoint=self.webhooks_endpoint.create_webhook(doc_id=doc_id_for_call))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def update_webhook(self, doc_id_for_call: str, webhook_id: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.webhooks_endpoint.update_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id))
+        url = self._build_url(
+            endpoint=self.webhooks_endpoint.update_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id)
+        )
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def delete_webhook(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
-        url = self._build_url(self.webhooks_endpoint.delete_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id))
+        url = self._build_url(
+            endpoint=self.webhooks_endpoint.delete_webhook(doc_id=doc_id_for_call, webhook_id=webhook_id)
+        )
         return self.http_client.delete(url=url, headers=self._build_headers())
 
     def clear_webhook_doc_queue(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
         url = self._build_url(
-            self.webhooks_endpoint.clear_webhook_doc_queue(doc_id=doc_id_for_call, webhook_id=webhook_id)
+            endpoint=self.webhooks_endpoint.clear_webhook_doc_queue(doc_id=doc_id_for_call, webhook_id=webhook_id)
         )
         return self.http_client.post(url=url, headers=self._build_headers())
 
     def clear_webhook_queue(self, doc_id_for_call: str, webhook_id: str) -> HTTPResponse:
-        url = self._build_url(self.webhooks_endpoint.clear_webhook_queue(doc_id=doc_id_for_call, webhook_id=webhook_id))
+        url = self._build_url(
+            endpoint=self.webhooks_endpoint.clear_webhook_queue(doc_id=doc_id_for_call, webhook_id=webhook_id)
+        )
         return self.http_client.post(url=url, headers=self._build_headers())
 
     # ==========================
     # SQL methods
     # ==========================
     def execute_sql(self, doc_id_for_call: str, query: str) -> HTTPResponse:
-        url = self._build_url(self.sql_endpoint.execute_sql(doc_id=doc_id_for_call))
+        url = self._build_url(endpoint=self.sql_endpoint.execute_sql(doc_id=doc_id_for_call))
         body = {"query": query}
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
 
     def execute_sql_with_params(self, doc_id_for_call: str, body: dict[str, Any]) -> HTTPResponse:
-        url = self._build_url(self.sql_endpoint.execute_sql_with_query_params(doc_id=doc_id_for_call))
+        url = self._build_url(endpoint=self.sql_endpoint.execute_sql_with_query_params(doc_id=doc_id_for_call))
         return self.http_client.post(url=url, headers=self._build_headers(), json=body)
