@@ -24,5 +24,6 @@ CREATE TABLE IF NOT EXISTS siep.bien_information_complementaire (
     date_entree_occupant DATE,
     date_sortie_occupant DATE,
     import_timestamp TIMESTAMP,
-    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (code_bat_gestionnaire, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
