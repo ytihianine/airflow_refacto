@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS siep.bien_eligibilite_fcu;
 CREATE TABLE IF NOT EXISTS siep.bien_eligibilite_fcu (
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     is_eligible BOOLEAN,
     distance INT,
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_eligibilite_fcu (
     import_date DATE,
     snapshot_id TEXT,
     import_timestamp_oad TIMESTAMP,
-    PRIMARY KEY (snapshot_id, import_timestamp, code_bat_ter),
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp_oad, snapshot_id) REFERENCES siep.bien(code_bat_ter, import_timestamp, snapshot_id)
 )PARTITION BY RANGE (import_timestamp);

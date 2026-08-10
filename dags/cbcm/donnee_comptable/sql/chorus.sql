@@ -6,6 +6,7 @@ CREATE SCHEMA IF NOT EXISTS donnee_comptable;
 -- Table générée depuis: zjdp.parquet
 DROP TABLE donnee_comptable."demande_paiement_journal_pieces" CASCADE;
 CREATE TABLE donnee_comptable.demande_paiement_journal_pieces (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	annee_exercice int,
 	annee_exercice_piece_fi int,
 	num_piece_reference bigint,
@@ -22,13 +23,15 @@ CREATE TABLE donnee_comptable.demande_paiement_journal_pieces (
 	texte_de_poste text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text
+	snapshot_id text,
+	PRIMARY KEY ("id_row")
 );
 
 
 -- Table générée depuis: zdep61.parquet
 DROP TABLE donnee_comptable."demande_paiement_carte_achat" CASCADE;
 CREATE TABLE donnee_comptable.demande_paiement_carte_achat (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	num_piece_dp_carte_achat int,
 	societe text,
 	annee_exercice int,
@@ -38,12 +41,14 @@ CREATE TABLE donnee_comptable.demande_paiement_carte_achat (
 	id_dp text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text not null
+	snapshot_id text not null,
+	PRIMARY KEY ("id_row")
 );
 
 -- Table générée depuis: infdep56.parquet
 DROP TABLE donnee_comptable."delai_global_paiement" CASCADE;
 CREATE TABLE donnee_comptable.delai_global_paiement (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	id_dgp uuid,
 	societe text,
 	annee_exercice int,
@@ -61,12 +66,14 @@ CREATE TABLE donnee_comptable.delai_global_paiement (
 	mois_nombre_nom text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text
+	snapshot_id text,
+	PRIMARY KEY ("id_row")
 );
 
 -- Table générée depuis: infbud57.parquet
 DROP TABLE donnee_comptable."demande_achat" CASCADE;
 CREATE TABLE donnee_comptable.demande_achat (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	id_da int,
 	nb_id_da int,
 	unique_multi text,
@@ -84,12 +91,14 @@ CREATE TABLE donnee_comptable.demande_achat (
 	delai_traitement_classe varchar(255) NULL,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text not null
+	snapshot_id text not null,
+	PRIMARY KEY ("id_row")
 );
 
 -- Table générée depuis: infbud55.parquet
 DROP TABLE donnee_comptable."demande_paiement_flux" CASCADE;
 CREATE TABLE donnee_comptable.demande_paiement_flux (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	id_dp text,
 	num_dp_flux bigint,
 	annee_exercice int,
@@ -97,13 +106,15 @@ CREATE TABLE donnee_comptable.demande_paiement_flux (
 	dp_flux_3 text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text not null
+	snapshot_id text not null,
+	PRIMARY KEY ("id_row")
 );
 
 
 -- Table générée depuis: zsfp_suivi.parquet
 DROP TABLE donnee_comptable."demande_paiement_sfp" CASCADE;
 CREATE TABLE donnee_comptable.demande_paiement_sfp (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	num_piece_sfp int,
 	societe text,
 	annee_exercice int,
@@ -114,13 +125,15 @@ CREATE TABLE donnee_comptable.demande_paiement_sfp (
 	id_dp text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text not null
+	snapshot_id text not null,
+	PRIMARY KEY ("id_row")
 );
 
 
 -- Table générée depuis: zlisteej.parquet
 DROP TABLE donnee_comptable."engagement_juridique" CASCADE;
 CREATE TABLE donnee_comptable.engagement_juridique (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	id_ej bigint,
 	type_ej text,
 	orga text,
@@ -140,11 +153,13 @@ CREATE TABLE donnee_comptable.engagement_juridique (
 	type_ej_nom text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text
+	snapshot_id text,
+	PRIMARY KEY ("id_row")
 );
 
 DROP TABLE donnee_comptable."demande_paiement" CASCADE;
 CREATE TABLE donnee_comptable."demande_paiement" (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	id_dp text,
 	annee_exercice int,
 	societe text,
@@ -162,12 +177,14 @@ CREATE TABLE donnee_comptable."demande_paiement" (
 	nat_snat_groupe text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text
+	snapshot_id text,
+	PRIMARY KEY ("id_row")
 );
 
 -- Table construite
 DROP TABLE donnee_comptable.demande_paiement_complet CASCADE;
 CREATE TABLE donnee_comptable.demande_paiement_complet (
+	"id_row" bigint GENERATED ALWAYS AS IDENTITY,
 	id_dp text,
 	annee_exercice int,
 	societe text,
@@ -209,5 +226,6 @@ CREATE TABLE donnee_comptable.demande_paiement_complet (
 	statut_sfp text,
 	import_timestamp timestamp not null,
 	import_date date not null,
-	snapshot_id text
+	snapshot_id text,
+	PRIMARY KEY ("id_row")
 );

@@ -8,7 +8,7 @@
 */
 DROP TABLE IF EXISTS siep.facture_annuelle_unpivot CASCADE;
 CREATE TABLE IF NOT EXISTS siep.facture_annuelle_unpivot (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     annee INT,
     fluide TEXT,
@@ -17,13 +17,14 @@ CREATE TABLE IF NOT EXISTS siep.facture_annuelle_unpivot (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (snapshot_id, import_timestamp, code_bat_gestionnaire, annee, fluide, type_facture)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, annee, fluide, type_facture)
 ) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS siep.facture_annuelle_unpivot_comparaison CASCADE;
 CREATE TABLE IF NOT EXISTS siep.facture_annuelle_unpivot_comparaison (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     annee INT,
     annee_comparaison INT,
@@ -35,5 +36,6 @@ CREATE TABLE IF NOT EXISTS siep.facture_annuelle_unpivot_comparaison (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (snapshot_id, import_timestamp, code_bat_gestionnaire, annee, annee_comparaison, fluide, type_facture)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, annee, annee_comparaison, fluide, type_facture)
 ) PARTITION BY RANGE (import_timestamp);

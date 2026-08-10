@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS temporaire.tmp_bien_bacs;
 DROP TABLE IF EXISTS siep.bien_bacs;
 CREATE TABLE IF NOT EXISTS siep.bien_bacs (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     classe_gtb TEXT,
     commentaire_soumission TEXT,

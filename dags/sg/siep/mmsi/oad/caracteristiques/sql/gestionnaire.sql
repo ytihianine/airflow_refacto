@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS siep.gestionnaire;
 CREATE TABLE IF NOT EXISTS siep.gestionnaire (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_gestionnaire BIGINT NOT NULL,
     libelle_gestionnaire TEXT,
     libelle_simplifie TEXT,
@@ -13,5 +13,6 @@ CREATE TABLE IF NOT EXISTS siep.gestionnaire (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
 	snapshot_id TEXT,
-    PRIMARY KEY (code_gestionnaire, import_timestamp)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);

@@ -4,33 +4,33 @@ CREATE SCHEMA IF NOT EXISTS conf_projets;
 
 DROP TABLE IF EXISTS conf_projets."ref_direction" CASCADE;
 CREATE TABLE conf_projets."ref_direction" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_direction" int,
   "direction" text,
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_direction", "import_timestamp")
 );
 
 DROP TABLE IF EXISTS conf_projets."ref_service" CASCADE;
 CREATE TABLE conf_projets."ref_service" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_service" int,
   "id_direction" int,
   "service" text,
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_service", "import_timestamp")
 );
 
 
 DROP TABLE IF EXISTS conf_projets."projet" CASCADE;
 CREATE TABLE conf_projets."projet" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_projet" int,
   "id_direction" int,
   "id_service" int,
@@ -38,27 +38,27 @@ CREATE TABLE conf_projets."projet" (
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "import_timestamp")
 );
 
 
 DROP TABLE IF EXISTS conf_projets."projet_documentation" CASCADE;
 CREATE TABLE conf_projets."projet_documentation" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_projet" int,
   "type_documentation" text,
   "lien" text,
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "type_documentation", "import_timestamp")
 );
 
 DROP TABLE IF EXISTS conf_projets."projet_s3" CASCADE;
 CREATE TABLE conf_projets."projet_s3" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_projet" int,
   "bucket" text,
   "key" text,
@@ -66,14 +66,14 @@ CREATE TABLE conf_projets."projet_s3" (
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "import_timestamp")
 );
 
 
 DROP TABLE IF EXISTS conf_projets."projet_contact" CASCADE;
 CREATE TABLE conf_projets."projet_contact" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_contact" int,
   "id_projet" int,
   "contact_mail" text,
@@ -81,13 +81,13 @@ CREATE TABLE conf_projets."projet_contact" (
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_contact", "import_timestamp")
 );
 
 DROP TABLE IF EXISTS conf_projets."projet_selecteur" CASCADE;
 CREATE TABLE conf_projets."projet_selecteur" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_selecteur" int,
   "id_projet" int,
   "type_selecteur" text,
@@ -95,13 +95,13 @@ CREATE TABLE conf_projets."projet_selecteur" (
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
 );
 
 DROP TABLE IF EXISTS conf_projets."selecteur_source" CASCADE;
 CREATE TABLE conf_projets."selecteur_source" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_projet" int,
   "id_selecteur" int,
   "type_source" text,
@@ -109,14 +109,14 @@ CREATE TABLE conf_projets."selecteur_source" (
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
 );
 
 
 DROP TABLE IF EXISTS conf_projets."selecteur_s3" CASCADE;
 CREATE TABLE conf_projets."selecteur_s3" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_projet" int,
   "id_selecteur" int,
   "key" text,
@@ -124,28 +124,28 @@ CREATE TABLE conf_projets."selecteur_s3" (
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
 );
 
 
 DROP TABLE IF EXISTS conf_projets."selecteur_database" CASCADE;
 CREATE TABLE conf_projets."selecteur_database" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_projet" int,
   "id_selecteur" int,
   "tbl_name" text,
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
 );
 
 
 DROP TABLE IF EXISTS conf_projets."selecteur_column_mapping" CASCADE;
 CREATE TABLE conf_projets."selecteur_column_mapping" (
-  "id" serial,
+  "id_row" bigint GENERATED ALWAYS AS IDENTITY,
   "id_col_mapping" int,
   "id_projet" int,
   "id_selecteur" int,
@@ -156,7 +156,7 @@ CREATE TABLE conf_projets."selecteur_column_mapping" (
   "import_timestamp" TIMESTAMP NOT NULL,
   "import_date" DATE NOT NULL,
   "snapshot_id" TEXT,
-  PRIMARY KEY ("id"),
+  PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "id_col_mapping", "import_timestamp")
 );
 

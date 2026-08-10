@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS siep.bien_information_complementaire CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_information_complementaire (
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_site BIGINT,
     code_bat_ter BIGINT,
     code_gestionnaire BIGINT,
@@ -25,5 +26,5 @@ CREATE TABLE IF NOT EXISTS siep.bien_information_complementaire (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (snapshot_id, code_bat_gestionnaire, import_timestamp)
+    PRIMARY KEY (code_bat_gestionnaire, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

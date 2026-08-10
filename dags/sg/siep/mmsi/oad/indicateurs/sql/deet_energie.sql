@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS temporaire.tmp_bien_deet_energie_ges;
 DROP TABLE IF EXISTS siep.bien_deet_energie_ges;
 CREATE TABLE IF NOT EXISTS siep.bien_deet_energie_ges (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     bat_assujettis_deet BOOLEAN,
     deet_commentaire TEXT,
@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_deet_energie_ges (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
 	snapshot_id TEXT,
-    PRIMARY KEY (code_bat_ter, import_timestamp),
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

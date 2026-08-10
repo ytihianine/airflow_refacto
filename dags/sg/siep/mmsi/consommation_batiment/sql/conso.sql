@@ -4,7 +4,7 @@
 
 DROP TABLE IF EXISTS siep.conso_mensuelle CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_mensuelle (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     date_conso DATE NULL,
     ratio_electricite DOUBLE PRECISION,
@@ -91,14 +91,14 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire, date_conso)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, date_conso)
 ) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS siep.conso_mensuelle_brute_unpivot CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_brute_unpivot (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     annee_conso INT,
     date_conso DATE NULL,
@@ -107,14 +107,14 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_brute_unpivot (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire, date_conso, type_energie)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, date_conso, type_energie)
 ) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS siep.conso_mensuelle_corr_unpivot CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_corr_unpivot (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     annee_conso INT,
     date_conso DATE NULL,
@@ -123,8 +123,8 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_corr_unpivot (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire, date_conso, type_energie)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, date_conso, type_energie)
 ) PARTITION BY RANGE (import_timestamp);
 
 
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_corr_unpivot (
 
 DROP TABLE IF EXISTS siep.conso_annuelle CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_annuelle (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     annee INT,
     -- Elec
@@ -214,13 +214,13 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire, annee)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, annee)
 ) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_annuelle_unpivot CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_annuelle_unpivot (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     annee INT,
     fluide TEXT,
@@ -229,14 +229,14 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle_unpivot (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire, annee, fluide, type_conso)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, annee, fluide, type_conso)
 ) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS siep.conso_annuelle_unpivot_comparaison CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_annuelle_unpivot_comparaison (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     annee INT,
     annee_comparaison INT,
@@ -248,14 +248,14 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle_unpivot_comparaison (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire, annee, annee_comparaison, fluide, type_conso)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire, annee, annee_comparaison, fluide, type_conso)
 ) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS siep.conso_statut_par_fluide CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_statut_par_fluide (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     annee INT,
     code_bat_gestionnaire TEXT,
     type_fluide TEXT,
@@ -264,25 +264,25 @@ CREATE TABLE IF NOT EXISTS siep.conso_statut_par_fluide (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, annee, code_bat_gestionnaire, type_fluide)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, annee, code_bat_gestionnaire, type_fluide)
 ) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_avant_2019 CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_avant_2019 (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     statut_conso_avant_2019 BOOLEAN,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_statut_fluide_global CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_statut_fluide_global (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     statut_elec TEXT,
     statut_gaz TEXT,
@@ -292,19 +292,19 @@ CREATE TABLE IF NOT EXISTS siep.conso_statut_fluide_global (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, code_bat_gestionnaire)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS siep.conso_statut_batiment CASCADE;
 CREATE TABLE IF NOT EXISTS siep.conso_statut_batiment (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     annee INT,
     code_bat_gestionnaire TEXT,
     statut_batiment TEXT,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
     snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp),
-    UNIQUE (snapshot_id, import_timestamp, annee, code_bat_gestionnaire)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, annee, code_bat_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);

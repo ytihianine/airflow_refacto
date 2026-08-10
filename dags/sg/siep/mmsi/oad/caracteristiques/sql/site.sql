@@ -1,11 +1,12 @@
 DROP TABLE IF EXISTS siep.site;
 CREATE TABLE IF NOT EXISTS siep.site (
-	id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	code_site BIGINT NOT NULL,
 	libelle_site TEXT,
 	site_mef_hmef TEXT,
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
 	snapshot_id TEXT,
-    PRIMARY KEY (code_site, import_timestamp)
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_site)
 ) PARTITION BY RANGE (import_timestamp);

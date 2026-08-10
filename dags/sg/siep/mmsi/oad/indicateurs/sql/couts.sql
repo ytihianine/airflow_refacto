@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS temporaire.tmp_bien_couts;
 DROP TABLE IF EXISTS siep.bien_couts;
 CREATE TABLE IF NOT EXISTS siep.bien_couts (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     annee_charges_copropriete INTEGER,
     annee_charges_locatives INTEGER,
@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_couts (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
 	snapshot_id TEXT,
-    PRIMARY KEY (code_bat_ter, import_timestamp),
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

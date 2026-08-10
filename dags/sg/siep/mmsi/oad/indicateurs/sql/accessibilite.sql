@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS temporaire.tmp_bien_accessibilite;
 DROP TABLE IF EXISTS siep.bien_accessibilite;
 CREATE TABLE IF NOT EXISTS siep.bien_accessibilite (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     attestation_accessibilite BOOLEAN,
     beneficie_derogation BOOLEAN,
@@ -13,14 +13,15 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
 	snapshot_id TEXT,
-    PRIMARY KEY (code_bat_ter, import_timestamp),
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS temporaire.tmp_bien_accessibilite_detail;
 DROP TABLE IF EXISTS siep.bien_accessibilite_detail;
 CREATE TABLE IF NOT EXISTS siep.bien_accessibilite_detail (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     composant_bien TEXT NOT NULL,
     niveau TEXT NOT NULL,
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite_detail (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
 	snapshot_id TEXT,
-    PRIMARY KEY (code_bat_ter, composant_bien, niveau, import_timestamp),
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_ter, composant_bien, niveau),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

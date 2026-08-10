@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS temporaire.tmp_bien_strategie;
 DROP TABLE IF EXISTS siep.bien_strategie;
 CREATE TABLE IF NOT EXISTS siep.bien_strategie (
-    id BIGSERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     segmentation_sdir_spsi TEXT,
     segmentation_theorique_sdir_spsi TEXT,
@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_strategie (
     import_timestamp TIMESTAMP NOT NULL,
     import_date DATE NOT NULL,
 	snapshot_id TEXT,
-    PRIMARY KEY (code_bat_ter, import_timestamp),
+    PRIMARY KEY (id_row, import_timestamp),
+    UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
