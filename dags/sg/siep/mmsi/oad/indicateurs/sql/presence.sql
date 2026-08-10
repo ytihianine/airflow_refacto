@@ -8,9 +8,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_effectif (
     nb_positions_de_travail INTEGER,
     nb_postes FLOAT,
     nb_residents FLOAT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-	snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)

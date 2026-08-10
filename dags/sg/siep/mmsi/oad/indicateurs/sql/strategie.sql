@@ -8,9 +8,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_strategie (
     statut_osc TEXT,
     perimetre_spsi_initial TEXT,
     perimetre_spsi_maj TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-	snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)

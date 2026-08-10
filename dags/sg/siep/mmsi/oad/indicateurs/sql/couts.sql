@@ -23,9 +23,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_couts (
     loyer_hc_ttc_annee2 FLOAT,
     loyers_budgetaires_2018 FLOAT,
     plafond_loyer_surfacique_sub FLOAT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-	snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)

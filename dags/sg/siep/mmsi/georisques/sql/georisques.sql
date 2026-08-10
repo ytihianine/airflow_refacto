@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS siep.bien_georisque;
 CREATE TABLE IF NOT EXISTS siep.bien_georisque (
-    id SERIAL,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     risque_categorie TEXT,
     risque_libelle TEXT,
@@ -8,8 +8,6 @@ CREATE TABLE IF NOT EXISTS siep.bien_georisque (
     statut TEXT,
     statut_code INT,
     raison TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
-    PRIMARY KEY (id, import_timestamp)
+    import_timestamp TIMESTAMP,
+    PRIMARY KEY (id_row, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp) ;

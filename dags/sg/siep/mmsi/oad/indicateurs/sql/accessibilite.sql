@@ -10,9 +10,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite (
     motif_derogation TEXT,
     numero_adap TEXT,
     presence_registre_accessibilite BOOLEAN,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-	snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
@@ -27,9 +25,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite_detail (
     niveau TEXT NOT NULL,
     niveau_fonctionnel TEXT,
     niveau_reglementaire TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-	snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter, composant_bien, niveau),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)

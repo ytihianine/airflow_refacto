@@ -14,9 +14,7 @@ CREATE TABLE IF NOT EXISTS siep.ademe_declaration (
     commune TEXT,
     id_import_consommations TEXT,
     statut TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-	snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (id_consommation, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

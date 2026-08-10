@@ -21,10 +21,8 @@ CREATE TABLE IF NOT EXISTS siep.bien_eligibilite_fcu (
     api_status_code INT,
     api_raison TEXT,
     import_timestamp TIMESTAMP,
-    import_date DATE,
-    snapshot_id TEXT,
     import_timestamp_oad TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
-    FOREIGN KEY(code_bat_ter, import_timestamp_oad, snapshot_id) REFERENCES siep.bien(code_bat_ter, import_timestamp, snapshot_id)
+    FOREIGN KEY(code_bat_ter, import_timestamp_oad, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp, import_timestamp)
 )PARTITION BY RANGE (import_timestamp);

@@ -88,9 +88,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle (
     conso_presente_photovoltaique INT NOT NULL,
     conso_presente_eau INT NOT NULL,
     ligne_avec_conso BOOLEAN NOT NULL,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, date_conso)
 ) PARTITION BY RANGE (import_timestamp);
@@ -104,9 +102,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_brute_unpivot (
     date_conso DATE NULL,
     type_energie TEXT,
     conso_brute DOUBLE PRECISION,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, date_conso, type_energie)
 ) PARTITION BY RANGE (import_timestamp);
@@ -120,9 +116,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_mensuelle_corr_unpivot (
     date_conso DATE NULL,
     type_energie TEXT,
     conso_corr_dju_mmsi DOUBLE PRECISION,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, date_conso, type_energie)
 ) PARTITION BY RANGE (import_timestamp);
@@ -211,9 +205,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle (
     conso_presente_gaz_pcs INT NOT NULL,
     conso_presente_photovoltaique INT NOT NULL,
     conso_presente_eau INT NOT NULL,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, annee)
 ) PARTITION BY RANGE (import_timestamp);
@@ -226,9 +218,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle_unpivot (
     fluide TEXT,
     type_conso TEXT,
     conso DOUBLE PRECISION,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, annee, fluide, type_conso)
 ) PARTITION BY RANGE (import_timestamp);
@@ -245,9 +235,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_annuelle_unpivot_comparaison (
     conso DOUBLE PRECISION,
     conso_comparaison DOUBLE PRECISION,
     diff_vs_comparaison DOUBLE PRECISION,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, annee, annee_comparaison, fluide, type_conso)
 ) PARTITION BY RANGE (import_timestamp);
@@ -261,9 +249,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_statut_par_fluide (
     type_fluide TEXT,
     conso_presente INT,
     statut_du_fluide TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, annee, code_bat_gestionnaire, type_fluide)
 ) PARTITION BY RANGE (import_timestamp);
@@ -273,9 +259,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_avant_2019 (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_gestionnaire TEXT,
     statut_conso_avant_2019 BOOLEAN,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);
@@ -289,9 +273,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_statut_fluide_global (
     statut_reseau_chaleur TEXT,
     statut_reseau_froid TEXT,
     statut_fluide_global TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);
@@ -302,9 +284,7 @@ CREATE TABLE IF NOT EXISTS siep.conso_statut_batiment (
     annee INT,
     code_bat_gestionnaire TEXT,
     statut_batiment TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-    snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, annee, code_bat_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);

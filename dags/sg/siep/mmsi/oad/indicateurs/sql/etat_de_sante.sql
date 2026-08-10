@@ -6,9 +6,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_etat_de_sante (
     composant_bien TEXT NOT NULL,
     eds_theorique TEXT,
     eds_constate TEXT,
-    import_timestamp TIMESTAMP NOT NULL,
-    import_date DATE NOT NULL,
-	snapshot_id TEXT,
+    import_timestamp TIMESTAMP,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter, composant_bien),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
