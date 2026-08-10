@@ -57,6 +57,19 @@ bucket/niveau_1/niveau_2/niveau_3/nom_table
 Application de ces [règles](https://www.postgresql.org/docs/7.0/syntax525.htm).
 Le nom des tables doit définis avec les agents métiers.
 
+Une table doit obligatoirement contenir les colonnes et le partitionnement suivant
+
+```sql
+CREATE TABLE IF NOT EXISTS schema.table (
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    colonne_metier_1 TYPE,
+    ...
+    colonne_metier_N TYPE,
+    import_timestamp TIMESTAMP,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
+```
+
 2. Les vues
 
 Les vues suivent les même règles que les tables.
