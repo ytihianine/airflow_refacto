@@ -288,7 +288,7 @@ def update_projet_snapshot_status(
         SET is_dag_completed = TRUE
         WHERE id_projet = %(id_projet)s
         AND snapshot_id = (
-            SELECT MAX(snapshot_id) FROM versioning.snapshot WHERE id_projet = %(id_projet)s
+            SELECT MAX(import_timestamp) FROM versioning.snapshot WHERE id_projet = %(id_projet)s
         );
     """
     params = {
