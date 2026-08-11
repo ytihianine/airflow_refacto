@@ -34,7 +34,7 @@ nom_projet = "TdB interne - SIRCOM"
 # Définition du DAG
 @dag(
     dag_id="tdb_sircom",
-    schedule="*/8 8-13,14-19 * * 1-5",
+    schedule="*/15 8-13,14-19 * * 1-5",
     max_active_runs=1,
     catchup=False,
     tags=["SG", "SIRCOM", "PRODUCTION", "TABLEAU DE BORD"],
