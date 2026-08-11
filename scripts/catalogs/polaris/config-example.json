@@ -1,0 +1,8 @@
+{
+    "POLARIS_URL": "POLARIS_URL",
+    "POLARIS_REALM": "POLARIS",
+    "POLARIS_CATALOG_NAME": "data_store",
+    "POLARIS_PRINCIPAL_NAME": "data_store_trino",
+    "POLARIS_PRINCIPAL_ROLE_NAME": "data_store_user_role",
+    "POLARIS_CATALOG_ROLE_NAME": "data_store_catalog_role"
+}

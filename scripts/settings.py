@@ -47,29 +47,8 @@ class CatalogSettings(BaseSettings):
         extra="ignore",
     )
 
-    uri: str = Field(alias="CATALOG_URI", default="")
-    warehouse: str = Field(alias="CATALOG_WAREHOUSE", default="")
-    name: str = Field(alias="CATALOG_NAME", default="")
     client_id: str = Field(alias="CLIENT_ID", default="")
     client_secret: str = Field(alias="CLIENT_SECRET", default="")
-
-
-class PolarisSettings(BaseSettings):
-    """Polaris-specific settings."""
-
-    model_config = SettingsConfigDict(
-        env_file=_ENV_FILE,
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
-
-    url: str = Field(alias="POLARIS_URL", default="")
-    realm: str = Field(alias="POLARIS_REALM", default="POLARIS")
-    catalog_name: str = Field(alias="POLARIS_CATALOG_NAME", default="data_store")
-    principal_name: str = Field(alias="POLARIS_PRINCIPAL_NAME", default="data_store_trino")
-    principal_role_name: str = Field(alias="POLARIS_PRINCIPAL_ROLE_NAME", default="data_store_user_role")
-    catalog_role_name: str = Field(alias="POLARIS_CATALOG_ROLE_NAME", default="data_store_catalog_role")
-    ca_bundle: str = Field(alias="POLARIS_CA_BUNDLE", default="")
 
 
 class GristSettings(BaseSettings):
@@ -96,21 +75,9 @@ class HttpSettings(BaseSettings):
         extra="ignore",
     )
 
+    ca_bundle: str = Field(alias="CA_BUNDLE", default="")
     proxy: str = Field(alias="HTTP_PROXY_URL", default="")
     agent: str = Field(alias="HTTP_AGENT", default="")
-
-
-class LoadConfigSettings(BaseSettings):
-    """Settings for load_config script."""
-
-    model_config = SettingsConfigDict(
-        env_file=_ENV_FILE,
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
-
-    grist_db_path: str = Field(alias="GRIST_DB_PATH", default="")
-    db_schema: str = Field(alias="LOAD_CONFIG_SCHEMA", default="conf_projets")
 
 
 class LoadDatasetSettings(BaseSettings):
@@ -171,10 +138,8 @@ class ScriptsSettings(BaseSettings):
     db: DatabaseSettings = DatabaseSettings()
     s3: S3Settings = S3Settings()
     catalog: CatalogSettings = CatalogSettings()
-    polaris: PolarisSettings = PolarisSettings()
     grist: GristSettings = GristSettings()
     http: HttpSettings = HttpSettings()
-    load_config: LoadConfigSettings = LoadConfigSettings()
     load_dataset: LoadDatasetSettings = LoadDatasetSettings()
     generate_tables: GenerateTablesSettings = GenerateTablesSettings()
     s3_user: S3UserSettings = S3UserSettings()
