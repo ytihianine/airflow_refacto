@@ -65,7 +65,9 @@ CREATE TABLE IF NOT EXISTS schema.table (
     colonne_metier_1 TYPE,
     ...
     colonne_metier_N TYPE,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 ```

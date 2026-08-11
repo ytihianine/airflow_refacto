@@ -5,6 +5,7 @@ import textwrap
 from collections.abc import Mapping
 from datetime import datetime, timedelta
 from typing import Any
+from uuid import UUID, uuid4
 
 from airflow.sdk import get_current_context, task
 
@@ -80,13 +81,19 @@ def _get_table_columns(schema: str, table: str, db_handler: DBInterface) -> list
     return df.loc[:, "column_name"].tolist()
 
 
-def _create_snapshot_id(nom_projet: str, execution_date: datetime) -> None:
+def _create_snapshot_id(nom_projet: str, execution_date: datetime, nom_projet_parent: str | None = None) -> None:
     """
     Créer un snapshot_id pour un projet donné et l'insérer dans la table conf_projets.projet_snapshot.
     Une insertion est également faite dans la table versioning.snapshot_id.
     Actuellement dans une phase de migration. L'insertion dans conf_projets.projet_snapshot sera supprimée à terme
     """
-    # Insert snapshot_id into versioning.snapshot_id
+    # Init vars
+    snapshot_id = uuid4()
+    snapshot_id_parent = None
+    import_timestamp = execution_date.replace(tzinfo=None)
+    import_date = execution_date.date()
+
+    # Init hook
     db_client = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
 
     # Get project id
@@ -101,37 +108,55 @@ def _create_snapshot_id(nom_projet: str, execution_date: datetime) -> None:
     if id_projet is None:
         raise ValueError(f"No id_projet found for project {nom_projet}")
 
+    # Get parent snapshot_id
+    if nom_projet_parent is not None:
+        snapshot_id_parent = _get_snapshot_id(nom_projet=nom_projet_parent, db_handler=db_client)
+
     query = """
-        INSERT INTO versioning.snapshot (id_projet, snapshot_id, import_timestamp, import_date)
-        VALUES (%(id_projet)s, %(snapshot_id)s, %(import_timestamp)s, %(import_date)s);
+        INSERT INTO versioning.snapshot (id_projet, snapshot_id, snapshot_id_parent, import_timestamp, import_date)
+        VALUES (%(id_projet)s, %(snapshot_id)s, %(snapshot_id_parent)s, %(import_timestamp)s, %(import_date)s);
     """
     params = {
         "id_projet": id_projet,
-        "snapshot_id": execution_date.strftime(format="%Y%m%d_%H:%M:%S"),
-        "import_timestamp": execution_date.replace(tzinfo=None),
-        "import_date": execution_date.date(),
+        "snapshot_id": snapshot_id,
+        "snapshot_id_parent": snapshot_id_parent,
+        "import_timestamp": import_timestamp,
+        "import_date": import_date,
     }
     # Exécution de la requête
     db_client.execute(query, parameters=params)
 
 
-def _get_snapshot_id(nom_projet: str, db_handler: DBInterface) -> str:
-    query = """
-        SELECT snapshot_id
-        FROM conf_projets.projet_snapshot_vw
-        WHERE projet = %(nom_projet)s AND rang = 1;
+def _get_snapshot_id(
+    nom_projet: str,
+    db_handler: DBInterface,
+) -> UUID:
+    """
+    Get the latest completed snapshot for a project.
     """
 
-    # Paramètres pour la requête
+    query = """
+        SELECT s.snapshot_id
+        FROM versioning.snapshot s
+        JOIN conf_projets.projet p
+            ON p.id_projet = s.id_projet
+        WHERE p.projet = %(nom_projet)s
+          AND s.is_dag_completed = TRUE
+        ORDER BY s.import_timestamp DESC
+        LIMIT 1;
+    """
+
     params = {"nom_projet": nom_projet}
 
-    # Exécution de la requête
-    db_result = db_handler.fetch_one(query, parameters=params)
+    db_result = db_handler.fetch_one(
+        query,
+        parameters=params,
+    )
 
     if db_result is None:
-        raise ValueError(f"No db_result found for project {nom_projet}")
+        raise ValueError(f"No completed snapshot found for project {nom_projet}")
 
-    snapshot_id = db_result.get("snapshot_id", None)
+    snapshot_id = db_result.get("snapshot_id")
 
     if snapshot_id is None:
         raise ValueError(f"No snapshot_id found for project {nom_projet}")
@@ -166,7 +191,9 @@ def determine_partition_period(time_period: PartitionTimePeriod, execution_date:
 # SQL tasks
 # ------------------------------------------------------------------------------
 @task
-def create_projet_snapshot(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
+def create_projet_snapshot(
+    nom_projet_parent: str | None = None, pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context
+) -> None:
     """ """
     if should_skip_task(context=context, feature_flag=FeatureFlags.DB):
         return
@@ -177,7 +204,7 @@ def create_projet_snapshot(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context)
     # Hook
     # db_client = create_db_handler(connection_id=pg_conn_id)
 
-    _create_snapshot_id(nom_projet=nom_projet, execution_date=execution_date)
+    _create_snapshot_id(nom_projet=nom_projet, execution_date=execution_date, nom_projet_parent=nom_projet_parent)
 
 
 @task
@@ -212,7 +239,7 @@ def get_projet_snapshot(
     snapshot_id = _get_snapshot_id(nom_projet=nom_projet, db_handler=db_handler)
     logging.info(msg=f"Adding snapshot_id {snapshot_id} to context")
 
-    return snapshot_id
+    return str(snapshot_id)
 
 
 @task
