@@ -73,7 +73,8 @@ def copy_s3_files(
             continue
 
         logging.info(
-            msg=f"Processing copy to S3 for selecteur <{config.storage_info.selecteur}> with type source <{config.storage_info.type_source}> ..."
+            msg=f"Processing copy to S3 for selecteur <{config.storage_info.selecteur}> "
+            f"with type source <{config.storage_info.type_source}> ..."
         )
 
         target_key = f"{config.storage_info.s3_key}/{curr_day}/{curr_time}/{config.storage_info.filename}"
