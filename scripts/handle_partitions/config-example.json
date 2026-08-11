@@ -1,0 +1,24 @@
+{
+    "dry_run": true,
+    "schema": "schema_name",
+    "table_to_include": [],
+    "create": {
+        "enable": false,
+        "dates": [
+            "2026-01-01"
+        ]
+    },
+    "update": {
+        "enable": false,
+        "current_timestamp": "2026-04-27 18:45:00",
+        "new_timestamp": "2026-03-01 13:00:00"
+    },
+    "delete": {
+        "enable": false,
+        "dates": [
+            "2026-01-01",
+            "2025-07-01",
+            "2025-02-01"
+        ]
+    }
+}
