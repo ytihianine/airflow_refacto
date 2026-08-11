@@ -15,7 +15,7 @@ S3_ACCESS_SECRET_KEY = settings.s3.access_secret_key
 CLIENT_ID = settings.catalog.client_id
 CLIENT_SECRET = settings.catalog.client_secret
 
-ca_bundle = settings.polaris.ca_bundle
+ca_bundle = settings.http.ca_bundle
 
 
 @dataclass(frozen=True)
