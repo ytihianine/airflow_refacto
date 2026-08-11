@@ -21,11 +21,11 @@ CREATE TABLE donnee_comptable.demande_paiement_journal_pieces (
 	unique_multi text,
 	montant_poste float,
 	texte_de_poste text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 -- Table générée depuis: zdep61.parquet
@@ -39,11 +39,11 @@ CREATE TABLE donnee_comptable.demande_paiement_carte_achat (
 	niveau_carte_achat text,
 	statut_dp_carte_achat text,
 	id_dp text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text not null,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 -- Table générée depuis: infdep56.parquet
 DROP TABLE donnee_comptable."delai_global_paiement" CASCADE;
@@ -64,11 +64,11 @@ CREATE TABLE donnee_comptable.delai_global_paiement (
 	mois int,
 	mois_nom text,
 	mois_nombre_nom text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 -- Table générée depuis: infbud57.parquet
 DROP TABLE donnee_comptable."demande_achat" CASCADE;
@@ -89,11 +89,11 @@ CREATE TABLE donnee_comptable.demande_achat (
 	mois_nom text,
 	mois_nombre_nom text,
 	delai_traitement_classe varchar(255) NULL,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text not null,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 -- Table générée depuis: infbud55.parquet
 DROP TABLE donnee_comptable."demande_paiement_flux" CASCADE;
@@ -104,11 +104,11 @@ CREATE TABLE donnee_comptable.demande_paiement_flux (
 	annee_exercice int,
 	societe text,
 	dp_flux_3 text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text not null,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 -- Table générée depuis: zsfp_suivi.parquet
@@ -123,11 +123,11 @@ CREATE TABLE donnee_comptable.demande_paiement_sfp (
 	statut_sfp text,
 	automatisation_wf_cpt text,
 	id_dp text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text not null,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 -- Table générée depuis: zlisteej.parquet
@@ -151,11 +151,11 @@ CREATE TABLE donnee_comptable.engagement_juridique (
 	nb_poste_ej int,
 	unique_multi text,
 	type_ej_nom text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE donnee_comptable."demande_paiement" CASCADE;
 CREATE TABLE donnee_comptable."demande_paiement" (
@@ -175,11 +175,11 @@ CREATE TABLE donnee_comptable."demande_paiement" (
 	mois_nombre_nom text,
 	nat_snat_nom text,
 	nat_snat_groupe text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 -- Table construite
 DROP TABLE donnee_comptable.demande_paiement_complet CASCADE;
@@ -224,8 +224,8 @@ CREATE TABLE donnee_comptable.demande_paiement_complet (
 	type_flux_sfp text,
 	flux_3_automatisation_compta text,
 	statut_sfp text,
-	import_timestamp TIMESTAMP,
-	import_date date not null,
-	snapshot_id text,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
 	PRIMARY KEY ("id_row")
-);
+) PARTITION BY RANGE (import_timestamp);

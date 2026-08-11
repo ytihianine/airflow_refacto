@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS siep.gestionnaire (
     personnalite_juridique_simplifiee TEXT,
     personnalite_juridique_precision TEXT,
     ministere TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_gestionnaire)
 ) PARTITION BY RANGE (import_timestamp);

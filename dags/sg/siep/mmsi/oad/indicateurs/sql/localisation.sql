@@ -19,7 +19,9 @@ CREATE TABLE IF NOT EXISTS siep.bien_localisation (
 	code_iso_region_normalise TEXT,
 	latitude DOUBLE PRECISION,
 	longitude DOUBLE PRECISION,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)

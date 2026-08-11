@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS siep.site (
 	code_site BIGINT NOT NULL,
 	libelle_site TEXT,
 	site_mef_hmef TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_site)
 ) PARTITION BY RANGE (import_timestamp);

@@ -1,20 +1,24 @@
 CREATE SCHEMA IF NOT EXISTS commun;
 
-DROP TABLE IF EXISTS temporaire.tmp_region;
-DROP TABLE IF EXISTS commun.region;
+DROP TABLE IF EXISTS commun.region CASCADE;
 CREATE TABLE IF NOT EXISTS commun.region (
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     id SERIAL PRIMARY KEY,
     reg TEXT,
     libelle TEXT,
     ncc TEXT,
     tncc INTEGER,
     nccenr TEXT,
-    cheflieu TEXT
-);
+    cheflieu TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE IF EXISTS temporaire.tmp_departement;
-DROP TABLE IF EXISTS commun.departement;
+DROP TABLE IF EXISTS commun.departement CASCADE;
 CREATE TABLE IF NOT EXISTS commun.departement (
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     id SERIAL PRIMARY KEY,
     dep TEXT,
     reg TEXT,
@@ -22,14 +26,17 @@ CREATE TABLE IF NOT EXISTS commun.departement (
     ncc TEXT,
     tncc INTEGER,
     nccenr TEXT,
-    cheflieu TEXT
-);
+    cheflieu TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 
-DROP TABLE IF EXISTS temporaire.tmp_commune;
-DROP TABLE IF EXISTS commun.commune;
+DROP TABLE IF EXISTS commun.commune CASCADE;
 CREATE TABLE IF NOT EXISTS commun.commune (
-    id SERIAL PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     dep TEXT,
     reg TEXT,
     libelle TEXT,
@@ -41,51 +48,67 @@ CREATE TABLE IF NOT EXISTS commun.commune (
     tncc INTEGER,
     nccenr TEXT,
     typecom TEXT,
-    comparent INTEGER
-);
+    comparent INTEGER,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 
 /*
     Tables pour les Code ISO 3166-2
 */
-DROP TABLE IF EXISTS temporaire.tmp_code_iso_region;
 DROP TABLE IF EXISTS commun.code_iso_region;
 CREATE TABLE IF NOT EXISTS commun.code_iso_region (
-    id SERIAL PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     libelle TEXT,
     code_iso_3166_2 TEXT,
-    categorie_division TEXT
-);
+    categorie_division TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE IF EXISTS temporaire.tmp_code_iso_departement;
 DROP TABLE IF EXISTS commun.code_iso_departement;
 CREATE TABLE IF NOT EXISTS commun.code_iso_departement (
-    id SERIAL PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     libelle TEXT,
     code_iso_3166_2 TEXT,
-    categorie_division TEXT
-);
+    categorie_division TEXT,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 /*
     Tables avec les données GEOJSON
 */
-DROP TABLE IF EXISTS temporaire.tmp_region_geojson;
-DROP TABLE IF EXISTS commun.region_geojson;
+DROP TABLE IF EXISTS commun.region_geojson CASCADE;
 CREATE TABLE commun.region_geojson (
-    id SERIAL PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     libelle TEXT,
     type_contour TEXT,
-    coordonnees JSONB
-);
+    coordonnees JSONB,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE IF EXISTS temporaire.tmp_departement_geojson;
-DROP TABLE IF EXISTS commun.departement_geojson;
+DROP TABLE IF EXISTS commun.departement_geojson CASCADE;
 CREATE TABLE commun.departement_geojson (
-    id SERIAL PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
     libelle TEXT,
     type_contour TEXT,
-    coordonnees JSONB
-);
+    coordonnees JSONB,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY (id_row, import_timestamp)
+) PARTITION BY RANGE (import_timestamp);
 
 
 /*

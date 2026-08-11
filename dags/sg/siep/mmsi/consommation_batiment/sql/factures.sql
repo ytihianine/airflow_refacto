@@ -14,7 +14,9 @@ CREATE TABLE IF NOT EXISTS siep.facture_annuelle_unpivot (
     fluide TEXT,
     type_facture TEXT,
     montant_facture DOUBLE PRECISION,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, annee, fluide, type_facture)
 ) PARTITION BY RANGE (import_timestamp);
@@ -31,7 +33,9 @@ CREATE TABLE IF NOT EXISTS siep.facture_annuelle_unpivot_comparaison (
     montant_facture DOUBLE PRECISION,
     montant_facture_comparaison DOUBLE PRECISION,
     diff_vs_comparaison DOUBLE PRECISION,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_gestionnaire, annee, annee_comparaison, fluide, type_facture)
 ) PARTITION BY RANGE (import_timestamp);

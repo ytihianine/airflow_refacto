@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS siep.bien_bacs (
     presence_gtb BOOLEAN,
     soumis_decret_bacs BOOLEAN,
     raison_soumis_decret_bacs TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (code_bat_ter, import_timestamp),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

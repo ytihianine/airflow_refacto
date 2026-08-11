@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS cgefi.barometre;
 CREATE TABLE IF NOT EXISTS cgefi.barometre (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	denomination TEXT,
 	sigle TEXT,
 	siren TEXT,
@@ -32,19 +32,25 @@ CREATE TABLE IF NOT EXISTS cgefi.barometre (
 	date_du_retour_attendue DATE,
 	date_du_retour DATE,
 	type_rapport TEXT,
-	hors_corpus BOOLEAN
-);
+	hors_corpus BOOLEAN,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE IF NOT EXISTS cgefi.sigle_mission (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	mission_actuelle TEXT,
 	entite_de_controle TEXT,
-	sigle TEXT
-);
+	sigle TEXT,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS cgefi.organisme;
 CREATE TABLE IF NOT EXISTS cgefi.organisme (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	denomination TEXT,
 	sigle TEXT,
 	siren BIGINT,
@@ -61,33 +67,42 @@ CREATE TABLE IF NOT EXISTS cgefi.organisme (
 	type_controle TEXT,
 	autorite TEXT,
 	date_de_fin DATE,
-	hors_corpus BOOLEAN
-);
+	hors_corpus BOOLEAN,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS cgefi.organisme_cartographie;
 CREATE TABLE IF NOT EXISTS cgefi.organisme_cartographie (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	denomination TEXT,
 	sigle TEXT,
 	siren BIGINT,
 	cartographie_attendue BOOLEAN,
-	cartographie_recue BOOLEAN
-);
+	cartographie_recue BOOLEAN,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS cgefi.organisme_efc;
 CREATE TABLE IF NOT EXISTS cgefi.organisme_efc (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	denomination TEXT,
 	sigle TEXT,
 	siren BIGINT,
 	efc_attendu BOOLEAN,
 	date_efc_recu DATE,
-	efc_recu BOOLEAN
-);
+	efc_recu BOOLEAN,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS cgefi.organisme_fiche_signaletique;
 CREATE TABLE IF NOT EXISTS cgefi.organisme_fiche_signaletique (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	denomination TEXT,
 	sigle TEXT,
 	siren BIGINT,
@@ -110,24 +125,30 @@ CREATE TABLE IF NOT EXISTS cgefi.organisme_fiche_signaletique (
 	bilan BOOLEAN,
 	compte_de_resultat BOOLEAN,
 	fiche_financiere BOOLEAN,
-	fiche_signaletique BOOLEAN
-);
+	fiche_signaletique BOOLEAN,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS cgefi.organisme_rapports_annuels;
 CREATE TABLE IF NOT EXISTS cgefi.organisme_rapports_annuels (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	denomination TEXT,
 	sigle TEXT,
 	siren BIGINT,
 	type_rapport TEXT,
 	date_du_retour_attendue DATE,
 	date_du_retour DATE,
-	rapport_annuel_recu BOOLEAN
-);
+	rapport_annuel_recu BOOLEAN,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS cgefi.organisme_recommandations;
 CREATE TABLE IF NOT EXISTS cgefi.organisme_recommandations (
-	id bigserial PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
 	denomination TEXT,
 	sigle TEXT,
 	siren BIGINT,
@@ -144,5 +165,8 @@ CREATE TABLE IF NOT EXISTS cgefi.organisme_recommandations (
 	taux_avancement FLOAT,
 	finalite TEXT,
 	type_de_recommandation TEXT,
-	importance_recommandation TEXT
-);
+	importance_recommandation TEXT,
+	import_timestamp TIMESTAMP NOT NULL,
+	snapshot_id UUID NOT NULL,
+	snapshot_id_parent UUID NULL,
+) PARTITION BY RANGE (import_timestamp);

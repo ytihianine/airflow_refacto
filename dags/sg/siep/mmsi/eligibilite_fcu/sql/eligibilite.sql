@@ -20,8 +20,9 @@ CREATE TABLE IF NOT EXISTS siep.bien_eligibilite_fcu (
     api_status TEXT,
     api_status_code INT,
     api_raison TEXT,
-    import_timestamp TIMESTAMP,
-    import_timestamp_oad TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp_oad, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp, import_timestamp)

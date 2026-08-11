@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS siep.bien_deet_energie_ges (
     conso_ef_annee2 FLOAT,
     emission_ges_annee1 FLOAT,
     emission_ges_annee2 FLOAT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (import_timestamp, code_bat_ter),
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)

@@ -15,7 +15,9 @@ CREATE TABLE certificat_igc.certificat (
     supports TEXT,
     version TEXT,
     version_serveur TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY(id_row, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
@@ -27,7 +29,9 @@ CREATE TABLE certificat_igc.mandataire (
     mail TEXT,
     structure TEXT,
     date DATE,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY(id_row, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
@@ -38,6 +42,8 @@ CREATE TABLE certificat_igc.agent (
     agent_direction TEXT,
     agent_mail TEXT,
     agent_groupe_gestionnaire TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY(id_row, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

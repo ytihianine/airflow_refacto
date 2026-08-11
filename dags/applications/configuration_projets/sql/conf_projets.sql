@@ -8,11 +8,11 @@ CREATE TABLE conf_projets."ref_direction" (
   "id_direction" int,
   "direction" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_direction", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS conf_projets."ref_service" CASCADE;
 CREATE TABLE conf_projets."ref_service" (
@@ -21,11 +21,11 @@ CREATE TABLE conf_projets."ref_service" (
   "id_direction" int,
   "service" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_service", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS conf_projets."projet" CASCADE;
@@ -36,11 +36,11 @@ CREATE TABLE conf_projets."projet" (
   "id_service" int,
   "projet" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS conf_projets."projet_documentation" CASCADE;
@@ -50,11 +50,11 @@ CREATE TABLE conf_projets."projet_documentation" (
   "type_documentation" text,
   "lien" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "type_documentation", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS conf_projets."projet_s3" CASCADE;
 CREATE TABLE conf_projets."projet_s3" (
@@ -64,11 +64,11 @@ CREATE TABLE conf_projets."projet_s3" (
   "key" text,
   "key_tmp" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS conf_projets."projet_contact" CASCADE;
@@ -79,11 +79,11 @@ CREATE TABLE conf_projets."projet_contact" (
   "contact_mail" text,
   "is_mail_generic" bool,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_contact", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS conf_projets."projet_selecteur" CASCADE;
 CREATE TABLE conf_projets."projet_selecteur" (
@@ -93,11 +93,11 @@ CREATE TABLE conf_projets."projet_selecteur" (
   "type_selecteur" text,
   "selecteur" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS conf_projets."selecteur_source" CASCADE;
 CREATE TABLE conf_projets."selecteur_source" (
@@ -107,11 +107,11 @@ CREATE TABLE conf_projets."selecteur_source" (
   "type_source" text,
   "id_source" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS conf_projets."selecteur_s3" CASCADE;
@@ -122,11 +122,11 @@ CREATE TABLE conf_projets."selecteur_s3" (
   "key" text,
   "filename" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS conf_projets."selecteur_database" CASCADE;
@@ -136,11 +136,11 @@ CREATE TABLE conf_projets."selecteur_database" (
   "id_selecteur" int,
   "tbl_name" text,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 DROP TABLE IF EXISTS conf_projets."selecteur_column_mapping" CASCADE;
@@ -154,11 +154,11 @@ CREATE TABLE conf_projets."selecteur_column_mapping" (
   "to_keep" bool,
   "date_archivage" date,
   "import_timestamp" TIMESTAMP NOT NULL,
-  "import_date" DATE NOT NULL,
-  "snapshot_id" TEXT,
+  "snapshot_id" UUID NOT NULL,
+  "snapshot_id_parent" UUID NULL,
   PRIMARY KEY ("id_row"),
   UNIQUE ("id_projet", "id_selecteur", "id_col_mapping", "import_timestamp")
-);
+) PARTITION BY RANGE (import_timestamp);
 
 
 -- Vue pour get_projet_s3_info()

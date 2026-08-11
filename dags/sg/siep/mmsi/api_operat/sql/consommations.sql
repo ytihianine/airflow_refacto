@@ -146,7 +146,9 @@ CREATE TABLE IF NOT EXISTS siep.ademe_declaration_detail (
     conservation_doc_conso_reseau_chaleur_kwh DOUBLE PRECISION,
     conservation_doc_conso_reseau_froid_kwh DOUBLE PRECISION,
     conservation_doc_conso_gazole_non_routier_litre DOUBLE PRECISION,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     FOREIGN KEY (id_consommation, import_timestamp) REFERENCES siep.ademe_declaration(id_consommation, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
@@ -164,7 +166,9 @@ CREATE TABLE IF NOT EXISTS siep.ademe_declaration_activite (
     logistique_de_froid TEXT,
     froid_commercial TEXT,
     conservation_doc_collections TEXT,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     FOREIGN KEY (id_consommation, import_timestamp) REFERENCES siep.ademe_declaration(id_consommation, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
@@ -178,7 +182,9 @@ CREATE TABLE IF NOT EXISTS siep.ademe_declaration_indicateur (
     nom_indicateur TEXT,
     numero_valeur_indicateur TEXT,
     valeur_indicateur DOUBLE PRECISION,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     FOREIGN KEY (id_consommation, import_timestamp) REFERENCES siep.ademe_declaration(id_consommation, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);

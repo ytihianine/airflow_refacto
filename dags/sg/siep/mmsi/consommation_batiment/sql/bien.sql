@@ -23,7 +23,9 @@ CREATE TABLE IF NOT EXISTS siep.bien_information_complementaire (
     indicateur_resident_occ DOUBLE PRECISION,
     date_entree_occupant DATE,
     date_sortie_occupant DATE,
-    import_timestamp TIMESTAMP,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
     PRIMARY KEY (id_row, import_timestamp),
     UNIQUE (code_bat_gestionnaire, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
