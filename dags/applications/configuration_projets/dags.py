@@ -32,7 +32,7 @@ nom_projet = "Configuration des projets"
 
 @dag(
     dag_id="configuration_projets",
-    schedule="@Daily",
+    schedule="0 0 * * 1-5",
     max_consecutive_failed_dag_runs=1,
     default_args=create_default_args(),
     catchup=False,
@@ -61,7 +61,7 @@ def configuration_projets() -> None:
             selecteur="grist_doc",
             workspace_id="dsci",
         ),
-        create_projet_snapshot(),
+        create_projet_snapshot(nom_projet_parent=nom_projet),
         get_projet_snapshot(),
         process_data(),
         delete_tmp_tables(storage_options=storage_options),
