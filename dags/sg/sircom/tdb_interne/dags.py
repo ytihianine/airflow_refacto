@@ -19,6 +19,7 @@ from modules.common_tasks.sql import (
     delete_tmp_tables,
     get_projet_snapshot,
     import_file_to_db,
+    update_projet_snapshot_status,
 )
 from modules.common_tasks.validation import validate_dag_parameters
 from modules.enums.dags import DagStatus
@@ -73,6 +74,7 @@ def tdb_sircom() -> None:
         create_tmp_tables(reset_id_seq=False),
         import_file_to_db.expand(selecteur_config=selecteur_configs),
         copy_tmp_table_to_real_table(),
+        update_projet_snapshot_status(),
         delete_tmp_tables(),
     )
 
