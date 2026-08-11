@@ -110,7 +110,7 @@ def _create_snapshot_id(nom_projet: str, execution_date: datetime, nom_projet_pa
 
     # Get parent snapshot_id
     if nom_projet_parent is not None:
-        snapshot_id_parent = _get_snapshot_id(nom_projet=nom_projet_parent, db_handler=db_client)
+        snapshot_id_parent = _get_snapshot_id(nom_projet=nom_projet_parent, db_handler=db_client, dag_completed=True)
 
     query = """
         INSERT INTO versioning.snapshot (id_projet, snapshot_id, snapshot_id_parent, import_timestamp, import_date)
@@ -127,10 +127,7 @@ def _create_snapshot_id(nom_projet: str, execution_date: datetime, nom_projet_pa
     db_client.execute(query, parameters=params)
 
 
-def _get_snapshot_id(
-    nom_projet: str,
-    db_handler: DBInterface,
-) -> UUID:
+def _get_snapshot_id(nom_projet: str, db_handler: DBInterface, dag_completed: bool = False) -> UUID:
     """
     Get the latest completed snapshot for a project.
     """
@@ -141,12 +138,12 @@ def _get_snapshot_id(
         JOIN conf_projets.projet p
             ON p.id_projet = s.id_projet
         WHERE p.projet = %(nom_projet)s
-          AND s.is_dag_completed = TRUE
+          AND s.is_dag_completed = %(is_dag_completed)s
         ORDER BY s.import_timestamp DESC
         LIMIT 1;
     """
 
-    params = {"nom_projet": nom_projet}
+    params = {"nom_projet": nom_projet, "is_dag_completed": dag_completed}
 
     db_result = db_handler.fetch_one(
         query,
@@ -267,11 +264,12 @@ def update_projet_snapshot_status(
         return
 
     # Hook
-    old_db_client = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
-    db_client = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db_client = create_db_handler(connection_id=pg_conn_id)
 
-    # Get project id
-    id_projet_result = old_db_client.fetch_one(
+    # Query params
+    snapshot_id = context["ti"].xcom_pull(key="return_value", task_ids="get_projet_snapshot")
+
+    id_projet_result = db_client.fetch_one(
         query="SELECT id_projet FROM conf_projets.projet WHERE projet = %(nom_projet)s;",
         parameters={"nom_projet": nom_projet},
     )
@@ -287,12 +285,11 @@ def update_projet_snapshot_status(
         UPDATE versioning.snapshot
         SET is_dag_completed = TRUE
         WHERE id_projet = %(id_projet)s
-        AND snapshot_id = (
-            SELECT MAX(import_timestamp) FROM versioning.snapshot WHERE id_projet = %(id_projet)s
-        );
+        AND snapshot_id = %(snapshot_id)s;
     """
     params = {
         "id_projet": id_projet,
+        "snapshot_id": snapshot_id,
     }
 
     db_client.execute(query, parameters=params)
