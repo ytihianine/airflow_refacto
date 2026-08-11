@@ -13,4 +13,5 @@ storage_options = {
         write_to_db=False,
         write_to_s3=False,
     ),
+    "bien_info_complementaire": SelecteurStorageOptions(read_options={"sheet_name": 0}),
 }

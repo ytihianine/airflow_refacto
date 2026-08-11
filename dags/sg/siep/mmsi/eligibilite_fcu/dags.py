@@ -17,6 +17,7 @@ from modules.common_tasks.sql import (
     ensure_partition,
     get_projet_snapshot,
     import_file_to_db,
+    update_projet_snapshot_status,
 )
 from modules.common_tasks.validation import validate_dag_parameters
 from modules.enums.dags import DagStatus
@@ -63,6 +64,7 @@ def eligibilite_fcu_dag() -> None:
         copy_tmp_table_to_real_table(storage_options=storage_options),
         copy_s3_files(storage_options=storage_options),
         del_s3_files(storage_options=storage_options),
+        update_projet_snapshot_status(),
         delete_tmp_tables(storage_options=storage_options),
     )
 

@@ -1,7 +1,7 @@
 from airflow.sdk import task_group
 from airflow.sdk.bases.operator import chain
 from dags.sg.siep.mmsi.consommation_batiment import process
-from modules.common_tasks.etl import create_file_etl_task, create_task
+from modules.common_tasks.etl import create_task
 from modules.common_tasks.file import create_parquet_converter_task
 from modules.types.dags import ETLStep, TaskConfig
 
@@ -13,11 +13,11 @@ conso_mens_parquet = create_parquet_converter_task(
 
 
 @task_group(group_id="source_files")
-def source_files():
-    informations_batiments = create_file_etl_task(
-        selecteur="bien_info_complementaire",
-        process_func=process.process_source_bien_info_comp,
-        read_options={"sheet_name": 0},
+def source_files() -> None:
+    informations_batiments = create_task(
+        task_config=TaskConfig(task_id="bien_info_complementaire"),
+        output_selecteur="bien_info_complementaire",
+        steps=[ETLStep(fn=process.process_source_bien_info_comp, read_data=True)],
     )
     conso_mensuelles = create_task(
         task_config=TaskConfig(task_id="conso_mens"),
@@ -29,7 +29,7 @@ def source_files():
 
 
 @task_group(group_id="additionnal_files")
-def additionnal_files():
+def additionnal_files() -> None:
     unpivot_conso_mens_corrigee = create_task(
         task_config=TaskConfig(task_id="conso_mens_corr_unpivot"),
         output_selecteur="conso_mens_corr_unpivot",

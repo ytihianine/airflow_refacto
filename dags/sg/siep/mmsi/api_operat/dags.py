@@ -15,6 +15,7 @@ from modules.common_tasks.sql import (
     ensure_partition,
     get_projet_snapshot,
     import_file_to_db,
+    update_projet_snapshot_status,
 )
 from modules.common_tasks.validation import validate_dag_parameters
 from modules.enums.dags import DagStatus
@@ -62,6 +63,7 @@ def api_operat_ademe() -> None:
         copy_tmp_table_to_real_table(storage_options=storage_options),
         copy_s3_files(),
         del_s3_files(),
+        update_projet_snapshot_status(),
     )
 
 

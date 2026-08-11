@@ -22,6 +22,7 @@ from modules.common_tasks.sql import (
     get_projet_snapshot,
     import_file_to_db,
     refresh_views,
+    update_projet_snapshot_status,
 )
 from modules.common_tasks.validation import validate_dag_parameters
 from modules.enums.dags import DagStatus
@@ -86,6 +87,7 @@ def consommation_des_batiments() -> None:
         refresh_views(),
         copy_s3_files(storage_options=storage_options),
         del_s3_files(storage_options=storage_options),
+        update_projet_snapshot_status(),
         delete_tmp_tables(storage_options=storage_options),
     )
 
