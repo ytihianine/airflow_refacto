@@ -5,11 +5,27 @@ from modules.common_tasks.etl import create_task
 from modules.common_tasks.file import create_parquet_converter_task
 from modules.types.dags import ETLStep, TaskConfig
 
-conso_mens_parquet = create_parquet_converter_task(
-    selecteur="conso_mens_source",
-    task_params={"task_id": "convert_cons_mens_to_parquet"},
-    process_func=None,
-)
+
+@task_group
+def convert_file_to_parquet() -> None:
+    conso_mens_parquet = create_parquet_converter_task(
+        selecteur="conso_mens_source",
+        task_params={"task_id": "convert_cons_mens_to_parquet"},
+        process_func=None,
+    )
+
+    informations_batiments_parquet = create_parquet_converter_task(
+        selecteur="bien_info_complementaire",
+        task_params={"task_id": "convert_bien_info_complementaire_to_parquet"},
+        process_func=None,
+    )
+
+    chain(
+        [
+            conso_mens_parquet(),
+            informations_batiments_parquet(),
+        ]
+    )
 
 
 @task_group(group_id="source_files")

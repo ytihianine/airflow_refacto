@@ -6,7 +6,7 @@ from airflow.sdk.bases.operator import chain
 from dags.sg.siep.mmsi.consommation_batiment.config import storage_options
 from dags.sg.siep.mmsi.consommation_batiment.tasks import (
     additionnal_files,
-    conso_mens_parquet,
+    convert_file_to_parquet,
     source_files,
 )
 from modules.common_tasks.projet import get_selecteur_config
@@ -77,7 +77,7 @@ def consommation_des_batiments() -> None:
         validate_dag_parameters(),
         looking_for_files,
         create_projet_snapshot(nom_projet_parent="Outil aide diagnostic"),
-        conso_mens_parquet(),
+        convert_file_to_parquet(),
         source_files(),
         additionnal_files(),
         create_tmp_tables(storage_options=storage_options, reset_id_seq=False),
