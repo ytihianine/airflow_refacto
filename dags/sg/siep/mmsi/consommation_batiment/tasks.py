@@ -17,6 +17,7 @@ def source_files() -> None:
     informations_batiments = create_task(
         task_config=TaskConfig(task_id="bien_info_complementaire"),
         output_selecteur="bien_info_complementaire",
+        input_selecteurs=["bien_info_complementaire"],
         steps=[ETLStep(fn=process.process_source_bien_info_comp, read_data=True)],
     )
     conso_mensuelles = create_task(
