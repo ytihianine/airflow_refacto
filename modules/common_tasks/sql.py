@@ -341,7 +341,7 @@ def ensure_partition(
 def create_tmp_tables(
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
     storage_options: Mapping[str, SelecteurStorageOptions] | None = None,
-    reset_id_seq: bool = True,
+    reset_id_seq: bool = False,
     **context,
 ) -> None:
     """
