@@ -1,5 +1,4 @@
-DROP TABLE IF EXISTS temporaire.tmp_bien_typologie;
-DROP TABLE IF EXISTS siep.bien_typologie;
+DROP TABLE IF EXISTS siep.bien_typologie CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_typologie (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,

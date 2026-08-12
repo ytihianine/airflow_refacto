@@ -1,5 +1,4 @@
-DROP TABLE IF EXISTS temporaire.tmp_bien_surface;
-DROP TABLE IF EXISTS siep.bien_surface;
+DROP TABLE IF EXISTS siep.bien_surface CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_surface (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,

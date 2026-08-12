@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS siep.gestionnaire;
+DROP TABLE IF EXISTS siep.gestionnaire CASCADE;
 CREATE TABLE IF NOT EXISTS siep.gestionnaire (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_gestionnaire BIGINT NOT NULL,

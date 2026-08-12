@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS siep.bien_eligibilite_fcu;
+DROP TABLE IF EXISTS siep.bien_eligibilite_fcu CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_eligibilite_fcu (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,

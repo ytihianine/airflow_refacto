@@ -1,5 +1,4 @@
-DROP TABLE IF EXISTS temporaire.tmp_bien_deet_energie_ges;
-DROP TABLE IF EXISTS siep.bien_deet_energie_ges;
+DROP TABLE IF EXISTS siep.bien_deet_energie_ges CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_deet_energie_ges (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,

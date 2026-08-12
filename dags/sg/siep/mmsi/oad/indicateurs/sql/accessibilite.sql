@@ -1,5 +1,4 @@
-DROP TABLE IF EXISTS temporaire.tmp_bien_accessibilite;
-DROP TABLE IF EXISTS siep.bien_accessibilite;
+DROP TABLE IF EXISTS siep.bien_accessibilite CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_accessibilite (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
@@ -18,8 +17,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite (
     FOREIGN KEY(code_bat_ter, import_timestamp) REFERENCES siep.bien(code_bat_ter, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE IF EXISTS temporaire.tmp_bien_accessibilite_detail;
-DROP TABLE IF EXISTS siep.bien_accessibilite_detail;
+DROP TABLE IF EXISTS siep.bien_accessibilite_detail CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_accessibilite_detail (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,

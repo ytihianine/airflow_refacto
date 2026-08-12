@@ -1,5 +1,4 @@
-DROP TABLE IF EXISTS temporaire.tmp_bien_etat_de_sante;
-DROP TABLE IF EXISTS siep.bien_etat_de_sante;
+DROP TABLE IF EXISTS siep.bien_etat_de_sante CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_etat_de_sante (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,

@@ -1,6 +1,5 @@
 ---=========== Tables ===========---
-DROP TABLE IF EXISTS temporaire.tmp_bien;
-DROP TABLE IF EXISTS siep.bien;
+DROP TABLE IF EXISTS siep.bien CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
@@ -36,8 +35,7 @@ CREATE TABLE IF NOT EXISTS siep.bien (
     FOREIGN KEY(gestionnaire_principal_code, import_timestamp) REFERENCES siep.gestionnaire(code_gestionnaire, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE IF EXISTS temporaire.tmp_bien_gestionnaire;
-DROP TABLE IF EXISTS siep.bien_gestionnaire;
+DROP TABLE IF EXISTS siep.bien_gestionnaire CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_gestionnaire (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
@@ -55,8 +53,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_gestionnaire (
     FOREIGN KEY(code_gestionnaire, import_timestamp) REFERENCES siep.gestionnaire(code_gestionnaire, import_timestamp)
 ) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE IF EXISTS temporaire.tmp_bien_occupant;
-DROP TABLE IF EXISTS siep.bien_occupant;
+DROP TABLE IF EXISTS siep.bien_occupant CASCADE;
 CREATE TABLE IF NOT EXISTS siep.bien_occupant (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
