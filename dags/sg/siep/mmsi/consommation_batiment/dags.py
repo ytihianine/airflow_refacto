@@ -16,10 +16,10 @@ from modules.common_tasks.s3 import (
 )
 from modules.common_tasks.sql import (
     copy_tmp_table_to_real_table,
+    create_projet_snapshot,
     create_tmp_tables,
     delete_tmp_tables,
     ensure_partition,
-    get_projet_snapshot,
     import_file_to_db,
     refresh_views,
     update_projet_snapshot_status,
@@ -76,7 +76,7 @@ def consommation_des_batiments() -> None:
     chain(
         validate_dag_parameters(),
         looking_for_files,
-        get_projet_snapshot(nom_projet="Outil aide diagnostic"),
+        create_projet_snapshot(nom_projet_parent="Outil aide diagnostic"),
         conso_mens_parquet(),
         source_files(),
         additionnal_files(),

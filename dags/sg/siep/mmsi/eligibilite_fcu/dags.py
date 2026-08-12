@@ -12,10 +12,10 @@ from modules.common_tasks.s3 import (
 )
 from modules.common_tasks.sql import (
     copy_tmp_table_to_real_table,
+    create_projet_snapshot,
     create_tmp_tables,
     delete_tmp_tables,
     ensure_partition,
-    get_projet_snapshot,
     import_file_to_db,
     update_projet_snapshot_status,
 )
@@ -55,7 +55,7 @@ def eligibilite_fcu_dag() -> None:
 
     chain(
         validate_dag_parameters(),
-        get_projet_snapshot(nom_projet="Outil aide diagnostic"),
+        create_projet_snapshot(nom_projet_parent="Outil aide diagnostic"),
         get_eligibilite_fcu(),
         process_fcu_result(),
         create_tmp_tables(storage_options=storage_options, reset_id_seq=False),

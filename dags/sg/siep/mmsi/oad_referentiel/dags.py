@@ -11,9 +11,9 @@ from modules.common_tasks.s3 import (
 )
 from modules.common_tasks.sql import (
     copy_tmp_table_to_real_table,
+    create_projet_snapshot,
     create_tmp_tables,
     delete_tmp_tables,
-    get_projet_snapshot,
     import_file_to_db,
     refresh_views,
     # set_dataset_last_update_date,
@@ -73,7 +73,7 @@ def oad_referentiel() -> None:
         validate_dag_parameters(),
         selecteur_configs,
         looking_for_files,
-        get_projet_snapshot(nom_projet="Outil aide diagnostic"),
+        create_projet_snapshot(nom_projet_parent="Outil aide diagnostic"),
         ref_typologie,
         create_tmp_tables(),
         import_file_to_db.expand(selecteur_config=selecteur_configs),
