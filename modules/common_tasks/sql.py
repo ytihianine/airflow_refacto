@@ -38,6 +38,7 @@ from modules.utils.config.dag_params import (
 )
 from modules.utils.config.tasks import (
     get_list_selecteur_storage_info,
+    get_projet_metadata,
     merge_selecteur_config,
 )
 from modules.utils.process.structures import are_lists_egal
@@ -231,19 +232,7 @@ def update_projet_snapshot_status(
     # Hook
     db_client = create_db_handler(connection_id=pg_conn_id)
 
-    # Query params
-    snapshot_id = context["ti"].xcom_pull(key="return_value", task_ids="get_projet_snapshot")
-
-    id_projet_result = db_client.fetch_one(
-        query="SELECT id_projet FROM conf_projets.projet WHERE projet = %(nom_projet)s;",
-        parameters={"nom_projet": nom_projet},
-    )
-    if id_projet_result is None:
-        raise ValueError(f"No project found with name {nom_projet}")
-
-    id_projet = id_projet_result.get("id_projet")
-    if id_projet is None:
-        raise ValueError(f"No id_projet found for project {nom_projet}")
+    projet_metadata = get_projet_metadata(nom_projet=nom_projet)
 
     # Update is_dag_completed to True for the snapshot_id
     query = """
@@ -253,8 +242,8 @@ def update_projet_snapshot_status(
         AND snapshot_id = %(snapshot_id)s;
     """
     params = {
-        "id_projet": id_projet,
-        "snapshot_id": snapshot_id,
+        "id_projet": projet_metadata.id_projet,
+        "snapshot_id": projet_metadata.snapshot_id,
     }
 
     db_client.execute(query, parameters=params)

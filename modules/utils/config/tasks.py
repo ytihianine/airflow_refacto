@@ -2,8 +2,6 @@
 
 import logging
 from collections.abc import Mapping
-from datetime import datetime
-from uuid import UUID
 
 import pandas as pd
 from tenacity import (
@@ -179,7 +177,7 @@ def get_projet_metadata(nom_projet: str, db: DBInterface | None = None, dag_comp
     """
 
     query = """
-        SELECT s.snapshot_id, s.snapshot_id_parent, s.import_timestamp
+        SELECT s.id_projet, s.snapshot_id, s.snapshot_id_parent, s.import_timestamp
         FROM versioning.snapshot s
         JOIN conf_projets.projet p
             ON p.id_projet = s.id_projet
@@ -201,24 +199,12 @@ def get_projet_metadata(nom_projet: str, db: DBInterface | None = None, dag_comp
     if db_result is None:
         raise ValueError(f"No metadata found for project {nom_projet}")
 
-    snapshot_id = db_result["snapshot_id"]
-    snapshot_id_parent = db_result["snapshot_id_parent"]
-    import_timestamp = db_result["import_timestamp"]
-
-    if not isinstance(snapshot_id, UUID):
-        raise TypeError("snapshot_id must be a UUID")
-
-    if snapshot_id_parent is not None and not isinstance(snapshot_id_parent, UUID):
-        raise TypeError("snapshot_id_parent must be a UUID or None")
-
-    if not isinstance(import_timestamp, datetime):
-        raise TypeError("import_timestamp must be a datetime")
-
-    return {
-        "snapshot_id": snapshot_id,
-        "snapshot_id_parent": snapshot_id_parent,
-        "import_timestamp": import_timestamp,
-    }
+    return ProjetMetadata(
+        _id_projet=db_result["id_projet"],
+        _snapshot_id=db_result["snapshot_id"],
+        _snapshot_id_parent=db_result["snapshot_id_parent"],
+        _import_timestamp=db_result["import_timestamp"],
+    )
 
 
 def merge_selecteur_config(
