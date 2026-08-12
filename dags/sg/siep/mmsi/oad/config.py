@@ -8,7 +8,7 @@ storage_options = {
     "bails": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),
     "biens": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=1),
     "biens_gest": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),
-    "biens_occupants": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),
+    "biens_occupants": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=3),
     "couts": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),
     "deet_energie_ges": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),
     "effectif": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS siep.bien_accessibilite_detail (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
     code_bat_ter BIGINT NOT NULL,
     composant_bien TEXT NOT NULL,
-    niveau TEXT NOT NULL,
+    niveau TEXT,
     niveau_fonctionnel TEXT,
     niveau_reglementaire TEXT,
     import_timestamp TIMESTAMP NOT NULL,
