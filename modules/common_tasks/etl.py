@@ -79,8 +79,6 @@ def create_task(
     steps: list[ETLStep],
     input_selecteurs: list[str] | None = None,
     add_metadata: bool = True,
-    add_import_date: bool = True,
-    add_snapshot_id: bool = True,
     export_output: bool = True,
 ) -> Callable[..., XComArg]:
     """
@@ -91,8 +89,7 @@ def create_task(
         output_selecteur: Selector for the output configuration
         steps: List of ETL steps to execute
         input_selecteurs: (Optional) list of selectors for input data
-        add_import_date: Whether to add import date metadata to the output
-        add_snapshot_id: Whether to add snapshot ID metadata to the output
+        add_metadata: Whether to add import date and snapshot ID metadata to the output
         export_output: Whether to export the final output to S3
 
     Returns:
