@@ -12,30 +12,21 @@ from modules.infra.file_system.factory import (
     create_default_s3_handler,
 )
 from modules.types.dags import ETLStep, TaskConfig
-from modules.utils.config.dag_params import get_execution_date, get_project_name
+from modules.utils.config.dag_params import get_project_name
 from modules.utils.config.tasks import (
+    get_projet_metadata,
     get_selecteur_storage_info,
 )
 from modules.utils.logs import df_info
 
 
-def _add_import_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
-    """Add import timestamp and date columns."""
-    execution_date = get_execution_date(context=context)
+def _add_metadata(df: pd.DataFrame, nom_projet: str) -> pd.DataFrame:
+    metadata = get_projet_metadata(nom_projet=nom_projet)
 
-    dt_no_timezone = execution_date.replace(tzinfo=None)
-    df["import_timestamp"] = dt_no_timezone
-    df["import_date"] = dt_no_timezone.date()
-    return df
+    df["import_timestamp"] = metadata["import_timestamp"]
+    df["snapshot_id"] = metadata["snapshot_id"]
+    df["snapshot_id_parent"] = metadata["snapshot_id_parent"]
 
-
-def _add_snapshot_id_metadata(df: pd.DataFrame, context: dict) -> pd.DataFrame:
-    """Add snapshot_id column."""
-    snapshot_id = context["ti"].xcom_pull(key="return_value", task_ids="get_projet_snapshot")
-    if not snapshot_id:
-        raise ValueError("snapshot_id is not defined")
-
-    df["snapshot_id"] = snapshot_id
     return df
 
 
@@ -84,6 +75,7 @@ def create_task(
     output_selecteur: str,
     steps: list[ETLStep],
     input_selecteurs: list[str] | None = None,
+    add_metadata: bool = True,
     add_import_date: bool = True,
     add_snapshot_id: bool = True,
     export_output: bool = True,
@@ -155,11 +147,8 @@ def create_task(
         # Resolve configs
         output_config = get_selecteur_storage_info(nom_projet=nom_projet, selecteur=output_selecteur)
 
-        if add_import_date:
-            result = _add_import_metadata(df=result, context=context)
-
-        if add_snapshot_id:
-            result = _add_snapshot_id_metadata(df=result, context=context)
+        if add_metadata:
+            result = _add_metadata(df=result, nom_projet=nom_projet)
 
         df_info(df=result, df_name=f"{output_selecteur} - df to export")
 

@@ -205,41 +205,6 @@ def create_projet_snapshot(
 
 
 @task
-def get_projet_snapshot(
-    nom_projet: str | None = None,
-    pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,
-    **context,
-) -> str:
-    """
-    Récupérer le dernier snapshot_id d'un projet.
-
-    Args:
-        nom_projet (optionnel): Le nom du projet. A spécifier lorsque le nom du projet
-            dans le DAG est différent de celui qui génère le snapshot_id,
-        pg_conn_id: Connexion Postgres. Valeur par défaut
-
-    Returns:
-        None. Ajoute le snapshot_id dans le context du DAG
-    """
-    if nom_projet is None:
-        nom_projet = get_project_name(context=context)
-
-    if should_skip_task(context=context, feature_flag=FeatureFlags.DB):
-        # Generate a dev snapshot_id based on execution date for local testing
-        execution_date = get_execution_date(context=context)
-        snapshot_id = execution_date.strftime(format="dev_%Y%m%d_%H:%M:%S")
-        return snapshot_id
-
-    # Hook
-    db_handler = create_db_handler(connection_id=pg_conn_id)
-
-    snapshot_id = _get_snapshot_id(nom_projet=nom_projet, db_handler=db_handler)
-    logging.info(msg=f"Adding snapshot_id {snapshot_id} to context")
-
-    return str(snapshot_id)
-
-
-@task
 def update_projet_snapshot_status(
     nom_projet: str | None = None,
     pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID,

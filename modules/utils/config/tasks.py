@@ -2,6 +2,8 @@
 
 import logging
 from collections.abc import Mapping
+from datetime import datetime
+from uuid import UUID
 
 import pandas as pd
 from tenacity import (
@@ -19,6 +21,7 @@ from modules.infra.database.factory import create_db_handler
 from modules.types.projet import (
     Contact,
     Documentation,
+    ProjetMetadata,
     ProjetS3,
     SelecteurConfig,
     SelecteurStorageInfo,
@@ -167,6 +170,55 @@ def get_projet_s3_info(
 
     record = df.iloc[0].to_dict(into=dict)
     return ProjetS3(**record)  # type: ignore
+
+
+@db_retry
+def get_projet_metadata(nom_projet: str, db: DBInterface | None = None, dag_completed: bool = False) -> ProjetMetadata:
+    """
+    Get the latest completed snapshot for a project.
+    """
+
+    query = """
+        SELECT s.snapshot_id, s.snapshot_id_parent, s.import_timestamp
+        FROM versioning.snapshot s
+        JOIN conf_projets.projet p
+            ON p.id_projet = s.id_projet
+        WHERE p.projet = %(nom_projet)s
+          AND s.is_dag_completed = %(is_dag_completed)s
+        ORDER BY s.import_timestamp DESC
+        LIMIT 1;
+    """
+
+    params = {"nom_projet": nom_projet, "is_dag_completed": dag_completed}
+
+    db = _get_db(db)
+
+    db_result = db.fetch_one(
+        query,
+        parameters=params,
+    )
+
+    if db_result is None:
+        raise ValueError(f"No metadata found for project {nom_projet}")
+
+    snapshot_id = db_result["snapshot_id"]
+    snapshot_id_parent = db_result["snapshot_id_parent"]
+    import_timestamp = db_result["import_timestamp"]
+
+    if not isinstance(snapshot_id, UUID):
+        raise TypeError("snapshot_id must be a UUID")
+
+    if snapshot_id_parent is not None and not isinstance(snapshot_id_parent, UUID):
+        raise TypeError("snapshot_id_parent must be a UUID or None")
+
+    if not isinstance(import_timestamp, datetime):
+        raise TypeError("import_timestamp must be a datetime")
+
+    return {
+        "snapshot_id": snapshot_id,
+        "snapshot_id_parent": snapshot_id_parent,
+        "import_timestamp": import_timestamp,
+    }
 
 
 def merge_selecteur_config(

@@ -1,7 +1,9 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
+from uuid import UUID
 
 from modules.constants import DEFAULT_PG_DATA_CONN_ID, DEFAULT_S3_CONN_ID
 from modules.enums.dags import TypeSource
@@ -21,6 +23,12 @@ def custom_asdict_factory(data) -> dict[str, Any]:
         return obj
 
     return dict((k, convert_value(obj=v)) for k, v in data)
+
+
+class ProjetMetadata(TypedDict):
+    snapshot_id: UUID
+    snapshot_id_parent: UUID | None
+    import_timestamp: datetime
 
 
 @dataclass(frozen=True)
