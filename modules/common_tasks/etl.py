@@ -24,8 +24,12 @@ def _add_metadata(df: pd.DataFrame, nom_projet: str) -> pd.DataFrame:
     metadata = get_projet_metadata(nom_projet=nom_projet)
 
     df["import_timestamp"] = metadata["import_timestamp"]
-    df["snapshot_id"] = metadata["snapshot_id"]
-    df["snapshot_id_parent"] = metadata["snapshot_id_parent"]
+    df["snapshot_id"] = str(metadata["snapshot_id"])
+
+    if metadata["snapshot_id_parent"] is None:
+        df["snapshot_id_parent"] = str(metadata["snapshot_id_parent"])
+    else:
+        df["snapshot_id_parent"] = str(metadata["snapshot_id_parent"])
 
     return df
 
