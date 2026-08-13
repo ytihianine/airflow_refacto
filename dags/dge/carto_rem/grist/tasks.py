@@ -343,8 +343,6 @@ def load_to_grist() -> None:
         task_config=TaskConfig(task_id="get_agent_db"),
         output_selecteur="get_agent_db",
         steps=[ETLStep(fn=actions.get_agent_db, use_context=True)],
-        add_import_date=False,
-        add_snapshot_id=False,
         export_output=True,
     )
 
@@ -360,8 +358,6 @@ def load_to_grist() -> None:
                 kwargs={"grist_doc_selecteur": "grist_doc"},
             )
         ],
-        add_import_date=False,
-        add_snapshot_id=False,
         export_output=False,
     )
 
