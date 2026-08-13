@@ -16,7 +16,6 @@ from modules.common_tasks.sql import (
     create_tmp_tables,
     delete_tmp_tables,
     ensure_partition,
-    get_projet_snapshot,
     import_file_to_db,
 )
 from modules.common_tasks.validation import validate_dag_parameters
@@ -70,7 +69,6 @@ def certificats_igc() -> None:
         selecteur_configs,
         looking_for_files,
         create_projet_snapshot(),
-        get_projet_snapshot(),
         source_files(),
         ensure_partition.expand(selecteur_config=selecteur_configs),
         create_tmp_tables(storage_options=storage_options),

@@ -21,7 +21,6 @@ from modules.common_tasks.sql import (
     create_tmp_tables,
     delete_tmp_tables,
     ensure_partition,
-    get_projet_snapshot,
     import_file_to_db,
 )
 from modules.common_tasks.validation import validate_dag_parameters
@@ -83,7 +82,6 @@ def chorus_donnees_comptables() -> None:
         selecteur_configs,
         looking_for_files,
         create_projet_snapshot(nom_projet=nom_projet),
-        get_projet_snapshot(nom_projet=nom_projet),
         source_files(),
         datasets_additionnels(),
         create_tmp_tables(storage_options=storage_options, reset_id_seq=False),

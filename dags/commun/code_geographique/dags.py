@@ -5,7 +5,6 @@ from modules.common_tasks.sql import (
     copy_tmp_table_to_real_table,
     create_projet_snapshot,
     create_tmp_tables,
-    get_projet_snapshot,
     refresh_views,
     # set_dataset_last_update_date,
 )
@@ -47,7 +46,6 @@ def informations_geographiques() -> None:
     chain(
         validate_dag_parameters(),
         create_projet_snapshot(),
-        get_projet_snapshot(),
         code_geographique(),
         geojson(),
         code_iso(),

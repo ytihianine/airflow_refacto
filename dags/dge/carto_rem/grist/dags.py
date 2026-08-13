@@ -15,7 +15,7 @@ from modules.common_tasks.s3 import (
     del_s3_files,
     import_file_to_iceberg,
 )
-from modules.common_tasks.sql import get_projet_snapshot
+from modules.common_tasks.sql import create_projet_snapshot
 from modules.common_tasks.validation import validate_dag_parameters
 from modules.enums.dags import DagStatus
 from modules.infra.mails.default_smtp import MailStatus, create_send_mail_callback
@@ -50,7 +50,7 @@ def cartographie_remuneration_grist() -> None:
 
     chain(
         validate_dag_parameters(),
-        get_projet_snapshot(nom_projet="Cartographie rémunération"),
+        create_projet_snapshot(nom_projet="Cartographie rémunération"),
         del_iceberg_staging_table(),
         download_grist_doc_to_s3(
             selecteur="grist_doc",

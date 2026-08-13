@@ -17,7 +17,6 @@ from modules.common_tasks.sql import (
     create_projet_snapshot,
     create_tmp_tables,
     delete_tmp_tables,
-    get_projet_snapshot,
     import_file_to_db,
     update_projet_snapshot_status,
 )
@@ -65,7 +64,6 @@ def tdb_sircom() -> None:
             doc_id_key="grist_doc_id_tdb_sircom",
         ),
         create_projet_snapshot(),
-        get_projet_snapshot(),
         abonnes_visites(),
         budget(),
         enquetes(),

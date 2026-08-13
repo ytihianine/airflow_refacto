@@ -14,9 +14,9 @@ from modules.common_tasks.s3 import (
 )
 from modules.common_tasks.sql import (
     copy_tmp_table_to_real_table,
+    create_projet_snapshot,
     create_tmp_tables,
     delete_tmp_tables,
-    get_projet_snapshot,
     import_file_to_db,
 )
 from modules.common_tasks.validation import validate_dag_parameters
@@ -57,8 +57,8 @@ def chorus_service_prescripteur() -> None:
     chain(
         validate_dag_parameters(),
         selecteur_configs,
+        create_projet_snapshot(nom_projet_parent="Données comptable"),
         download_grist_doc_to_s3(selecteur="grist_doc", workspace_id="dsci", doc_id_key="grist_doc_id_cbcm"),
-        get_projet_snapshot(nom_projet="Données comptable"),
         grist_source(),
         fetch_from_db(),
         load_to_grist(),

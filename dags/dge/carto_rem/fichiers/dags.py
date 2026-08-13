@@ -15,7 +15,7 @@ from modules.common_tasks.s3 import (
     del_s3_files,
     import_file_to_iceberg,
 )
-from modules.common_tasks.sql import create_projet_snapshot, get_projet_snapshot
+from modules.common_tasks.sql import create_projet_snapshot
 from modules.common_tasks.validation import validate_dag_parameters
 from modules.enums.dags import DagStatus
 from modules.infra.mails.default_smtp import MailStatus, create_send_mail_callback
@@ -72,7 +72,6 @@ def cartographie_remuneration() -> None:
         validate_dag_parameters(),
         looking_for_files,
         create_projet_snapshot(),
-        get_projet_snapshot(),
         del_iceberg_staging_table(),
         source_files(),
         import_file_to_iceberg.expand(selecteur_config=selecteur_configs),
