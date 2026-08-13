@@ -17,7 +17,6 @@ from modules.common_tasks.sql import (
     create_projet_snapshot,
     create_tmp_tables,
     delete_tmp_tables,
-    get_projet_snapshot,
     import_file_to_db,
     update_projet_snapshot_status,
 )
@@ -61,8 +60,7 @@ def configuration_projets() -> None:
             selecteur="grist_doc",
             workspace_id="dsci",
         ),
-        create_projet_snapshot(nom_projet_parent=nom_projet),
-        get_projet_snapshot(),
+        create_projet_snapshot(),
         process_data(),
         delete_tmp_tables(storage_options=storage_options),
         create_tmp_tables(
