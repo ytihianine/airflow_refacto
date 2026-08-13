@@ -437,7 +437,7 @@ def process_conso_annuelle_unpivot_comparaison(df: pd.DataFrame) -> pd.DataFrame
 
 
 def process_facture_annuelle_unpivot(df: pd.DataFrame) -> pd.DataFrame:
-    cols_to_drop = ["import_date", "import_timestamp", "snapshot_id"]
+    cols_to_drop = ["import_timestamp", "snapshot_id", "snapshot_id_parent"]
     df = df.drop(columns=cols_to_drop)
     correspondance_facture = {
         "facture_elec_ht": "elec",
