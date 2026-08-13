@@ -327,7 +327,8 @@ def process_conso_annuelle(df: pd.DataFrame) -> pd.DataFrame:
         "ratio_electricite",
         "ratio_autres_fluides",
         "ligne_avec_conso",
-        "import_date",
+        "snapshot_id",
+        "snapshot_id_parent",
         "import_timestamp",
     ]
 
