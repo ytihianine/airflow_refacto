@@ -230,7 +230,7 @@ def process_source_bien_info_comp(df: pd.DataFrame) -> pd.DataFrame:
             df=df,
             columns=date_cols,
             str_date_format="%d-%m-%Y %H:%M:%S",
-            errors="raise",
+            errors="coerce",
         )
 
     # Regroupement
