@@ -29,7 +29,5 @@ generer_binomes = create_task(
         ETLStep(fn=actions.trouver_meilleurs_binomes, read_data=True),
         ETLStep(fn=actions.send_result, use_context=True, use_previous_output=True),
     ],
-    add_import_date=False,
-    add_snapshot_id=False,
     export_output=False,
 )

@@ -7,7 +7,6 @@ from airflow.sdk.bases.operator import chain
 from dags.dag_standard.config import storage_options
 from modules.common_tasks.projet import config_projet_group, get_selecteur_config
 from modules.common_tasks.s3 import del_iceberg_staging_table
-from modules.common_tasks.sql import get_projet_snapshot  # , import_files_to_db
 from modules.constants import (
     DEFAULT_POLARIS_CATALOG,
     DEFAULT_POLARIS_HOST,
@@ -162,7 +161,6 @@ def dag_verification() -> None:
     chain(
         selecteur_configs,
         [
-            get_projet_snapshot(),
             print_context(),
             send_simple_mail(),
             send_error_mail(),
