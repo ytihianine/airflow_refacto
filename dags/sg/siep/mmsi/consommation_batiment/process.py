@@ -209,13 +209,12 @@ def corriger_consommation(df_conso_mens: pd.DataFrame) -> pd.DataFrame:
 # BIEN INFO COMP
 # ======================================================
 def process_source_bien_info_comp(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.replace(to_replace=[None], value=pd.NA)
     # Normaliser les données textuelles
     txt_cols = [
         "usage_detaille_du_bien",
         "famille_de_bien",
         "etat_bat",
-        "efa",
+        # "efa",
     ]
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
