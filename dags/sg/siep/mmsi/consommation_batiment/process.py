@@ -214,7 +214,7 @@ def process_source_bien_info_comp(df: pd.DataFrame) -> pd.DataFrame:
         "usage_detaille_du_bien",
         "famille_de_bien",
         "etat_bat",
-        # "efa",
+        "efa",
     ]
     df = normalize_whitespace_columns(df=df, columns=txt_cols)
 
