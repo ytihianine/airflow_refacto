@@ -211,7 +211,6 @@ def corriger_consommation(df_conso_mens: pd.DataFrame) -> pd.DataFrame:
 def process_source_bien_info_comp(df: pd.DataFrame) -> pd.DataFrame:
     # Normaliser les données textuelles
     txt_cols = [
-        "code_site",
         "usage_detaille_du_bien",
         "famille_de_bien",
         "etat_bat",
