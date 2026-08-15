@@ -191,4 +191,5 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python
 
 # Additional
+.complexipy_cache
 config.json
