@@ -192,4 +192,5 @@ pyrightconfig.json
 
 # Additional
 .complexipy_cache
+complexipy_*.txt
 config.json
