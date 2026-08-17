@@ -24,7 +24,6 @@ from modules.common_tasks.sql import (
     create_tmp_tables,
     delete_tmp_tables,
     ensure_partition,
-    get_projet_snapshot,
     import_file_to_db,
     update_projet_snapshot_status,
 )
@@ -67,7 +66,6 @@ def experimentation_ia_dag() -> None:
             workspace_id="dsci",
         ),
         create_projet_snapshot(),
-        get_projet_snapshot(),
         [
             referentiels(),
             repartition(),
