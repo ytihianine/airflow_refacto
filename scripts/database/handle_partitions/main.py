@@ -117,6 +117,7 @@ def update_import_timestamp_in_versioning(
 def update_import_timestamp(
     tbl_names: list[tuple[Any, ...]],
     cursor: extensions.cursor,
+    id_projet: int,
     dry_run: bool = True,
 ) -> None:
     custom_logger.info(msg=f"{len(tbl_names)} table(s) trouvée(s)")
@@ -130,7 +131,7 @@ def update_import_timestamp(
             FROM (
                 SELECT import_timestamp, snapshot_id
                 FROM versioning."snapshot" s
-                WHERE id_projet=3) tmp_snap
+                WHERE id_projet={id_projet}) tmp_snap
             WHERE current.snapshot_id = tmp_snap.snapshot_id;
         """
 
@@ -162,6 +163,9 @@ def drop_partitions(
         partition_start_date (datetime): Date de début de la partition
         dry_run (bool): Si True, affiche les commandes sans les exécuter
     """
+    range_start = partition_start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    range_end = range_start + timedelta(days=1)
+
     # Suppression des partitions
     dropped_count = 0
     for tbl_name, schema in tbl_names:
@@ -169,8 +173,8 @@ def drop_partitions(
         partition_name = "_".join(
             [
                 tbl_name,
-                partition_start_date.strftime(format="%Y%m%d"),
-                (partition_start_date + timedelta(days=1)).strftime(format="%Y%m%d"),
+                range_start.strftime(format="%Y%m%d"),
+                range_end.strftime(format="%Y%m%d"),
             ]
         )
 
@@ -189,8 +193,6 @@ def drop_partitions(
         custom_logger.info(msg=f"\n{dropped_count} partition(s) supprimée(s) avec succès")
     else:
         custom_logger.info(msg=f"\n[DRY RUN] {dropped_count} partition(s) seraient supprimées")
-
-    cursor.close()
 
 
 if __name__ == "__main__":
@@ -230,6 +232,7 @@ if __name__ == "__main__":
     custom_logger.info(msg=f"{len(tables)} Tables to process: {[tbl[0] for tbl in tables]}")
 
     # Créer les nouvelles partitions si nécessaire
+    pg_cur.execute(query="SET session_replication_role = replica;")
     for _, date_mapping in enumerate(config.dates):
         curr_date = date_mapping.current_as_datetime
         new_date = date_mapping.new_as_datetime
@@ -258,6 +261,7 @@ if __name__ == "__main__":
             update_import_timestamp(
                 tbl_names=tables,
                 cursor=pg_cur,
+                id_projet=config.id_projet,
                 dry_run=config.dry_run,
             )
             pg_conn.commit()
@@ -284,3 +288,6 @@ if __name__ == "__main__":
                 custom_logger.info(
                     msg=f"✗ Erreur lors de la suppression de partitions dans le schéma {config.schema}: {e}"
                 )
+    pg_cur.execute(query="SET session_replication_role = DEFAULT;")
+    pg_cur.close()
+    pg_conn.close()
