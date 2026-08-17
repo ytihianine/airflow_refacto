@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from airflow.sdk import dag
 from airflow.sdk.bases.operator import chain
-from dags.sg.siep.mmsi.api_operat.config import storage_options
+from dags.sg.siep.mmsi.api_operat.config import dag_id_operat, nom_projet_operat, storage_options
 from dags.sg.siep.mmsi.api_operat.task import output  # , source
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
@@ -23,13 +23,11 @@ from modules.infra.mails.default_smtp import MailStatus, create_send_mail_callba
 from modules.types.dags import DBParams, FeatureFlagsEnable
 from modules.utils.config.dag_params import create_dag_params, create_default_args
 
-nom_projet = "API Opera"
-
 
 # Définition du DAG
 @dag(
-    dag_id="api_operat_ademe",
-    schedule="@daily",
+    dag_id=dag_id_operat,
+    schedule=None,
     max_active_runs=1,
     catchup=False,
     tags=["SG", "SIEP", "PRODUCTION", "BATIMENT", "ADEME"],
@@ -37,7 +35,7 @@ nom_projet = "API Opera"
     max_consecutive_failed_dag_runs=1,
     default_args=create_default_args(retries=1, retry_delay=timedelta(minutes=1)),
     params=create_dag_params(
-        nom_projet=nom_projet,
+        nom_projet=nom_projet_operat,
         dag_status=DagStatus.RUN,
         db_params=DBParams(prod_schema="siep"),
         feature_flags=FeatureFlagsEnable(db=True, mail=False, s3=True, convert_files=False, download_grist_doc=False),

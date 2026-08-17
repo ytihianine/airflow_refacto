@@ -20,8 +20,6 @@ def georisques_group() -> None:
                 use_context=True,
             )
         ],
-        add_snapshot_id=False,
-        add_import_date=False,
     )
 
     georisques = create_task(

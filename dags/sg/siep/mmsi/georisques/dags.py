@@ -1,6 +1,6 @@
 from airflow.sdk import dag
 from airflow.sdk.bases.operator import chain
-from dags.sg.siep.mmsi.georisques.config import storage_options
+from dags.sg.siep.mmsi.georisques.config import dag_id_georisque, nom_projet_georisque, storage_options
 from dags.sg.siep.mmsi.georisques.task import georisques_group
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
@@ -21,13 +21,10 @@ from modules.infra.mails.default_smtp import MailStatus, create_send_mail_callba
 from modules.types.dags import DBParams, FeatureFlagsEnable
 from modules.utils.config.dag_params import create_dag_params, create_default_args
 
-# Mails
-nom_projet = "Géorisques"
-
 
 # Définition du DAG
 @dag(
-    dag_id="georisques_batiments",
+    dag_id=dag_id_georisque,
     schedule=None,
     max_active_runs=1,
     catchup=False,
@@ -36,7 +33,7 @@ nom_projet = "Géorisques"
     max_consecutive_failed_dag_runs=1,
     default_args=create_default_args(),
     params=create_dag_params(
-        nom_projet=nom_projet,
+        nom_projet=nom_projet_georisque,
         dag_status=DagStatus.RUN,
         db_params=DBParams(prod_schema="siep"),
         feature_flags=FeatureFlagsEnable(db=True, mail=False, s3=True, convert_files=False, download_grist_doc=False),

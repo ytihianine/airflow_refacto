@@ -1,6 +1,9 @@
 from modules.enums.database import LoadStrategy
 from modules.types.projet import SelecteurStorageOptions
 
+nom_projet_operat = "API Opera"
+dag_id_operat = "api_operat_ademe"
+
 storage_options = {
     "activite": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=1),
     "consommations": SelecteurStorageOptions(write_to_db=False),

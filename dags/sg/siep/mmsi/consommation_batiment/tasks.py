@@ -1,6 +1,9 @@
+from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sdk import task_group
 from airflow.sdk.bases.operator import chain
+from dags.sg.siep.mmsi.api_operat.config import dag_id_operat
 from dags.sg.siep.mmsi.consommation_batiment import process
+from dags.sg.siep.mmsi.eligibilite_fcu.config import dag_id_fcu
 from modules.common_tasks.etl import create_task
 from modules.common_tasks.file import create_parquet_converter_task
 from modules.types.dags import ETLStep, TaskConfig
@@ -127,3 +130,17 @@ def additionnal_files() -> None:
         conso_statut_par_fluide(),
         conso_statut_batiment(),
     )
+
+
+@task_group
+def trigger_linked_dags() -> None:
+    trigger_fcu_dag = TriggerDagRunOperator(
+        task_id="trigger_fcu_dag",
+        trigger_dag_id=dag_id_fcu,
+    )
+    trigger_operat_dag = TriggerDagRunOperator(
+        task_id="trigger_operat_dag",
+        trigger_dag_id=dag_id_operat,
+    )
+
+    chain([trigger_fcu_dag, trigger_operat_dag])

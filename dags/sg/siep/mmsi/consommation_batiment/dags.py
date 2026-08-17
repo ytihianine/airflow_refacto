@@ -8,6 +8,7 @@ from dags.sg.siep.mmsi.consommation_batiment.tasks import (
     additionnal_files,
     convert_file_to_parquet,
     source_files,
+    trigger_linked_dags,
 )
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
@@ -89,6 +90,7 @@ def consommation_des_batiments() -> None:
         del_s3_files(storage_options=storage_options),
         update_projet_snapshot_status(),
         delete_tmp_tables(storage_options=storage_options),
+        trigger_linked_dags(),
     )
 
 

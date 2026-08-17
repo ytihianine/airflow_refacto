@@ -1,6 +1,6 @@
 from airflow.sdk import dag
 from airflow.sdk.bases.operator import chain
-from dags.sg.siep.mmsi.eligibilite_fcu.config import storage_options
+from dags.sg.siep.mmsi.eligibilite_fcu.config import dag_id_fcu, nom_projet_fcu, storage_options
 from dags.sg.siep.mmsi.eligibilite_fcu.task import (
     get_eligibilite_fcu,
     process_fcu_result,
@@ -25,12 +25,10 @@ from modules.infra.mails.default_smtp import MailStatus, create_send_mail_callba
 from modules.types.dags import DBParams, FeatureFlagsEnable
 from modules.utils.config.dag_params import create_dag_params, create_default_args
 
-nom_projet = "France Chaleur Urbaine (FCU)"
-
 
 # Définition du DAG
 @dag(
-    dag_id="eligibilite_fcu",
+    dag_id=dag_id_fcu,
     schedule=None,
     max_active_runs=1,
     catchup=False,
@@ -39,7 +37,7 @@ nom_projet = "France Chaleur Urbaine (FCU)"
     max_consecutive_failed_dag_runs=1,
     default_args=create_default_args(),
     params=create_dag_params(
-        nom_projet=nom_projet,
+        nom_projet=nom_projet_fcu,
         dag_status=DagStatus.RUN,
         db_params=DBParams(prod_schema="siep"),
         feature_flags=FeatureFlagsEnable(db=True, mail=True, s3=True, convert_files=False, download_grist_doc=False),
