@@ -22,6 +22,10 @@ VENV_PYTHON := $(VENV_BIN)/python
 help: ## Afficher l'aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
+
+# ===================================
+# Development environment setup
+# ===================================
 install-sys-packages: ## Installer les packages système nécessaires (libxml2-dev, libxmlsec1-dev, pkg-config)
 	@echo "Ce script va mettre à jour votre système et installer les packages nécessaires."
 	@echo "Packages à installer: libxml2-dev libxmlsec1-dev pkg-config"
@@ -62,14 +66,13 @@ init-git: ## Initialiser la configuration git
 	@echo "Init git config"
 	git config --global credential.helper 'cache --timeout=360000'
 
-setup-dev-env: create-py-env install-packages install-pre-commit init-git ## Installer tout l'environnement de développement
-
 init-env-files: ## Initialiser les fichiers d'environnement des scripts
 	@echo "Initialisation des fichiers d'environnement"
 	@chmod +x ./scripts/init_env.bash
 	@./scripts/init_env.bash
 	@echo "Tous les fichiers .env créés à partir de example.env. Veuillez les personnaliser avec vos propres valeurs."
 
+setup-dev-env: create-py-env install-packages install-pre-commit init-git ## Installer tout l'environnement de développement
 
 # ===================================
 # Code quality
