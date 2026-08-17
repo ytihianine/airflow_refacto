@@ -5,12 +5,13 @@ import pandas as pd
 from dags.sg.siep.mmsi.eligibilite_fcu.process import (
     get_eligibilite_fcu,
 )
+from dags.sg.siep.mmsi.oad.config import nom_projet_oad
 from modules.constants import AGENT, DEFAULT_PG_DATA_CONN_ID, PROXY
 from modules.enums.http import HttpHandlerType
 from modules.infra.database.factory import create_db_handler
 from modules.infra.http_client.adapters import ClientConfig
 from modules.infra.http_client.factory import create_http_client
-from modules.utils.logs import df_info
+from modules.utils.config.tasks import get_projet_metadata
 
 
 def eligibilite_fcu(context: dict[str, Any]) -> pd.DataFrame:
@@ -21,27 +22,22 @@ def eligibilite_fcu(context: dict[str, Any]) -> pd.DataFrame:
     # Hooks
     db_hook = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
 
+    metadata = get_projet_metadata(nom_projet=nom_projet_oad, dag_completed=True)
+    logging.info(msg=f"Snapshot ID récupéré : {metadata}")
+
     # Storage paths
-    snapshot_id = context["ti"].xcom_pull(key="return_value", task_ids="get_projet_snapshot")
-    logging.info(msg=f"Snapshot ID récupéré : {snapshot_id}")
     df_oad = db_hook.fetch_df(
         query="""
         SELECT
             sbl.code_bat_ter,
             sbl.latitude,
-            sbl.longitude,
-            sbl.import_timestamp as import_timestamp_oad
+            sbl.longitude
         FROM siep.bien_localisation sbl
-            WHERE sbl.snapshot_id = %s
-            AND sbl.import_timestamp = (
-                SELECT MAX(import_timestamp)
-                FROM siep.bien_localisation
-                WHERE snapshot_id = %s
-            )
-            ;
+        WHERE sbl.snapshot_id = %s;
         """,
-        parameters=(snapshot_id, snapshot_id),
+        parameters=(metadata.snapshot_id,),
     )
+
     if df_oad.empty:
         logging.warning(msg="Le DataFrame df_oad est vide. Fin du processus.")
         raise ValueError("Aucune données disponible dans df_oad.")
@@ -53,20 +49,26 @@ def eligibilite_fcu(context: dict[str, Any]) -> pd.DataFrame:
     api_results = []
     nb_rows = len(df_oad)
     logging.info(msg=f"Nombre de bâtiments à traiter : {nb_rows}")
-    for row in df_oad.itertuples():
-        logging.info(msg=f"{row.Index}/{nb_rows}")
+    for i, (code_bat_ter, latitude, longitude) in enumerate(
+        df_oad[["code_bat_ter", "latitude", "longitude"]].itertuples(
+            index=False,
+            name=None,
+        ),
+        start=1,
+    ):
+        logging.info(msg=f"{i}/{nb_rows} - Appel API FCU")
+
         api_result = get_eligibilite_fcu(
             api_client=http_internet_client,
             url=url,
-            latitude=row.latitude,
-            longitude=row.longitude,
+            latitude=latitude,
+            longitude=longitude,
         )
-        api_result["code_bat_ter"] = row.code_bat_ter
-        api_result["import_timestamp_oad"] = row.import_timestamp_oad
+
+        api_result["code_bat_ter"] = code_bat_ter
         api_results.append(api_result)
+
         logging.info(msg=api_result)
 
     df_result = pd.DataFrame(data=api_results)
-    df_info(df=df_result, df_name="Result API - After processing")
-
     return df_result
