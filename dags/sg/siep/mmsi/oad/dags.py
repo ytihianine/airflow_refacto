@@ -11,7 +11,7 @@ from dags.sg.siep.mmsi.oad.caracteristiques.tasks import (
     oad_carac_to_parquet,
     tasks_oad_caracteristiques,
 )
-from dags.sg.siep.mmsi.oad.config import storage_options
+from dags.sg.siep.mmsi.oad.config import dag_id_oad, nom_projet_oad, storage_options
 from dags.sg.siep.mmsi.oad.indicateurs.tasks import (
     oad_indic_to_parquet,
     tasks_oad_indicateurs,
@@ -38,13 +38,10 @@ from modules.types.dags import DBParams, FeatureFlagsEnable
 from modules.utils.config.dag_params import create_dag_params, create_default_args
 from modules.utils.config.tasks import get_list_source_fichier
 
-# Mails
-nom_projet = "Outil aide diagnostic"
-
 
 # Définition du DAG
 @dag(
-    dag_id="outil_aide_diagnostic",
+    dag_id=dag_id_oad,
     schedule="*/15 6-22 * * 1-5",
     max_active_runs=1,
     max_consecutive_failed_dag_runs=1,
@@ -53,7 +50,7 @@ nom_projet = "Outil aide diagnostic"
     description="""Traitement des données de l'immobilier. Base""",
     default_args=create_default_args(retries=0),
     params=create_dag_params(
-        nom_projet=nom_projet,
+        nom_projet=nom_projet_oad,
         dag_status=DagStatus.RUN,
         db_params=DBParams(prod_schema="siep"),
         feature_flags=FeatureFlagsEnable(db=True, mail=False, s3=True, convert_files=True, download_grist_doc=False),
@@ -67,7 +64,7 @@ def oad() -> None:
         task_id="looking_for_files",
         aws_conn_id="minio_bucket_dsci",
         bucket_name="dsci",
-        bucket_key=get_list_source_fichier(nom_projet=nom_projet),
+        bucket_key=get_list_source_fichier(nom_projet=nom_projet_oad),
         mode="reschedule",
         poke_interval=timedelta(seconds=30),
         timeout=timedelta(minutes=13),

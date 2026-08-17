@@ -1,6 +1,9 @@
 from modules.enums.database import LoadStrategy
 from modules.types.projet import SelecteurStorageOptions
 
+nom_projet_oad = "Outil aide diagnostic"
+dag_id_oad = "outil_aide_diagnostic"
+
 storage_options = {
     "accessibilite": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),
     "accessibilite_detail": SelecteurStorageOptions(load_strategy=LoadStrategy.APPEND, tbl_order=2),
