@@ -91,28 +91,10 @@ CREATE TABLE IF NOT EXISTS siep.bien_occupant (
 ) PARTITION BY RANGE (import_timestamp);
 
 ---=========== Vues ===========---
-DROP MATERIALIZED VIEW siep.bien_caracteristiques_complet_gestionnaire_vw;
+DROP MATERIALIZED VIEW IF EXISTS siep.bien_caracteristiques_complet_gestionnaire_vw;
 CREATE MATERIALIZED VIEW siep.bien_caracteristiques_complet_gestionnaire_vw AS
-    WITH oad_timestamps AS (
-        SELECT DISTINCT snapshot_id, import_timestamp
-        FROM siep.bien
-    ),
-    osfi_timestamps AS (
-        SELECT DISTINCT snapshot_id, import_timestamp
-        FROM siep.bien_information_complementaire
-    ),
-    couples_timestamps AS (
-        -- Produit cartésien uniquement sur les timestamps par snapshot
-        SELECT
-            oad.snapshot_id,
-            oad.import_timestamp as oad_import_timestamp,
-            osfi.import_timestamp as osfi_import_timestamp
-        FROM oad_timestamps oad
-        JOIN osfi_timestamps osfi
-            ON oad.snapshot_id = osfi.snapshot_id
-    ),
-    cte_bien_gest_oad_osfi AS (
-        -- Liste complète des biens entre l'OAD et l'OSFI par snapshot_id
+    WITH liste_biens_oad_osfi AS (
+    -- Liste complète des biens entre l'OAD et l'OSFI par snapshot_id
         SELECT DISTINCT
             code_bat_ter,
             code_gestionnaire,
@@ -124,8 +106,23 @@ CREATE MATERIALIZED VIEW siep.bien_caracteristiques_complet_gestionnaire_vw AS
             code_bat_ter,
             code_gestionnaire,
             code_bat_gestionnaire,
-            snapshot_id
+            snapshot_id_parent
         FROM siep.bien_information_complementaire
+    ), cte_bien_gest_oad_osfi AS (
+        SELECT
+            lboo.code_bat_ter,
+            lboo.code_gestionnaire,
+            lboo.code_bat_gestionnaire,
+            lboo.snapshot_id,
+            vs.import_timestamp AS oad_import_timestamp,
+            vs_parent.import_timestamp AS osfi_import_timestamp
+        FROM liste_biens_oad_osfi lboo
+        LEFT JOIN versioning.snapshot vs
+            ON vs.snapshot_id = lboo.snapshot_id
+            AND vs.is_dag_completed IS True
+        LEFT JOIN versioning.snapshot vs_parent
+            ON vs_parent.snapshot_id_parent = lboo.snapshot_id
+            AND vs_parent.is_dag_completed IS True
     ), cte_bien_occupant_agrege AS (
         -- Agrégation des indicateurs à la maille code_bat_gestionnaire (bien gestionnaire)
         SELECT
@@ -261,48 +258,37 @@ CREATE MATERIALIZED VIEW siep.bien_caracteristiques_complet_gestionnaire_vw AS
     -- scsb.statut_fluide_global as statut_fluide_global,
     -- scsb.statut_batiment as statut_batiment,
     -- Date d'import
-    ct.oad_import_timestamp,
-    ct.osfi_import_timestamp
+    cte_bgoo.oad_import_timestamp,
+    cte_bgoo.osfi_import_timestamp
     FROM cte_bien_gest_oad_osfi cte_bgoo
-    LEFT JOIN couples_timestamps ct
-    ON ct.snapshot_id = cte_bgoo.snapshot_id
     -- Jointures datasets issus de l'OAD
     LEFT JOIN siep.bien sb
-        ON sb.snapshot_id = cte_bgoo.snapshot_id
-        AND sb.import_timestamp = ct.oad_import_timestamp
+        ON sb.import_timestamp = cte_bgoo.oad_import_timestamp
         AND sb.code_bat_ter = cte_bgoo.code_bat_ter
     LEFT JOIN siep.gestionnaire sgest
-        ON sgest.snapshot_id = cte_bgoo.snapshot_id
-        AND sgest.import_timestamp = ct.oad_import_timestamp
+        ON sgest.import_timestamp = cte_bgoo.oad_import_timestamp
         AND sgest.code_gestionnaire = cte_bgoo.code_gestionnaire
     LEFT JOIN siep.bien_strategie sbs
-        ON sbs.snapshot_id = cte_bgoo.snapshot_id
-        AND sbs.import_timestamp = ct.oad_import_timestamp
+        ON sbs.import_timestamp = cte_bgoo.oad_import_timestamp
         AND sbs.code_bat_ter = cte_bgoo.code_bat_ter
     LEFT JOIN siep.bien_deet_energie_ges sbdeg
-        ON sbdeg.snapshot_id = cte_bgoo.snapshot_id
-        AND sbdeg.import_timestamp = ct.oad_import_timestamp
+        ON sbdeg.import_timestamp = cte_bgoo.oad_import_timestamp
         AND sbdeg.code_bat_ter = cte_bgoo.code_bat_ter
     LEFT JOIN siep.bien_proprietaire sbp
-        ON sbp.snapshot_id = cte_bgoo.snapshot_id
-        AND sbp.import_timestamp = ct.oad_import_timestamp
+        ON sbp.import_timestamp = cte_bgoo.oad_import_timestamp
         AND sbp.code_bat_ter = cte_bgoo.code_bat_ter
     LEFT JOIN siep.bien_reglementation sbr
-        ON sbr.snapshot_id = cte_bgoo.snapshot_id
-        AND sbr.import_timestamp = ct.oad_import_timestamp
+        ON sbr.import_timestamp = cte_bgoo.oad_import_timestamp
         AND sbr.code_bat_ter = cte_bgoo.code_bat_ter
     LEFT JOIN siep.bien_typologie sbt
-        ON sbt.snapshot_id = cte_bgoo.snapshot_id
-        AND sbt.import_timestamp = ct.oad_import_timestamp
+        ON sbt.import_timestamp = cte_bgoo.oad_import_timestamp
         AND sbt.code_bat_ter = cte_bgoo.code_bat_ter
     -- Jointures datasets issus de l'OSFI
     LEFT JOIN siep.bien_information_complementaire sbic
-        ON sbic.snapshot_id = cte_bgoo.snapshot_id
-        AND sbic.import_timestamp = ct.osfi_import_timestamp
+        ON sbic.import_timestamp = cte_bgoo.osfi_import_timestamp
         AND sbic.code_bat_gestionnaire = cte_bgoo.code_bat_gestionnaire
     -- LEFT JOIN siep.conso_statut_batiment scsb
-    --    ON scsb.snapshot_id = cte_bgoo.snapshot_id
-    --    AND scsb.import_timestamp = ct.osfi_import_timestamp
+    --    AND scsb.import_timestamp = cte_bgoo.osfi_import_timestamp
     --    AND scsb.code_bat_gestionnaire = cte_bgoo.code_bat_gestionnaire
     -- Jointure avec ref_typologie basée sur usage_detaille_du_bien coalescé
     LEFT JOIN siep.ref_typologie srt
@@ -310,12 +296,10 @@ CREATE MATERIALIZED VIEW siep.bien_caracteristiques_complet_gestionnaire_vw AS
         ON srt.usage_detaille_du_bien = COALESCE(sbt.usage_detaille_du_bien, sbic.usage_detaille_du_bien)
     -- Jointure avec cte_bien_occupant_agrege
     LEFT JOIN cte_bien_occupant_agrege cte_boa
-        ON cte_boa.snapshot_id = cte_bgoo.snapshot_id
-        AND cte_boa.import_timestamp = ct.oad_import_timestamp
+        ON cte_boa.import_timestamp = cte_bgoo.oad_import_timestamp
         AND cte_boa.code_bat_gestionnaire = cte_bgoo.code_bat_gestionnaire
     -- Jointure avec l'état recalculé au niveau code_bat_ter
     LEFT JOIN cte_etat_bat_final cte_ebf
-        ON cte_ebf.snapshot_id = cte_bgoo.snapshot_id
-        AND cte_ebf.import_timestamp = ct.osfi_import_timestamp
+        ON cte_ebf.import_timestamp = cte_bgoo.osfi_import_timestamp
         AND cte_ebf.code_bat_ter = cte_bgoo.code_bat_ter
     ;
