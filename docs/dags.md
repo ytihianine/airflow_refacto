@@ -19,11 +19,11 @@ Ce guide explique comment créer des pipelines Airflow (appelées DAGs dans Airf
 Le framework propose une architecture en couches :
 
 - **DAGs (`dags/`)** : Orchestration des traitements métiers
-- **Tasks (`common_tasks/`)** : Tâches génériques réutilisables
-- **Infrastructure (`infra/`)** : Interaction avec les systèmes externes (base de données, S3, HTTP, mails)
-- **Enums (`_enums/`)** : Enums transverses nécessaires dans les dags, tâches, fonctions ...
-- **Types (`_types/`)** : Types transverses nécessaires dans les dags, tâches, fonctions ...
-- **Utilitaires (`utils/`)** : Tâches réutilisables et configuration
+- **Tasks (`modules.common_tasks/`)** : Tâches génériques réutilisables
+- **Infrastructure (`modules.infra/`)** : Interaction avec les systèmes externes (base de données, S3, HTTP, mails)
+- **Enums (`modules.enums/`)** : Enums transverses nécessaires dans les dags, tâches, fonctions ...
+- **Types (`modules.types/`)** : Types transverses nécessaires dans les dags, tâches, fonctions ...
+- **Utilitaires (`modules.utils/`)** : Tâches réutilisables et configuration
 
 Les dags doivent respecter [cette organisation](./convention.md#dags)
 
@@ -53,9 +53,10 @@ Chaque DAG doit définir ses paramètres selon la structure suivante :
 
 ```python
 from airflow.sdk import dag
-from enums.dags import DagStatus
-from modules.types.dags import DBParams, FeatureFlagsEnable
+from modules.enums.dags import DagStatus
 from modules.infra.mails.default_smtp import create_send_mail_callback, MailStatus
+from modules.types.dags import DBParams, FeatureFlagsEnable
+from modules.utils.config.dag_params import create_dag_params, create_default_args
 
 @dag(
     dag_id="id_unique_du_dag",
@@ -92,16 +93,22 @@ Les FeatureFlagsEnable permettent d'activer/désactiver certaines fonctionnalit�
 
 ### 1. Validation des Paramètres
 
-Une tâche générique est disponible: `from modules.common_tasks.alidation import validate_dag_parameters`
+Une tâche générique est disponible: `from modules.common_tasks.validation import validate_dag_parameters`
 
 ### 2. Tâches ETL (Extract, Transform, Load)
 
 #### ETL depuis Grist
 ```python
-from modules.common_tasks.grist import download_grist_doc_to_s3
-from modules.common_tasks.etl import create_grist_etl_task
+from functools import partial
 
-# Télécharger le document Grist
+from modules.common_tasks.grist import download_grist_doc_to_s3, generic_grist_processing
+from modules.constants import DEFAULT_GRIST_HOST
+from modules.types.dags import TaskConfig
+from modules.types.readers import GristReaderStrategy
+from modules.types.tasks import ETLTask, SingleInputStep
+from modules.types.writers import FileWriterStrategy
+
+# Télécharger le document Grist en début de DAG
 grist_doc = download_grist_doc_to_s3(
     selecteur="grist_doc",
     workspace_id="grist_ws_id",
@@ -110,42 +117,55 @@ grist_doc = download_grist_doc_to_s3(
     use_proxy=True,
 )
 
-# ETL Grist pour traiter une table du document avec fonction de processing personnalisée
-grist_etl = create_grist_etl_task(
-    selecteur="mon_selecteur",
-    doc_selecteur="grist_doc",
-    normalisation_process_func=ma_fonction_normalisation,
-    process_func=ma_fonction_processing
+# ETL Grist : traitement d'une table du document avec fonction de processing personnalisée
+grist_etl = ETLTask(
+    task_config=TaskConfig(task_id="ma_table"),
+    target="ma_table",
+    reader=GristReaderStrategy(),
+    steps=[
+        SingleInputStep(
+            fn=partial(
+                generic_grist_processing,
+                cols_to_keep=["colonne_1", "colonne_2"],
+                cols_mapping={"colonne_source": "colonne_cible"},
+                txt_columns=["colonne_2"],
+                custom_fn=ma_fonction_processing,  # Fonction de processing métier
+            ),
+            input_key="ma_table",
+            output_key="ma_table",
+        )
+    ],
+    writers=[FileWriterStrategy()],
+    add_metadata=True,
 )
 ```
 
 #### ETL Générique
 ```python
-from _types_.dags import TaskConfig, ETLStep
-from modules.utils.tasks.etl import create_task
+from modules.common_tasks.etl import create_task
+from modules.types.dags import TaskConfig, ETLStep
 
 # ETL générique avec traitement personnalisé
 etl_task = create_task(
     task_config=TaskConfig(
-        task_id="my_task_id"
+        task_id="my_task_id",
     ),
     output_selecteur="selecteur",
     steps=[
         ETLStep(
             fn=ma_fonction_processing,
-            kwargs={"additional_fn_args": True} # kwargs passés à la function
+            kwargs={"additional_fn_args": True},  # kwargs passés à la function
             use_context=True,
-            read_data=True
+            read_data=True,
         ),
         ...
         ETLStep(
             fn=ma_fonction_processing_2,
-            use_previous_output=True
+            use_previous_output=True,
         ),
     ],
     input_selecteurs=["input_1", "input_2"],
-    add_import_date=True,
-    add_snapshot_id=True,
+    add_metadata=True,  # Ajoute import_timestamp et snapshot_id
     export_output=True,
 )
 ```
@@ -169,36 +189,40 @@ convert_to_parquet = create_parquet_converter_task(
 
 #### Création de Tables Temporaires
 ```python
+from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.sql import (
-    create_tmp_tables,
     copy_tmp_table_to_real_table,
+    create_projet_snapshot,
+    create_tmp_tables,
+    delete_tmp_tables,
     ensure_partition,
     import_file_to_db,
-    LoadStrategy,
 )
-from modules.constants import (
-    DEFAULT_PG_DATA_CONN_ID,
-    DEFAULT_S3_CONN_ID,
-)
+from dags.config import nom_projet, storage_options
+
+# Récupération des configurations de selecteurs
+selecteur_configs = get_selecteur_config(storage_options=storage_options)
+
+# Création du snapshot du projet
+create_snapshot = create_projet_snapshot(nom_projet=nom_projet)
 
 # Création des tables temporaires
-create_tables = create_tmp_tables()
+create_tables = create_tmp_tables(
+    storage_options=storage_options,
+    reset_id_seq=False,
+)
 
 # Importer les données -- Tâche dynamique
-import_task = import_file_to_db.partial(
-        pg_conn_id=DEFAULT_PG_DATA_CONN_ID,
-        s3_conn_id=DEFAULT_S3_CONN_ID,
-        keep_file_id_col=True,
-        use_prod_schema=True
-    ).expand(
-        selecteur_config=get_projet_config(nom_projet=nom_projet)
-    )
+import_task = import_file_to_db.expand(selecteur_config=selecteur_configs)
 
-# Création de partition mensuelle
-create_partition = ensure_partition()
+# Création de partition mensuelle -- Tâche dynamique
+create_partition = ensure_partition.expand(selecteur_config=selecteur_configs)
 
 # Copie des données vers production
-copy_to_prod = copy_tmp_table_to_real_table()
+copy_to_prod = copy_tmp_table_to_real_table(storage_options=storage_options)
+
+# Suppression des tables temporaires
+delete_tables = delete_tmp_tables()
 ```
 
 ### 5. Opérations S3
@@ -221,21 +245,21 @@ delete_files = del_s3_files()
 # ✅ Bon : Utilisation de préfixes clairs
 @dag("pipeline_ventes_mensuelles", ...)
 def pipeline_ventes_mensuelles():
-    extract_data = create_grist_etl_task(...)
+    extract_data = ETLTask(...)  # ou create_task(...)
     transform_data = create_parquet_converter_task(...)
 
 # ❌ Éviter : Noms génériques
 @dag("dag1", ...)
 def my_dag():
-    task1 = create_grist_etl_task(...)
+    task1 = ETLTask(...)  # ou create_task(...)
 ```
 
 ### 2. Paramétrage
 
 ```python
 # ✅ Bon : Utilisation des constantes
-from modules.utils.config.vars import (
-    DEFAULT_S3_BUCKET, DEFAULT_PG_DATA_CONN_ID
+from modules.constants import (
+    DEFAULT_S3_BUCKET, DEFAULT_PG_DATA_CONN_ID, DEFAULT_S3_CONN_ID
 )
 ```
 
@@ -290,22 +314,40 @@ from modules.infra.mails.default_smtp import create_send_mail_callback, MailStat
     on_success_callback=create_send_mail_callback(mail_status=MailStatus.SUCCESS)
 )
 def mon_dag():
-    # Tasks avec callbacks individuels
-    risky_task = create_etl_task(
-        selecteur="data_source",
-        on_failure_callback=create_send_mail_callback(mail_status=MailStatus.ERROR)
+    # Tasks avec callbacks individuels (via TaskConfig)
+    risky_task = create_task(
+        task_config=TaskConfig(
+            task_id="risky_task",
+            on_failure_callback=create_send_mail_callback(mail_status=MailStatus.ERROR),
+        ),
+        output_selecteur="data_source",
+        steps=[...],
     )
 ```
 
 ### 2. Retry et Timeout
 
 ```python
-default_args = {
-    "retries": 2,
-    "retry_delay": timedelta(minutes=5),
-    "retry_exponential_backoff": True,
-    "max_retry_delay": timedelta(minutes=30),
-}
+from modules.utils.config.dag_params import create_default_args
+
+# Retry au niveau du DAG
+default_args = create_default_args(
+    retries=2,
+    retry_delay=timedelta(minutes=5),
+)
+
+# Retry au niveau d'une tâche (via TaskConfig)
+task_with_retry = create_task(
+    task_config=TaskConfig(
+        task_id="ma_tache",
+        retries=3,
+        retry_delay=timedelta(minutes=5),
+        retry_exponential_backoff=True,
+        max_retry_delay=timedelta(minutes=30),
+    ),
+    output_selecteur="selecteur",
+    steps=[...],
+)
 
 # Task avec timeout spécifique
 detect_files = S3KeySensor(
