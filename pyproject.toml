@@ -19,7 +19,7 @@
 
 default = [
     "pandas==3.0.5",
-    "pydantic-settings==2.14.2",
+    "pydantic-settings==2.15.0",
     "pyxlsb==1.0.10",
     "openpyxl==3.1.5",
     "xlrd==2.0.2",
@@ -39,17 +39,17 @@ airflow = [
 # ---- Airflow providers -----------------------------------------------------
 
 airflow-providers = [
-    "apache-airflow-providers-amazon==9.33.0",
-    "apache-airflow-providers-celery==3.23.0",
-    "apache-airflow-providers-common-compat==1.17.0",
+    "apache-airflow-providers-amazon==9.34.0",
+    "apache-airflow-providers-celery==3.23.1",
+    "apache-airflow-providers-common-compat==1.18.0",
     "apache-airflow-providers-common-io==1.8.0",
     "apache-airflow-providers-common-messaging==2.0.4",
-    "apache-airflow-providers-common-sql==2.0.3",
+    "apache-airflow-providers-common-sql==2.1.0",
     "apache-airflow-providers-http==6.0.5",
-    "apache-airflow-providers-postgres==7.0.0",
-    "apache-airflow-providers-smtp==3.0.2",
-    "apache-airflow-providers-standard==1.16.0",
-    "apache-airflow-providers-openlineage==2.19.0",
+    "apache-airflow-providers-postgres==7.0.1",
+    "apache-airflow-providers-smtp==3.0.3",
+    "apache-airflow-providers-standard==1.17.0",
+    "apache-airflow-providers-openlineage==2.20.0",
 ]
 
 # ---- Iceberg / S3 ----------------------------------------------------------
@@ -62,7 +62,8 @@ iceberg = [
 
 dev = [
     "pytest==9.1.1",
-    "pre-commit==4.6.1",
+    "pre-commit==4.6.2",
+    "complexipy==7.0.1",
 ]
 
 
