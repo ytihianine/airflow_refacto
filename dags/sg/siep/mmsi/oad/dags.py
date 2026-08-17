@@ -5,6 +5,7 @@ from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sdk import dag, task_group
 from airflow.sdk.bases.operator import chain
+from dags.sg.siep.mmsi.eligibilite_fcu.config import dag_id_fcu
 from dags.sg.siep.mmsi.georisques.config import dag_id_georisque
 from dags.sg.siep.mmsi.oad.caracteristiques.tasks import (
     oad_carac_to_parquet,
@@ -78,10 +79,19 @@ def oad() -> None:
     )
 
     selecteur_configs = get_selecteur_config(storage_options=storage_options)
-    trigger_georisques_dag = TriggerDagRunOperator(
-        task_id="trigger_georisques_dag",
-        trigger_dag_id=dag_id_georisque,
-    )
+
+    @task_group
+    def trigger_linked_dags() -> None:
+        trigger_fcu_dag = TriggerDagRunOperator(
+            task_id="trigger_fcu_dag",
+            trigger_dag_id=dag_id_fcu,
+        )
+        trigger_georisques_dag = TriggerDagRunOperator(
+            task_id="trigger_georisques_dag",
+            trigger_dag_id=dag_id_georisque,
+        )
+
+        chain([trigger_fcu_dag, trigger_georisques_dag])
 
     @task_group
     def convert_file_to_parquet() -> None:
@@ -114,8 +124,8 @@ def oad() -> None:
         del_s3_files(storage_options=storage_options),
         delete_tmp_tables(storage_options=storage_options),
         update_projet_snapshot_status(),
-        trigger_georisques_dag,
         end_task,
+        trigger_linked_dags(),
     )
 
 
