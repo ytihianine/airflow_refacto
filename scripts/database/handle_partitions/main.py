@@ -12,22 +12,17 @@ from scripts.settings import get_settings
 
 
 @dataclass(frozen=True)
-class CreateAction:
-    enable: bool
-    dates: list[str]
+class DateMapping:
+    current: str
+    new: str
 
+    @property
+    def current_as_datetime(self) -> datetime:
+        return datetime.strptime(self.current, "%Y-%m-%d %H:%M:%S")
 
-@dataclass(frozen=True)
-class UpdateAction:
-    enable: bool
-    current_timestamp: str
-    new_timestamp: str
-
-
-@dataclass(frozen=True)
-class DeleteAction:
-    enable: bool
-    dates: list[str]
+    @property
+    def new_as_datetime(self) -> datetime:
+        return datetime.strptime(self.new, "%Y-%m-%d %H:%M:%S")
 
 
 @dataclass(frozen=True)
@@ -35,26 +30,12 @@ class Config:
     dry_run: bool
     schema: str
     table_to_include: list[str]
-    create: CreateAction
-    update: UpdateAction
-    delete: DeleteAction
-
-
-def get_partitions(schema: str, curseur: extensions.cursor) -> list[tuple[str, ...]]:
-    curseur.execute(query=f"""
-        SELECT
-            child.relname AS partition_name,
-            parent.relname AS parent_table,
-            child.relnamespace::regnamespace::text AS schema_name
-        FROM pg_inherits
-        JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
-        JOIN pg_class child ON pg_inherits.inhrelid = child.oid
-        JOIN pg_namespace nmsp_parent ON parent.relnamespace = nmsp_parent.oid
-        WHERE nmsp_parent.nspname = '{schema}'
-        AND child.relispartition = true
-        ORDER BY parent.relname, child.relname;
-        """)
-    return curseur.fetchall()
+    table_to_exclude: list[str]
+    id_projet: int
+    dates: list[DateMapping]
+    run_create: bool
+    run_update: bool
+    run_delete: bool
 
 
 def list_table_names(schema: str, curseur: extensions.cursor) -> list[tuple[str, ...]]:
@@ -71,12 +52,13 @@ def list_table_names(schema: str, curseur: extensions.cursor) -> list[tuple[str,
 
 def create_partitions(
     tbl_names: list[tuple[Any, ...]],
-    range_start: datetime,
-    range_end: datetime,
+    partition_start_date: datetime,
     cursor: extensions.cursor,
     dry_run: bool = True,
 ) -> None:
     custom_logger.info(msg=f"{len(tbl_names)} table(s) trouvée(s)")
+    range_start = partition_start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    range_end = range_start + timedelta(days=1)
 
     created_count = 0
     for tbl_name, schema in tbl_names:
@@ -109,10 +91,31 @@ def create_partitions(
         custom_logger.info(msg=f"\n[DRY RUN] {len(tbl_names)} partitions(s) seraient créées")
 
 
-def update_import_timestamp(
-    tbl_names: list[tuple[Any, ...]],
+def update_import_timestamp_in_versioning(
+    id_projet: int,
     current_import_timestamp: datetime,
     new_import_timestamp: datetime,
+    cursor: extensions.cursor,
+    dry_run: bool = True,
+) -> None:
+    custom_logger.info(msg=f"Updating import timestamp for project {id_projet}.")
+
+    update_query = f"""
+        UPDATE versioning.snapshot
+        SET import_timestamp = '{new_import_timestamp}', import_date = '{new_import_timestamp.date()}'
+        WHERE id_projet = {id_projet}
+        AND import_timestamp = '{current_import_timestamp}';
+    """
+
+    if dry_run:
+        custom_logger.info(msg=f"[DRY RUN] {update_query}")
+    else:
+        cursor.execute(query=update_query)
+        custom_logger.info(msg=f"✓ Project {id_projet} updated successfully.")
+
+
+def update_import_timestamp(
+    tbl_names: list[tuple[Any, ...]],
     cursor: extensions.cursor,
     dry_run: bool = True,
 ) -> None:
@@ -122,9 +125,13 @@ def update_import_timestamp(
     for tbl_name, schema in tbl_names:
         custom_logger.info(msg=f"Updating table {tbl_name}.")
         create_query = f"""
-            UPDATE {schema}.{tbl_name}
-            SET import_timestamp = '{new_import_timestamp}',
-            WHERE import_timestamp = '{current_import_timestamp}';
+            UPDATE {schema}.{tbl_name} current
+            SET import_timestamp = tmp_snap.import_timestamp
+            FROM (
+                SELECT import_timestamp, snapshot_id
+                FROM versioning."snapshot" s
+                WHERE id_projet=3) tmp_snap
+            WHERE current.snapshot_id = tmp_snap.snapshot_id;
         """
 
         if dry_run:
@@ -141,46 +148,47 @@ def update_import_timestamp(
 
 
 def drop_partitions(
-    partitions: list[tuple[Any, ...]],
+    tbl_names: list[tuple[Any, ...]],
     cursor: extensions.cursor,
+    partition_start_date: datetime,
     dry_run: bool = True,
-    dates: list[datetime] | None = None,
 ) -> None:
     """
     Supprime toutes les partitions d'un schéma spécifique.
 
     Args:
-        connection_params (dict): Paramètres de connexion PostgreSQL
-        schema_name (str): Nom du schéma
+        tbl_names (list[tuple[Any, ...]]): Liste des tables et schémas
+        cursor (extensions.cursor): Curseur de la base de données
+        partition_start_date (datetime): Date de début de la partition
         dry_run (bool): Si True, affiche les commandes sans les exécuter
     """
-    custom_logger.info(msg=f"{len(partitions)} partition(s) trouvée(s)")
-
-    if dates is not None:
-        partitions = [
-            partition
-            for partition in partitions
-            if any(substring.strftime(format="%Y%m%d") in partition[0] for substring in dates)
-        ]
-
     # Suppression des partitions
     dropped_count = 0
-    for partition_name, _parent_table, schema in partitions:
+    for tbl_name, schema in tbl_names:
+        # Nom de la partition : parenttable_YYYY_MM
+        partition_name = "_".join(
+            [
+                tbl_name,
+                partition_start_date.strftime(format="%Y%m%d"),
+                (partition_start_date + timedelta(days=1)).strftime(format="%Y%m%d"),
+            ]
+        )
+
         drop_query = sql.SQL(string="DROP TABLE IF EXISTS {}.{} CASCADE").format(
             sql.Identifier(schema), sql.Identifier(partition_name)
         )
-
         if dry_run:
             custom_logger.info(msg=f"[DRY RUN] {drop_query.as_string(context=cursor)}")
         else:
             cursor.execute(query=drop_query)
             custom_logger.info(msg=f"✓ Supprimée: {schema}.{partition_name}")
-            dropped_count += 1
+
+        dropped_count += 1
 
     if not dry_run:
-        custom_logger.info(msg=f"\n{dropped_count}/{len(partitions)} partition(s) supprimée(s) avec succès")
+        custom_logger.info(msg=f"\n{dropped_count} partition(s) supprimée(s) avec succès")
     else:
-        custom_logger.info(msg=f"\n[DRY RUN] {len(partitions)} partition(s) seraient supprimées")
+        custom_logger.info(msg=f"\n[DRY RUN] {dropped_count} partition(s) seraient supprimées")
 
     cursor.close()
 
@@ -195,10 +203,13 @@ if __name__ == "__main__":
         config = Config(
             dry_run=_config.get("dry_run", True),
             schema=_config.get("schema"),
-            table_to_include=_config.get("table_to_include", []),
-            create=CreateAction(**_config.get("create", {})),
-            update=UpdateAction(**_config.get("update", {})),
-            delete=DeleteAction(**_config.get("delete", {})),
+            table_to_include=_config.get("table_to_include"),
+            table_to_exclude=_config.get("table_to_exclude"),
+            id_projet=_config.get("id_projet"),
+            dates=[DateMapping(**date_mapping) for date_mapping in _config.get("dates", [])],
+            run_create=_config.get("run_create", False),
+            run_update=_config.get("run_update", False),
+            run_delete=_config.get("run_delete", False),
         )
     settings = get_settings()
 
@@ -215,62 +226,57 @@ if __name__ == "__main__":
     # Récupérer les tables concernées
     all_tables = list_table_names(schema=config.schema, curseur=pg_cur)
     tables = [tbl for tbl in all_tables if tbl[0].startswith(tuple(config.table_to_include))]
+    tables = [tbl for tbl in tables if not tbl[0].startswith(tuple(config.table_to_exclude))]
+    custom_logger.info(msg=f"{len(tables)} Tables to process: {[tbl[0] for tbl in tables]}")
 
     # Créer les nouvelles partitions si nécessaire
-    if config.create.enable:
-        for _, str_date in enumerate(config.create.dates):
-            try:
-                start_date = datetime.strptime(str_date, "%Y-%m-%d")
-                end_date = start_date + timedelta(days=1)
-                create_partitions(
-                    tbl_names=tables,
-                    range_start=start_date,
-                    range_end=end_date,
-                    cursor=pg_cur,
-                    dry_run=config.dry_run,
-                )
-                pg_conn.commit()
-            except Exception as e:
-                pg_conn.rollback()
-                custom_logger.info(
-                    msg=f"✗ Erreur lors de la création de partitions dans le schéma {config.schema}: {e}"
-                )
+    for _, date_mapping in enumerate(config.dates):
+        curr_date = date_mapping.current_as_datetime
+        new_date = date_mapping.new_as_datetime
 
-    # Mettre à jour les timestamps
-    if config.update.enable:
-        try:
-            current_timestamp = datetime.strptime(config.update.current_timestamp, "%Y-%m-%d %H:%M:%S")
-            new_timestamp = datetime.strptime(config.update.new_timestamp, "%Y-%m-%d %H:%M:%S")
-
-            update_import_timestamp(
+        custom_logger.info(
+            msg=f"[{_ + 1} / {len(config.dates)}] Processing date mapping: {date_mapping.current} -> {date_mapping.new}"
+        )
+        if config.run_create:
+            create_partitions(
                 tbl_names=tables,
-                current_import_timestamp=current_timestamp,
-                new_import_timestamp=new_timestamp,
+                partition_start_date=new_date,
                 cursor=pg_cur,
                 dry_run=config.dry_run,
             )
             pg_conn.commit()
-        except Exception as e:
-            pg_conn.rollback()
-            custom_logger.info(
-                msg=f"✗ Erreur lors de la mise à jour des timestamps dans le schéma {config.schema}: {e}"
-            )
 
-    # Supprimer les partitions
-    if config.delete.enable:
-        # Récupérer la liste des partitions
-        _partitions = get_partitions(schema=config.schema, curseur=pg_cur)
-        partitions = [partition for partition in _partitions if partition[0].startswith(tuple(config.table_to_include))]
-        custom_logger.info(msg=f"Partitions filtrées dans le schéma {config.schema}: {partitions}")
-        dates = [datetime.strptime(str_date, "%Y-%m-%d") for str_date in config.delete.dates]
-        for _, str_date in enumerate(config.delete.dates):
+        # Mettre à jour les timestamps
+        if config.run_update:
+            update_import_timestamp_in_versioning(
+                id_projet=config.id_projet,
+                current_import_timestamp=curr_date,
+                new_import_timestamp=new_date,
+                cursor=pg_cur,
+                dry_run=config.dry_run,
+            )
+            update_import_timestamp(
+                tbl_names=tables,
+                cursor=pg_cur,
+                dry_run=config.dry_run,
+            )
+            pg_conn.commit()
+
+    # We do the delete part once everythin is created and updated, to avoid any issues with foreign keys
+    for _, date_mapping in enumerate(config.dates):
+        curr_date = date_mapping.current_as_datetime
+        new_date = date_mapping.new_as_datetime
+
+        custom_logger.info(
+            msg=f"[{_ + 1} / {len(config.dates)}] Processing date mapping: {date_mapping.current} -> {date_mapping.new}"
+        )
+        if config.run_delete:
             try:
-                start_date = datetime.strptime(str_date, "%Y-%m-%d")
                 drop_partitions(
-                    partitions=partitions,
+                    tbl_names=tables,
                     cursor=pg_cur,
+                    partition_start_date=curr_date,
                     dry_run=config.dry_run,
-                    dates=dates,
                 )
                 pg_conn.commit()
             except Exception as e:
