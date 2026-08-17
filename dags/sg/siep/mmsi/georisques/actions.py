@@ -128,19 +128,26 @@ def get_georisques(df: pd.DataFrame) -> pd.DataFrame:
 
     risques_results = []
     nb_rows = len(df)
-    for row in df.itertuples():
-        logging.info(msg=f"{row.Index + 1}/{nb_rows}")
+
+    for i, (code_bat_ter, latitude, longitude, adresse_normalisee) in enumerate(
+        df.loc[:, ["code_bat_ter", "latitude", "longitude", "adresse_normalisee"]].itertuples(
+            index=False,
+            name=None,
+        ),
+        start=1,
+    ):
+        logging.info(msg=f"{i + 1}/{nb_rows}")
         query_param = format_query_param(
-            adresse=row.adresse_normalisee,
-            latitude=row.latitude,
-            longitude=row.longitude,
+            adresse=adresse_normalisee,
+            latitude=latitude,
+            longitude=longitude,
         )
 
         api_response = None
         if query_param:
             api_response = get_risque(http_client=http_internet_client, url=url, query_param=query_param)
 
-        formated_risques = format_risque_results(code_bat_ter=row.code_bat_ter, api_response=api_response)
+        formated_risques = format_risque_results(code_bat_ter=code_bat_ter, api_response=api_response)
         logging.info(msg=formated_risques)
         risques_results.extend(formated_risques)
 
