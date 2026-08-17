@@ -2,6 +2,7 @@ from airflow.sdk import dag
 from airflow.sdk.bases.operator import chain
 from dags.sg.siep.mmsi.georisques.config import dag_id_georisque, nom_projet_georisque, storage_options
 from dags.sg.siep.mmsi.georisques.task import georisques_group
+from dags.sg.siep.mmsi.oad.config import nom_projet_oad
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
     copy_s3_files,
@@ -50,7 +51,7 @@ def bien_georisques() -> None:
 
     chain(
         validate_dag_parameters(),
-        create_projet_snapshot(nom_projet_parent="Outil aide diagnostic"),
+        create_projet_snapshot(nom_projet_parent=nom_projet_oad),
         georisques_group(),
         create_tmp_tables(storage_options=storage_options, reset_id_seq=False),
         import_file_to_db.expand(selecteur_config=selecteur_configs),

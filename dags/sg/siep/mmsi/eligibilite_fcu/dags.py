@@ -5,6 +5,7 @@ from dags.sg.siep.mmsi.eligibilite_fcu.task import (
     get_eligibilite_fcu,
     process_fcu_result,
 )
+from dags.sg.siep.mmsi.oad.config import nom_projet_oad
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
     copy_s3_files,
@@ -53,7 +54,7 @@ def eligibilite_fcu_dag() -> None:
 
     chain(
         validate_dag_parameters(),
-        create_projet_snapshot(nom_projet_parent="Outil aide diagnostic"),
+        create_projet_snapshot(nom_projet_parent=nom_projet_oad),
         get_eligibilite_fcu(),
         process_fcu_result(),
         create_tmp_tables(storage_options=storage_options, reset_id_seq=False),
