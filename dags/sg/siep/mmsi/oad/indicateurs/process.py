@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import numpy as np
 import pandas as pd
 from modules.utils.process.text import normalize_whitespace_columns
@@ -160,15 +158,10 @@ def process_bails(df: pd.DataFrame) -> pd.DataFrame:
     ]
     df = df.loc[:, cols_to_keep]
 
-    df = df.assign(
-        date_debut_bail=df["date_debut_bail"].apply(
-            lambda x: datetime.strptime(x, "%d/%m/%Y") if isinstance(x, str) else pd.NaT
-        ),
-        date_fin_bail=df["date_fin_bail"].apply(
-            lambda x: datetime.strptime(x, "%d/%m/%Y") if isinstance(x, str) else pd.NaT
-        ),
-        type_contrat=df["type_contrat"].str.split().str.join(" "),
+    df[["date_debut_bail", "date_fin_bail"]] = df[["date_debut_bail", "date_fin_bail"]].apply(
+        pd.to_datetime, format="%d/%m/%Y", errors="coerce"
     )
+    df["type_contrat"] = df["type_contrat"].str.split().str.join(" ")
 
     return df
 
