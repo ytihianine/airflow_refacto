@@ -4,6 +4,7 @@ from airflow.sdk import dag
 from airflow.sdk.bases.operator import chain
 from dags.sg.siep.mmsi.api_operat.config import dag_id_operat, nom_projet_operat, storage_options
 from dags.sg.siep.mmsi.api_operat.task import output  # , source
+from dags.sg.siep.mmsi.oad.config import nom_projet_oad
 from modules.common_tasks.projet import get_selecteur_config
 from modules.common_tasks.s3 import (
     copy_s3_files,
@@ -52,7 +53,7 @@ def api_operat_ademe() -> None:
     chain(
         validate_dag_parameters(),
         selecteur_configs,
-        create_projet_snapshot(nom_projet_parent="Outil aide diagnostic"),
+        create_projet_snapshot(nom_projet_parent=nom_projet_oad),
         # source(),
         output(),
         create_tmp_tables(reset_id_seq=False),

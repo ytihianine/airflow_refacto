@@ -1,5 +1,8 @@
 from modules.types.projet import SelecteurStorageOptions
 
+dag_id_osfi = "consommation_des_batiments"
+nom_projet_osfi = "Consommation des bâtiments"
+
 storage_options = {
     "conso_mens_source": SelecteurStorageOptions(
         write_to_db=False,

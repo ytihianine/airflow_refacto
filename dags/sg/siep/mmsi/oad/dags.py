@@ -5,6 +5,7 @@ from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.sdk import dag, task_group
 from airflow.sdk.bases.operator import chain
+from dags.sg.siep.mmsi.api_operat.config import dag_id_operat
 from dags.sg.siep.mmsi.eligibilite_fcu.config import dag_id_fcu
 from dags.sg.siep.mmsi.georisques.config import dag_id_georisque
 from dags.sg.siep.mmsi.oad.caracteristiques.tasks import (
@@ -87,8 +88,12 @@ def oad() -> None:
             task_id="trigger_georisques_dag",
             trigger_dag_id=dag_id_georisque,
         )
+        trigger_operat_dag = TriggerDagRunOperator(
+            task_id="trigger_operat_dag",
+            trigger_dag_id=dag_id_operat,
+        )
 
-        chain([trigger_fcu_dag, trigger_georisques_dag])
+        chain([trigger_fcu_dag, trigger_georisques_dag, trigger_operat_dag])
 
     @task_group
     def convert_file_to_parquet() -> None:
