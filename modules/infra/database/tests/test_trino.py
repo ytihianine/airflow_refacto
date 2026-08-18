@@ -1,5 +1,6 @@
 """Tests for TrinoAdapter."""
 
+from typing import cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -23,7 +24,7 @@ def adapter() -> TrinoAdapter:
         )
         # Force connection initialization
         _ = handler.conn
-        yield handler
+        return handler
 
 
 class TestTrinoAdapterInit:
@@ -71,7 +72,7 @@ class TestTrinoAdapterFetchOne:
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = (1, "Alice")
         mock_cursor.description = [("id",), ("name",)]
-        adapter.conn.cursor.return_value = mock_cursor
+        cast("MagicMock", adapter.conn).cursor.return_value = mock_cursor
 
         result = adapter.fetch_one("SELECT * FROM users WHERE id = 1")
         assert result == {"id": 1, "name": "Alice"}
@@ -79,7 +80,7 @@ class TestTrinoAdapterFetchOne:
     def test_fetch_one_returns_none(self, adapter: TrinoAdapter) -> None:
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = None
-        adapter.conn.cursor.return_value = mock_cursor
+        cast("MagicMock", adapter.conn).cursor.return_value = mock_cursor
 
         result = adapter.fetch_one("SELECT * FROM users WHERE id = 999")
         assert result is None
@@ -90,7 +91,7 @@ class TestTrinoAdapterFetchAll:
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [(1, "Alice"), (2, "Bob")]
         mock_cursor.description = [("id",), ("name",)]
-        adapter.conn.cursor.return_value = mock_cursor
+        cast("MagicMock", adapter.conn).cursor.return_value = mock_cursor
 
         results = adapter.fetch_all("SELECT * FROM users")
         assert len(results) == 2
@@ -103,7 +104,7 @@ class TestTrinoAdapterFetchDf:
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [(1, "Alice")]
         mock_cursor.description = [("id",), ("name",)]
-        adapter.conn.cursor.return_value = mock_cursor
+        cast("MagicMock", adapter.conn).cursor.return_value = mock_cursor
 
         df = adapter.fetch_df("SELECT * FROM users")
         assert len(df) == 1
