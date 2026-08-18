@@ -84,7 +84,7 @@ run-complexipy: ## Lancer complexipy sur tous les fichiers
 	$(VENV_BIN)/complexipy . > complexipy_summary_report.txt
 
 run-complexipy-with-refactor-suggestions: ## Lancer complexipy sur tous les fichiers
-	$(VENV_BIN)/complexipy . --failed --suggest-refactors > complexipy_refactor_report.txt
+	$(VENV_BIN)/complexipy . --suggest-refactors > complexipy_refactor_report.txt
 
 # ===================================
 # Nettoyage des fichiers temporaires
