@@ -36,7 +36,7 @@ def export_database(db_conn_id: str) -> None:
             logging.warning(msg="Aucun nom de base de données n'a été récupéré.")
             return []
 
-        return result["datname"].values.tolist()
+        return [str(db_name) for db_name in result["datname"].tolist()]
 
     @task(map_index_template="{{ db_name }}")
     def export_database(db_conn_id: str, db_name: str, **context) -> None:
