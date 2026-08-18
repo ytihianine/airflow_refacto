@@ -19,35 +19,30 @@ def tasks_oad_caracteristiques():
         output_selecteur="sites",
         input_selecteurs=["oad_carac"],
         steps=[ETLStep(fn=process.process_sites, read_data=True)],
-        # use_required_cols=True,
     )
     biens = create_task(
         task_config=TaskConfig(task_id="biens"),
         output_selecteur="biens",
         input_selecteurs=["oad_carac"],
         steps=[ETLStep(fn=process.process_biens, read_data=True)],
-        # use_required_cols=True,
     )
     gestionnaires = create_task(
         task_config=TaskConfig(task_id="gestionnaires"),
         output_selecteur="gestionnaires",
         input_selecteurs=["oad_carac"],
         steps=[ETLStep(fn=process.process_gestionnaires, read_data=True)],
-        # use_required_cols=True,
     )
     biens_gestionnaires = create_task(
         task_config=TaskConfig(task_id="biens_gestionnaires"),
         output_selecteur="biens_gest",
         input_selecteurs=["oad_carac"],
         steps=[ETLStep(fn=process.process_biens_gestionnaires, read_data=True)],
-        # use_required_cols=True,
     )
     biens_occupants = create_task(
         task_config=TaskConfig(task_id="biens_occupants"),
         output_selecteur="biens_occupants",
         input_selecteurs=["oad_carac"],
         steps=[ETLStep(fn=process.process_biens_occupants, read_data=True)],
-        # use_required_cols=True,
     )
 
     chain(
