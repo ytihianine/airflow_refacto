@@ -61,4 +61,4 @@ def is_in_range(
 
     df_union = df_inf & df_sup
 
-    return df_union.all(axis=None)
+    return bool(df_union.all(axis=None))
