@@ -146,4 +146,5 @@ python_functions = [
 addopts = [
     "--strict-markers",
     "--tb=short",
+    "--import-mode=importlib",
 ]
