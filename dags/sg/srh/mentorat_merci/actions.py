@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 from collections.abc import Mapping
@@ -159,3 +160,13 @@ def send_result(dfs: Mapping[str, pd.DataFrame], context: Mapping[str, Any]) -> 
     send_mail(mail_message=mail_message)
 
     os.remove(path=tmp_path)
+
+
+def action_generer_binomes_mentorat(df: pd.DataFrame, context: Mapping[str, Any]) -> None:
+    """
+    Action principale pour générer les binômes de mentorat et envoyer le rapport par mail.
+    """
+    logging.info(msg="Début de l'action : génération des binômes de mentorat")
+    dfs_resultats = trouver_meilleurs_binomes(df=df)
+    send_result(dfs=dfs_resultats, context=context)
+    logging.info(msg="Fin de l'action : génération des binômes de mentorat")

@@ -26,8 +26,7 @@ generer_binomes = create_task(
     output_selecteur="generer_binome",
     input_selecteurs=["agent_inscrit"],
     steps=[
-        ETLStep(fn=actions.trouver_meilleurs_binomes, read_data=True),
-        ETLStep(fn=actions.send_result, use_context=True, use_previous_output=True),
+        ETLStep(fn=actions.action_generer_binomes_mentorat, read_data=True),
     ],
     export_output=False,
 )
