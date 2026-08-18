@@ -26,5 +26,6 @@ class TestDBInterfaceCannotBeInstantiatedDirectly:
             "commit",
             "rollback",
             "copy_expert",
+            "connection",
         }
         assert expected_methods == DBInterface.__abstractmethods__
