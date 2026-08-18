@@ -2,6 +2,7 @@
 
 from typing import Any
 from unittest.mock import MagicMock
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -33,6 +34,7 @@ class ConcreteHttpClient(HttpInterface):
         self.last_call = {
             "method": method,
             "url": url,
+            "endpoint": urlsplit(url).path,
             "params": params,
             "data": data,
             "json": json,
