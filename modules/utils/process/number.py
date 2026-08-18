@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pandas._typing import DateTimeErrorChoices
 
@@ -24,22 +25,22 @@ def is_lower(
     cols_to_check: list[str],
     seuil: float | int,
     inclusive=True,
-) -> bool:
+) -> np.bool_:
     """
     Checks if all values are below seuil.
     """
     df_inf = df[cols_to_check].le(seuil) if inclusive else df[cols_to_check].lt(seuil)
 
-    return df_inf.all(axis=None)  # type: ignore
+    return df_inf.all(axis=None)
 
 
-def is_upper(df: pd.DataFrame, cols_to_check: list[str], seuil: float | int, inclusive=True) -> bool:
+def is_upper(df: pd.DataFrame, cols_to_check: list[str], seuil: float | int, inclusive=True) -> np.bool_:
     """
     Checks if all values are above seuil.
     """
     df_sup = df[cols_to_check].ge(seuil) if inclusive else df[cols_to_check].gt(seuil)
 
-    return df_sup.all(axis=None)  # type: ignore
+    return df_sup.all(axis=None)
 
 
 def is_in_range(
@@ -48,7 +49,7 @@ def is_in_range(
     seuil_inf: float | int,
     seuil_sup: float | int,
     inclusive=True,
-) -> bool:
+) -> np.bool_:
     """
     Checks if all values are within a given range.
     """
@@ -61,4 +62,4 @@ def is_in_range(
 
     df_union = df_inf & df_sup
 
-    return bool(df_union.all(axis=None))
+    return df_union.all(axis=None)
