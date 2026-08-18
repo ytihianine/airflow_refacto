@@ -25,10 +25,7 @@ def _add_metadata(df: pd.DataFrame, nom_projet: str) -> pd.DataFrame:
 
     df["import_timestamp"] = metadata.import_timestamp
     df["snapshot_id"] = str(metadata.snapshot_id)
-    df["snapshot_id_parent"] = metadata.snapshot_id_parent
-
-    if metadata.snapshot_id_parent is not None:
-        df["snapshot_id_parent"] = str(metadata.snapshot_id_parent)
+    df["snapshot_id_parent"] = str(metadata.snapshot_id_parent) if metadata.snapshot_id_parent is not None else None
 
     return df
 
