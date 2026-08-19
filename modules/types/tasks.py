@@ -110,8 +110,10 @@ class ETLTask(ABC):
     ) -> pd.DataFrame:
         df = df.copy()
 
-        df["snapshot_id"] = runtime.metadata.snapshot_id
-        df["snapshot_id_parent"] = runtime.metadata.snapshot_id_parent
+        df["snapshot_id"] = str(runtime.metadata.snapshot_id)
+        df["snapshot_id_parent"] = (
+            str(runtime.metadata.snapshot_id_parent) if runtime.metadata.snapshot_id_parent is not None else None
+        )
         df["import_timestamp"] = runtime.metadata.import_timestamp
 
         return df
