@@ -9,10 +9,11 @@ import pandas as pd
 from airflow.sdk import XComArg, task
 
 from modules.types.dags import TaskConfig
-from modules.types.projet import SelecteurConfig
+from modules.types.projet import ProjetMetadata, SelecteurConfig
 from modules.types.readers import DataContext, ReaderStrategy
 from modules.types.writers import WriterStrategy
 from modules.utils.config.dag_params import get_execution_date, get_project_name
+from modules.utils.config.tasks import get_projet_metadata
 from modules.utils.logs import df_info
 
 
@@ -54,7 +55,7 @@ class RuntimeContext:
     airflow_context: dict[str, Any]
     project_name: str
     execution_date: datetime
-    snapshot_id: str
+    metadata: ProjetMetadata
     selecteurs: dict[str, SelecteurConfig]
 
     @classmethod
@@ -62,15 +63,12 @@ class RuntimeContext:
         cls,
         context: dict[str, Any],
         selecteur_config_task_id: str,
-        snapshot_task_id: str = "get_projet_snapshot",
     ) -> "RuntimeContext":
         project_name = get_project_name(context=context)
         execution_date = get_execution_date(context=context)
+        metadata = get_projet_metadata(nom_projet=project_name)
+        snapshot_id = metadata.snapshot_id
 
-        snapshot_id = context["ti"].xcom_pull(
-            key="return_value",
-            task_ids=snapshot_task_id,
-        )
         if not snapshot_id:
             raise ValueError("snapshot_id is not defined")
 
@@ -90,7 +88,7 @@ class RuntimeContext:
             airflow_context=context,
             project_name=project_name,
             execution_date=execution_date,
-            snapshot_id=snapshot_id,
+            metadata=metadata,
             selecteurs=selecteurs,
         )
 
@@ -112,11 +110,9 @@ class ETLTask(ABC):
     ) -> pd.DataFrame:
         df = df.copy()
 
-        dt = runtime.execution_date.replace(tzinfo=None)
-
-        df["snapshot_id"] = runtime.snapshot_id
-        df["import_timestamp"] = dt
-        df["import_date"] = dt.date()
+        df["snapshot_id"] = runtime.metadata.snapshot_id
+        df["snapshot_id_parent"] = runtime.metadata.snapshot_id_parent
+        df["import_timestamp"] = runtime.metadata.import_timestamp
 
         return df
 
