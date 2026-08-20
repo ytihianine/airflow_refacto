@@ -159,7 +159,7 @@ class SelecteurStorageOptions:
     keep_file_id_col: bool = True
     is_partitioned: bool = True
     partition_period: PartitionTimePeriod = PartitionTimePeriod.DAY
-    load_strategy: LoadStrategy = LoadStrategy.INCREMENTAL
+    load_strategy: LoadStrategy = LoadStrategy.APPEND
 
     def __post_init__(self) -> None:
         # Convert partition_period and load_strategy to their respective Enum types if they are provided as strings
