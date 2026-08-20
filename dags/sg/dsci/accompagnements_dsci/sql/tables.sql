@@ -6,568 +6,640 @@ CREATE SCHEMA IF NOT EXISTS activite_dsci;
 */
 
 CREATE TABLE activite_dsci."ref_typologie_accompagnement" (
-  "id" integer PRIMARY KEY,
-  "typologie_accompagnement" text
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "typologie_accompagnement" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_bureau" (
-  "id" integer PRIMARY KEY,
-  "bureau" text
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "bureau" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
-drop table activite_dsci."ref_profil_correspondant" CASCade;
+DROP TABLE IF EXISTS activite_dsci."ref_profil_correspondant" CASCADE;
 CREATE TABLE activite_dsci."ref_profil_correspondant" (
-  "id" integer PRIMARY KEY,
-  "profil_correspondant" text,
-  "intitule_long" text,
-  "created_by" text,
-  "updated_by" text
-  -- "created_at" date,
-  -- "updated_at" date
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "profil_correspondant" text,
+    "intitule_long" text,
+    "created_by" text,
+    "updated_by" text,
+    -- "created_at" date,
+    -- "updated_at" date,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_direction" (
-  "id" integer PRIMARY KEY,
-  "direction" text,
-  "libelle_long" text,
-  "administration" text
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "direction" text,
+    "libelle_long" text,
+    "administration" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_region" (
-  "id" integer PRIMARY KEY,
-  "region" text
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "region" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_certification" (
-  "id" integer PRIMARY KEY,
-  "competence" text
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "competence" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_pole" (
-  "id" integer PRIMARY KEY,
-  "id_bureau" int,
-  "pole" text,
-	FOREIGN KEY ("id_bureau") REFERENCES activite_dsci."ref_bureau" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_bureau" int,
+    "pole" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+    --FOREIGN KEY ("id_bureau") REFERENCES activite_dsci."ref_bureau" ("id") ON DELETE SET NULL
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_type_accompagnement" (
-  "id" integer PRIMARY KEY,
-  "type_d_accompagnement" text,
-  "id_pole" int,
-	FOREIGN KEY ("id_pole") REFERENCES activite_dsci."ref_pole" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "type_d_accompagnement" text,
+    "id_pole" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+    -- FOREIGN KEY ("id_pole") REFERENCES activite_dsci."ref_pole" ("id") ON DELETE SET NULL
+) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE activite_dsci."ref_semainier";
+DROP TABLE IF EXISTS activite_dsci."ref_semainier" CASCADE;
 CREATE TABLE activite_dsci."ref_semainier" (
-  "id" integer PRIMARY KEY,
-  "annee" int,
-  "mois" text,
-  "trimestre" text,
-  "date_semaine" date,
-  "semaine" int
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "annee" int,
+    "mois" text,
+    "trimestre" text,
+    "date_semaine" date,
+    "semaine" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_qualite_service" (
-  "id" integer PRIMARY KEY,
-  "qualite_de_service" text
-);
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "qualite_de_service" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."ref_competence_particuliere" (
-  "id" integer PRIMARY KEY,
-  "competence" text
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "competence" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 /*
     Données : onglet global
 */
 
-
 CREATE TABLE activite_dsci."effectif_dsci" (
-  "id" integer PRIMARY KEY,
-  "mail" text,
-  "id_bureau" int,
-  "id_pole" int,
-  "nom_complet" text,
-  "agent_present" boolean,
-  "fonction" text,
-  "absent_depuis" date
-  --"created_at" date,
-  --"updated_at" date,
-  -- "created_by" text,
-  --"updated_by text",
-  --"bureau_texte" text,
-
-);
-ALTER TABLE "effectif_dsci" ADD FOREIGN KEY ("id_bureau") REFERENCES activite_dsci."ref_bureau" ("id");
-ALTER TABLE "effectif_dsci" ADD FOREIGN KEY ("id_pole") REFERENCES activite_dsci."ref_pole" ("id");
-
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "mail" text,
+    "id_bureau" int,
+    "id_pole" int,
+    "nom_complet" text,
+    "agent_present" boolean,
+    "fonction" text,
+    "absent_depuis" date,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci" (
-  "id" integer PRIMARY KEY,
-  "annee" numeric,
-  "statut" text,
-  "recours_prestataire" text,
-  "commentaires_complements" text,
-  "ressources_documentaires" text,
-  "debut_previsionnel_de_l_accompagnement" date,
-  "fin_previsionnelle_de_l_accompagnement" date,
-  "intitule_de_l_accompagnement" text,
-  "autres_participants" text,
-  "id_direction" int,
-  "service_bureau" text,
-  "sous_dir_bureau_" text,
-  "nom_du_prestataire" text,
-  -- "equipe_dsci_txt" text,
-  -- "formulaire_cci" text,
-  "date_de_cloture_questionnaire" date,
-  "porteur_metier" text
-);
-ALTER TABLE "accompagnement_dsci" ADD FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id");
-
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "annee" numeric,
+    "statut" text,
+    "recours_prestataire" text,
+    "commentaires_complements" text,
+    "ressources_documentaires" text,
+    "debut_previsionnel_de_l_accompagnement" date,
+    "fin_previsionnelle_de_l_accompagnement" date,
+    "intitule_de_l_accompagnement" text,
+    "autres_participants" text,
+    "id_direction" int,
+    "service_bureau" text,
+    "sous_dir_bureau_" text,
+    "nom_du_prestataire" text,
+    "date_de_cloture_questionnaire" date,
+    "porteur_metier" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci_typologie" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci_typologie" (
-  "id" bigint PRIMARY KEY,
-  "id_accompagnement" integer,
-  "id_typologie" integer,
-  UNIQUE ("id_accompagnement", "id_typologie"),
-  FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_dsci" ("id") ON DELETE SET NULL,
-  FOREIGN KEY ("id_typologie") REFERENCES activite_dsci."ref_typologie_accompagnement" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_accompagnement" integer,
+    "id_typologie" integer,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
--- Table liaison pour les équipes DSCI
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci_equipe" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci_equipe" (
-  "id" bigint PRIMARY KEY,
-  "id_accompagnement" integer,
-  "id_equipe_s_dsci" integer,
-  FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_dsci" ("id") ON DELETE SET NULL,
-  FOREIGN KEY ("id_equipe_s_dsci") REFERENCES activite_dsci."ref_bureau" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_accompagnement" integer,
+    "id_equipe_s_dsci" integer,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
--- Table de liaison pour les porteurs DSCI
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci_porteur" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci_porteur" (
-  "id" bigint PRIMARY KEY,
-  "id_accompagnement" integer,
-  "id_porteur_dsci" integer,
-  UNIQUE ("id_accompagnement", "id_porteur_dsci"),
-  FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_dsci" ("id") ON DELETE SET NULL,
-  FOREIGN KEY ("id_porteur_dsci") REFERENCES activite_dsci."effectif_dsci" ("id") ON DELETE SET NULL
-);
-
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_accompagnement" integer,
+    "id_porteur_dsci" integer,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."bilaterale" (
-  "id" integer PRIMARY KEY,
-  "id_direction" int,
-  "date_de_rencontre" date,
-  "intitule" text
-);
-ALTER TABLE "bilaterale" ADD FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id");
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_direction" int,
+    "date_de_rencontre" date,
+    "intitule" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."bilaterale_remontee" (
-	"id" integer PRIMARY KEY,
-	"id_bilaterale" int,
-	"id_bureau" int,
-	"information_a_remonter" text,
-	-- "id_int_direction" int,
-	FOREIGN KEY ("id_bilaterale") REFERENCES activite_dsci."bilaterale" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_bureau") REFERENCES activite_dsci."ref_bureau" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_bilaterale" int,
+    "id_bureau" int,
+    "information_a_remonter" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE activite_dsci."correspondant" CASCADE;
+DROP TABLE IF EXISTS activite_dsci."correspondant" CASCADE;
 CREATE TABLE activite_dsci."correspondant" (
-	"id" integer PRIMARY KEY,
-	"mail" text,
-	"nom_complet" text,
-	"id_direction" int,
-	"entite" text,
-	"id_region" int,
-	"actif" boolean,
-	"id_promotion_fac" int,
-	"est_certifie_fac" boolean,
-	"actif_communaute_fac" boolean,
-	"direction_hors_mef" text,
-	-- "fac_certifications_realisees" text,
-	-- "type_correspondant_text" text,
-	"prenom" text,
-	"nom" text,
-	-- "created_by" text,
-	-- "created_at" timestamp,
-	-- "updated_at" timestamp,
-	-- "updated_by" text,
-	"date_debut_inactivite" date,
-	-- "is_duplicate" grist_any,
-	-- "check_mail" grist_any,
-	-- "poste" text,
-	-- "cause_inactivite" text,
-	FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_region") REFERENCES activite_dsci."ref_region" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_promotion_fac") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "mail" text,
+    "nom_complet" text,
+    "id_direction" int,
+    "entite" text,
+    "id_region" int,
+    "actif" boolean,
+    "id_promotion_fac" int,
+    "est_certifie_fac" boolean,
+    "actif_communaute_fac" boolean,
+    "direction_hors_mef" text,
+    "prenom" text,
+    "nom" text,
+    "date_debut_inactivite" date,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
-DROP TABLE activite_dsci."correspondant_profil" CASCADE;
+DROP TABLE IF EXISTS activite_dsci."correspondant_profil" CASCADE;
 CREATE TABLE activite_dsci."correspondant_profil" (
-	"id" bigint PRIMARY KEY,
-	"id_correspondant" integer,
-	"id_type_de_correspondant" int,
-	UNIQUE ("id_correspondant", "id_type_de_correspondant"),
-	FOREIGN KEY ("id_correspondant") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_type_de_correspondant") REFERENCES activite_dsci."ref_profil_correspondant" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_correspondant" integer,
+    "id_type_de_correspondant" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."correspondant_competence_particuliere" (
-	"id" bigint PRIMARY KEY,
-	"id_correspondant" integer,
-	"id_competence_particuliere" int,
-	UNIQUE ("id_correspondant", "id_competence_particuliere"),
-	FOREIGN KEY ("id_correspondant") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_competence_particuliere") REFERENCES activite_dsci."ref_competence_particuliere" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_correspondant" integer,
+    "id_competence_particuliere" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."correspondant_connaissance_communaute" (
-	"id" bigint PRIMARY KEY,
-	"id_correspondant" integer,
-	"connaissance_communaute" text,
-	UNIQUE ("id_correspondant", "connaissance_communaute")
-	FOREIGN KEY ("id_correspondant") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL
-);
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_correspondant" integer,
+    "connaissance_communaute" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 /*
     Données : onglet Mission Innovation mi
 */
 
-
-
-DROP TABLE activite_dsci."accompagnement_mi" CASCADE;
+DROP TABLE IF EXISTS activite_dsci."accompagnement_mi" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_mi" (
-	"id" integer PRIMARY KEY,
-	"est_ouvert_notation" boolean,
-	-- "quest_passinnov_inscription" text,
-	-- "certifications_possibiles_txt" grist_any,
-	-- "quest_passinnov_satisfaction" text,
-	-- "quest_formationfac_satisfaction" grist_any,
-	-- "quest_pleniere_inscription" grist_any,
-	-- "quest_formation_codev_inscription" grist_any,
-	-- "lieu" text,
-	-- "id_certifications_possibles" int[],
-	"est_certifiant" boolean,
-	-- "canal_de_communication" grist_any,
-	"places_max" int,
-	"nb_inscrits" int,
-	"places_restantes" int,
-	-- "type_accompagnement_text" text,
-	-- "direction_direction" text,
-	"intitule" text,
-	"id_direction" int,
-	"date_de_realisation" date,
-	"statut" text,
-	"id_pole" int,
-	"id_type_d_accompagnement" int,
-	"informations_complementaires" text,
-	FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_pole") REFERENCES activite_dsci."ref_pole" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_type_d_accompagnement") REFERENCES activite_dsci."ref_type_accompagnement" ("id") ON DELETE SET NULL
-);
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "est_ouvert_notation" boolean,
+    "est_certifiant" boolean,
+    "places_max" int,
+    "nb_inscrits" int,
+    "places_restantes" int,
+    "intitule" text,
+    "id_direction" int,
+    "date_de_realisation" date,
+    "statut" text,
+    "id_pole" int,
+    "id_type_d_accompagnement" int,
+    "informations_complementaires" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."accompagnement_mi_satisfaction" (
-	"id" integer PRIMARY KEY,
-	"id_accompagnement" int,
-	"nombre_de_participants" numeric,
-	"nombre_de_reponses" numeric,
-	"taux_de_reponse" numeric,
-	"note_moyenne_de_satisfaction" numeric,
-	"unite" text,
-	"id_type_d_accompagnement" int,
-	FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL,
-	FOREIGN KEY ("id_type_d_accompagnement") REFERENCES activite_dsci."ref_type_accompagnement" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_accompagnement" int,
+    "nombre_de_participants" numeric,
+    "nombre_de_reponses" numeric,
+    "taux_de_reponse" numeric,
+    "note_moyenne_de_satisfaction" numeric,
+    "unite" text,
+    "id_type_d_accompagnement" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."animateur_interne" (
-  "id" integer PRIMARY KEY,
-  "id_accompagnement" int,
-  "id_animateur" int
-);
-ALTER TABLE "animateur_interne" ADD FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-ALTER TABLE "animateur_interne" ADD FOREIGN KEY ("id_animateur") REFERENCES activite_dsci."effectif_dsci" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_accompagnement" int,
+    "id_animateur" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."animateur_externe" (
-  "id" integer PRIMARY KEY,
-  "id_accompagnement" int,
-  "animateur" text
-);
-ALTER TABLE "animateur_externe" ADD FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_accompagnement" int,
+    "animateur" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."animateur_fac" (
-  "id" integer PRIMARY KEY,
-  "id_accompagnement" int,
-  "id_animateur" int
-);
-ALTER TABLE "animateur_fac" ADD FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-ALTER TABLE "animateur_fac" ADD FOREIGN KEY ("id_animateur") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_accompagnement" int,
+    "id_animateur" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
--- Table de liaison pour les certifications_souhaitées
 DROP TABLE IF EXISTS activite_dsci."animateur_fac_certification" CASCADE;
 CREATE TABLE activite_dsci."animateur_fac_certification" (
-  "id" bigint PRIMARY KEY,
-  "id_animateur_fac" integer,
-  "id_certifications_souhaitees" integer,
-  UNIQUE ("id_animateur_fac", "id_certifications_souhaitees"),
-  FOREIGN KEY ("id_animateur_fac") REFERENCES activite_dsci."animateur_fac" ("id") ON DELETE SET NULL,
-  FOREIGN KEY ("id_certifications_souhaitees") REFERENCES activite_dsci."ref_certification" ("id") ON DELETE SET NULL
-);
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_animateur_fac" integer,
+    "id_certifications_souhaitees" integer,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
--- Table de liaison pour les certifications_validées
 DROP TABLE IF EXISTS activite_dsci."animateur_fac_certification_valide" CASCADE;
 CREATE TABLE activite_dsci."animateur_fac_certification_valide" (
-  "id" bigint PRIMARY KEY,
-  "id_animateur_fac" integer,
-  "id_certifications_validees" integer,
-  UNIQUE ("id_animateur_fac", "id_certifications_validees"),
-  FOREIGN KEY ("id_animateur_fac") REFERENCES activite_dsci."animateur_fac" ("id") ON DELETE SET NULL,
-  FOREIGN KEY ("id_certifications_validees") REFERENCES activite_dsci."ref_certification" ("id") ON DELETE SET NULL
-);
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_animateur_fac" integer,
+    "id_certifications_validees" integer,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."laboratoires_territoriaux" (
-	"id" integer PRIMARY KEY,
-	"nom" text,
-	"id_direction" int,
-	"id_region" int
-);
-ALTER TABLE "laboratoires_territoriaux" ADD FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id") ON DELETE SET NULL;
-ALTER TABLE "laboratoires_territoriaux" ADD FOREIGN KEY ("id_region") REFERENCES activite_dsci."ref_region" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "nom" text,
+    "id_direction" int,
+    "id_region" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 ------------------------------------- questionnaires mi -------------------------------
 
 CREATE TABLE activite_dsci."pleniere_quest_inscription" (
-	"id" integer PRIMARY KEY,
-	"is_duplicate" int,
-	"id_direction" int,
-	"mail" text,
-	"id_pleniere" int,
-	"id_id_accompagnement" int
-);
-ALTER TABLE "pleniere_quest_inscription" ADD FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id") ON DELETE SET NULL;
-ALTER TABLE "pleniere_quest_inscription" ADD FOREIGN KEY ("id_pleniere") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-ALTER TABLE "pleniere_quest_inscription" ADD FOREIGN KEY ("id_id_accompagnement") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "is_duplicate" int,
+    "id_direction" int,
+    "mail" text,
+    "id_pleniere" int,
+    "id_id_accompagnement" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
-CREATE TABLE activite_dsci."pleniere_quest_satisfaction"(
-	"id" integer PRIMARY key,
-	"mail" text,
-	"ce_que_j_ai_apprecie" text,
-	"ce_qui_peut_etre_ameliore" text,
-	"note_globale" int
-);
-
+CREATE TABLE activite_dsci."pleniere_quest_satisfaction" (
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "mail" text,
+    "ce_que_j_ai_apprecie" text,
+    "ce_qui_peut_etre_ameliore" text,
+    "note_globale" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."passinnov_quest_inscription" (
-	"id" integer PRIMARY KEY,
-	"is_duplicate" numeric,
-	"id_region" int,
-	"mail" text,
-	"id_direction" int,
-	"id_passinnov" int,
-	"id_id_accompagnement" int,
-	"role" text
-);
-ALTER TABLE "passinnov_quest_inscription" ADD FOREIGN KEY ("id_region") REFERENCES activite_dsci."ref_region" ("id") ON DELETE SET NULL;
-ALTER TABLE "passinnov_quest_inscription" ADD FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id") ON DELETE SET NULL;
-ALTER TABLE "passinnov_quest_inscription" ADD FOREIGN KEY ("id_passinnov") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-ALTER TABLE "passinnov_quest_inscription" ADD FOREIGN KEY ("id_id_accompagnement") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "is_duplicate" numeric,
+    "id_region" int,
+    "mail" text,
+    "id_direction" int,
+    "id_passinnov" int,
+    "id_id_accompagnement" int,
+    "role" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."passinnov_quest_satisfaction" (
-	"id" integer PRIMARY KEY,
-	"is_duplicate" int,
-	"mail" text,
-	"id_id_passinnov" int,
-	"commentaires" text,
-	"id_quest_passinnov" int,
-	"note_globale" text
-);
-ALTER TABLE "passinnov_quest_satisfaction" ADD FOREIGN KEY ("id_id_passinnov") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-ALTER TABLE "passinnov_quest_satisfaction" ADD FOREIGN KEY ("id_quest_passinnov") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "is_duplicate" int,
+    "mail" text,
+    "id_id_passinnov" int,
+    "commentaires" text,
+    "id_quest_passinnov" int,
+    "note_globale" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."formation_codev_quest_inscription"(
-	"id" integer PRIMARY KEY,
-	"mail" text,
-	"id_direction" int,
-	"formation_codev" text,
-	"experience_codev" text,
-	"details_experience" text,
-	"difficultes" text,
-	"attentes" text,
-	"id_session_formation_codev" int,
-	--"is_duplicate" int,
-	"id_id_accompagnement" int
-);
-ALTER TABLE "formation_codev_quest_inscription" ADD FOREIGN KEY ("id_id_accompagnement") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-ALTER TABLE "formation_codev_quest_inscription" ADD FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id") ON DELETE SET NULL;
-ALTER TABLE "formation_codev_quest_inscription" ADD FOREIGN KEY ("id_session_formation_codev") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "mail" text,
+    "id_direction" int,
+    "formation_codev" text,
+    "experience_codev" text,
+    "details_experience" text,
+    "difficultes" text,
+    "attentes" text,
+    "id_session_formation_codev" int,
+    "id_id_accompagnement" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS activite_dsci."formation_fac_quest_satisfaction" CASCADE;
 CREATE TABLE activite_dsci."formation_fac_quest_satisfaction"(
-	"id" integer PRIMARY KEY,
-	"id_quest_formation" int,
-	"mail" text,
-	"id_promotion" int,
-	"note_module_1" int,
-	"commentaire_m1" text,
-	"note_module_2" int,
-	"commentaire_m2" text,
-	"note_module_3" int,
-	"commentaire_m3" text,
-	"nps" int,
-	"utilite" text,
-	"besoin" text,
-	"id_id_formation" int
-);
-ALTER TABLE "formation_fac_quest_satisfaction" ADD FOREIGN KEY ("id_promotion") REFERENCES activite_dsci."ref_promotion_fac" ("id") ON DELETE SET NULL;
-ALTER TABLE "formation_fac_quest_satisfaction" ADD FOREIGN KEY ("id_quest_formation") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
-ALTER TABLE "formation_fac_quest_satisfaction" ADD FOREIGN KEY ("id_id_formation") REFERENCES activite_dsci."accompagnement_mi" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_quest_formation" int,
+    "mail" text,
+    "id_promotion" int,
+    "note_module_1" int,
+    "commentaire_m1" text,
+    "note_module_2" int,
+    "commentaire_m2" text,
+    "note_module_3" int,
+    "commentaire_m3" text,
+    "nps" int,
+    "utilite" text,
+    "besoin" text,
+    "id_id_formation" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
--- Nouvelle table de liaison pour les envies_pour_la_suite
 DROP TABLE IF EXISTS activite_dsci."formation_fac_envie_suite_quest_satisfaction" CASCADE;
 CREATE TABLE activite_dsci."formation_fac_envie_suite_quest_satisfaction"(
-    "id" bigint PRIMARY KEY,
-	"id_formation_fac" integer,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
+    "id_formation_fac" integer,
     "envies_pour_la_suite" text,
-    UNIQUE ("id_formation_fac", "envies_pour_la_suite")
-);
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_accompagnement" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement" (
-	"id" integer PRIMARY KEY,
-	"id_facilitateur_1" int,
-	"id_facilitateur_2" int,
-	"id_facilitateur_3" int,
-	"id_direction" int,
-	"synthese_de_l_accompagnement" text,
-	"id_region" int,
-	"date_de_realisation" date,
-	"intitule_de_l_accompagnement" text,
-	"statut" text
-);
-ALTER TABLE "fac_hors_bercylab_quest_accompagnement" ADD FOREIGN KEY ("id_facilitateur_1") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL;
-ALTER TABLE "fac_hors_bercylab_quest_accompagnement" ADD FOREIGN KEY ("id_facilitateur_2") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL;
-ALTER TABLE "fac_hors_bercylab_quest_accompagnement" ADD FOREIGN KEY ("id_facilitateur_3") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL;
---ALTER TABLE "fac_hors_bercylab_quest_accompagnement" ADD FOREIGN KEY ("id_facilitateurs") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL;
-ALTER TABLE "fac_hors_bercylab_quest_accompagnement" ADD FOREIGN KEY ("id_direction") REFERENCES activite_dsci."ref_direction" ("id") ON DELETE SET NULL;
-ALTER TABLE "fac_hors_bercylab_quest_accompagnement" ADD FOREIGN KEY ("id_region") REFERENCES activite_dsci."ref_region" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "id_facilitateur_1" int,
+    "id_facilitateur_2" int,
+    "id_facilitateur_3" int,
+    "id_direction" int,
+    "synthese_de_l_accompagnement" text,
+    "id_region" int,
+    "date_de_realisation" date,
+    "intitule_de_l_accompagnement" text,
+    "statut" text,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
-
--- Table de liaison pour les facilitateurs
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_accompagnement_facilitateurs" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement_facilitateurs" (
-    "id" bigint PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
     "id_formation_fac_hors_bercylab" integer,
     "id_facilitateurs" integer,
-    UNIQUE ("id_formation_fac_hors_bercylab", "id_facilitateurs"),
-    FOREIGN KEY ("id_formation_fac_hors_bercylab") REFERENCES activite_dsci."fac_hors_bercylab_quest_accompagnement" ("id") ON DELETE SET NULL,
-    FOREIGN KEY ("id_facilitateurs") REFERENCES activite_dsci."correspondant" ("id") ON DELETE SET NULL
-);
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
--- Table de liaison pour le type d'accompagnement
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_type_accompagnement" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_type_accompagnement" (
-    "id" bigint PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
     "id_formation_fac_hors_bercylab" integer,
     "type_d_accompagnement" text,
-    UNIQUE ("id_formation_fac_hors_bercylab", "type_d_accompagnement"),
-    FOREIGN KEY ("id_formation_fac_hors_bercylab") REFERENCES activite_dsci."fac_hors_bercylab_quest_accompagnement" ("id") ON DELETE SET NULL
-);
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
--- 4. Table de liaison pour les participants
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_accompagnement_participants" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement_participants" (
-    "id" bigint PRIMARY KEY,
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" bigint,
     "id_formation_fac_hors_bercylab" integer,
     "participants" text,
-    UNIQUE ("id_formation_fac_hors_bercylab", "participants"),
-    FOREIGN KEY ("id_formation_fac_hors_bercylab") REFERENCES activite_dsci."fac_hors_bercylab_quest_accompagnement" ("id") ON DELETE SET NULL
-);
-
-
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 /*
     Données : onglet Cellule Conseil Interne cci
 */
 
-
-
 CREATE TABLE activite_dsci."charge_agent_cci" (
-	"id" integer PRIMARY KEY,
-	"trimestre" text,
-	"type_de_charge" text,
-	"equipe" text,
-	"id_missions" int,
-	"id_semaine" int,
-	"id_agent_e_" int,
-	"temps_passe" numeric,
-	"taux_de_charge" numeric,
-	"annee" int
-);
-ALTER TABLE "charge_agent_cci" ADD FOREIGN KEY ("id_missions") REFERENCES activite_dsci."accompagnement_dsci" ("id") ON DELETE SET NULL;
-ALTER TABLE "charge_agent_cci" ADD FOREIGN KEY ("id_semaine") REFERENCES activite_dsci."ref_semainier" ("id") ON DELETE SET NULL;
-ALTER TABLE "charge_agent_cci" ADD FOREIGN KEY ("id_agent_e_") REFERENCES activite_dsci."effectif_dsci" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "trimestre" text,
+    "type_de_charge" text,
+    "equipe" text,
+    "id_missions" int,
+    "id_semaine" int,
+    "id_agent_e_" int,
+    "temps_passe" numeric,
+    "taux_de_charge" numeric,
+    "annee" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 CREATE TABLE activite_dsci."accompagnement_cci_opportunite" (
-	"id" integer PRIMARY KEY,
-	"date_prise_de_decision" date,
-	"date_de_proposition_d_accompagnement" date,
-	"decision" text,
-	"date_de_reception" date,
-	"id_accompagnement" int,
-	"expression_de_besoin_transmise" boolean,
-	"type_de_canal" text,
-	"statut" text,
-	"convention_d_accompagnement" boolean,
-	"commentaires" text,
-	"precision_canal" text,
-	"proposition_d_accompagnement_transmise" boolean
-);
-ALTER TABLE "accompagnement_cci_opportunite" ADD FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_dsci" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "date_prise_de_decision" date,
+    "date_de_proposition_d_accompagnement" date,
+    "decision" text,
+    "date_de_reception" date,
+    "id_accompagnement" int,
+    "expression_de_besoin_transmise" boolean,
+    "type_de_canal" text,
+    "statut" text,
+    "convention_d_accompagnement" boolean,
+    "commentaires" text,
+    "precision_canal" text,
+    "proposition_d_accompagnement_transmise" boolean,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
 
 ------------------------------------- questionnaires cci -------------------------------
 
 CREATE TABLE activite_dsci."accompagnement_cci_quest_satisfaction" (
-	"id" integer PRIMARY KEY,
-	"appreciation_globale" text,
-	"points_d_ameliorations" text,
-	"points_forts" text,
-	"id_adaptabilite" int,
-	"id_formulaire_accompagnement" int,
-	"id_relationnel_client" int,
-	"id_qualite_des_livrables" int,
-	"id_atteinte_objectifs" int,
-	"score_de_recommandation" text,
-	"id_pilotage_et_suivi" int,
-	"autres_elements" text,
-	"id_etape_de_cadrage" int,
-	"id_aide_methodologique" int,
-	"id_reactivite" int,
-	"id_respect_calendrier" int,
-	"mail" text,
-	"id_accompagnement" int
-);
-
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_adaptabilite") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_formulaire_accompagnement") REFERENCES activite_dsci."accompagnement_dsci" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_relationnel_client") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_qualite_des_livrables") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_atteinte_objectifs") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_pilotage_et_suivi") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_etape_de_cadrage") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_aide_methodologique") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_reactivite") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_respect_calendrier") REFERENCES activite_dsci."ref_qualite_service" ("id") ON DELETE SET NULL;
-ALTER TABLE "accompagnement_cci_quest_satisfaction" ADD FOREIGN KEY ("id_accompagnement") REFERENCES activite_dsci."accompagnement_dsci" ("id") ON DELETE SET NULL;
+    id_row bigint GENERATED ALWAYS AS IDENTITY,
+    "id" integer,
+    "appreciation_globale" text,
+    "points_d_ameliorations" text,
+    "points_forts" text,
+    "id_adaptabilite" int,
+    "id_formulaire_accompagnement" int,
+    "id_relationnel_client" int,
+    "id_qualite_des_livrables" int,
+    "id_atteinte_objectifs" int,
+    "score_de_recommandation" text,
+    "id_pilotage_et_suivi" int,
+    "autres_elements" text,
+    "id_etape_de_cadrage" int,
+    "id_aide_methodologique" int,
+    "id_reactivite" int,
+    "id_respect_calendrier" int,
+    "mail" text,
+    "id_accompagnement" int,
+    import_timestamp TIMESTAMP NOT NULL,
+    snapshot_id UUID NOT NULL,
+    snapshot_id_parent UUID NULL,
+    PRIMARY KEY ("id_row", "import_timestamp")
+) PARTITION BY RANGE (import_timestamp);
