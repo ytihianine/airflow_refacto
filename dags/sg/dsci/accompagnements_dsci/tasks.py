@@ -478,6 +478,16 @@ def dsci() -> None:
                 fn=partial(
                     generic_grist_processing,
                     cols_mapping={"bureau": "id_bureau", "pole": "id_pole"},
+                    cols_to_keep=[
+                        "id",
+                        "mail",
+                        "bureau",
+                        "pole",
+                        "nom_complet",
+                        "agent_present",
+                        "fonction",
+                        "absent_depuis",
+                    ],
                     date_columns=["absent_depuis"],
                     ref_columns=["id_bureau", "id_pole"],
                     custom_fn=process.process_effectif_dsci,
@@ -626,20 +636,20 @@ def mission_innovation() -> None:
                     },
                     cols_to_keep=[
                         "id",
-                        "intitule",
-                        "direction",
-                        "date_de_realisation",
-                        "statut",
-                        "pole",
+                        "accompagnement",
                         "type_d_accompagnement",
-                        "est_certifiant",
-                        "places_max",
-                        "nb_inscrits",
-                        "places_restantes",
-                        "est_ouvert_notation",
-                        "informations_complementaires",
+                        "nombre_de_participants",
+                        "nombre_de_reponses",
+                        "taux_de_reponse",
+                        "note_moyenne_de_satisfaction",
+                        "unite",
                     ],
-                    txt_columns=["informations_complementaires"],
+                    num_columns=[
+                        "nombre_de_participants",
+                        "nombre_de_reponses",
+                        "taux_de_reponse",
+                        "note_moyenne_de_satisfaction",
+                    ],
                     ref_columns=["id_accompagnement", "id_type_d_accompagnement"],
                     custom_fn=process.process_accompagnement_mi_satisfaction,
                 ),
@@ -814,17 +824,10 @@ def mission_innovation() -> None:
             SingleInputStep(
                 fn=partial(
                     generic_grist_processing,
-                    cols_mapping={
-                        "direction": "id_direction",
-                        "region": "id_region",
-                        "passinnov": "id_passinnov",
-                        "id_accompagnement": "id_id_accompagnement",
-                    },
-                    ref_columns=[
-                        "id_direction",
-                        "id_region",
-                        "id_passinnov",
-                        "id_id_accompagnement",
+                    txt_columns=[
+                        "mail",
+                        "ce_que_j_ai_apprecie",
+                        "ce_qui_peut_etre_ameliore",
                     ],
                     custom_fn=process.process_pleniere_quest_satisfaction,
                 ),
@@ -966,6 +969,9 @@ def mission_innovation() -> None:
             SingleInputStep(
                 fn=partial(
                     generic_grist_processing,
+                    cols_mapping={"id": "id_formation_fac"},
+                    ref_columns=["id_formation_fac"],
+                    cols_to_keep=["id", "envies_pour_la_suite"],
                     custom_fn=process.process_formation_fac_envie_suite_quest_satisfaction,
                 ),
                 input_key="formation_fac_envie_suite_quest_satisfaction",
@@ -1044,9 +1050,9 @@ def mission_innovation() -> None:
         writers=[FileWriterStrategy()],
         add_metadata=True,
     )
-    fac_hors_bercylab_quest_accompagnement_partiicipants = ETLTask(
-        task_config=TaskConfig(task_id="fac_hors_bercylab_quest_accompagnement_partiicipants"),
-        target="fac_hors_bercylab_quest_accompagnement_partiicipants",
+    fac_hors_bercylab_quest_accompagnement_participants = ETLTask(
+        task_config=TaskConfig(task_id="fac_hors_bercylab_quest_accompagnement_participants"),
+        target="fac_hors_bercylab_quest_accompagnement_participants",
         reader=GristReaderStrategy(),
         steps=[
             SingleInputStep(
@@ -1055,10 +1061,10 @@ def mission_innovation() -> None:
                     cols_mapping={"id": "id_formation_fac_hors_bercylab"},
                     cols_to_keep=["id", "participants"],
                     ref_columns=["id_formation_fac_hors_bercylab"],
-                    custom_fn=process.process_fac_hors_bercylab_quest_accompagnement_partiicipants,
+                    custom_fn=process.process_fac_hors_bercylab_quest_accompagnement_participants,
                 ),
-                input_key="fac_hors_bercylab_quest_accompagnement_partiicipants",
-                output_key="fac_hors_bercylab_quest_accompagnement_partiicipants",
+                input_key="fac_hors_bercylab_quest_accompagnement_participants",
+                output_key="fac_hors_bercylab_quest_accompagnement_participants",
             )
         ],
         writers=[FileWriterStrategy()],
@@ -1108,7 +1114,7 @@ def mission_innovation() -> None:
             formation_fac_envie_suite_quest_satisfaction.create_task(),
             fac_hors_bercylab_quest_accompagnement.create_task(),
             fac_hors_bercylab_quest_type_accompagnement.create_task(),
-            fac_hors_bercylab_quest_accompagnement_partiicipants.create_task(),
+            fac_hors_bercylab_quest_accompagnement_participants.create_task(),
             fac_hors_bercylab_quest_accompagnement_facilitateurs.create_task(),
         ]
     )
@@ -1153,6 +1159,7 @@ def conseil_interne() -> None:
                         "semaine": "id_semaine",
                         "missions": "id_missions",
                     },
+                    num_columns=["temps_passe", "taux_de_charge"],
                     ref_columns=["id_agent_e_", "id_semaine", "id_missions"],
                     custom_fn=process.process_charge_agent_cci,
                 ),
