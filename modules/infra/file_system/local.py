@@ -5,6 +5,7 @@ import mimetypes
 import os
 import shutil
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import BinaryIO
@@ -13,8 +14,11 @@ from .base import FileMetadata, FSInterface
 from .exceptions import FileHandlerError, FileNotFoundError, FilePermissionError
 
 
+@dataclass
 class LocalFS(FSInterface):
     """Handler for local filesystem operations."""
+
+    base_path: Path
 
     def read(self, file_path: str | Path, validate: bool = True) -> BinaryIO:
         """Read file content from local filesystem."""

@@ -13,11 +13,11 @@ from modules.constants import (
     DEFAULT_S3_CONN_ID,
 )
 from modules.enums.dags import FeatureFlags, TypeSource
-from modules.enums.filesystem import IcebergTableStatus
+from modules.enums.filesystem import FileHandlerType, IcebergTableStatus
 from modules.infra.catalog.iceberg import IcebergCatalog, generate_catalog_properties
 from modules.infra.file_system.dataframe import read_dataframe
 from modules.infra.file_system.exceptions import FileHandlerError
-from modules.infra.file_system.factory import create_default_s3_handler
+from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.types.projet import SelecteurConfig, SelecteurStorageOptions
 from modules.utils.config.dag_params import (
     get_execution_date,
@@ -58,8 +58,9 @@ def copy_s3_files(
     curr_time = execution_date.strftime(format="%Hh%M")
 
     # Créer les hooks
-    s3_handler = create_default_s3_handler(
-        connection_id=connection_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=connection_id),
     )
 
     # Get selecteur config
@@ -114,8 +115,9 @@ def del_s3_files(
     nom_projet = get_project_name(context=context)
 
     # Créer les hooks
-    s3_handler = create_default_s3_handler(
-        connection_id=s3_conn_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
     )
 
     # Get selecteur config
@@ -175,8 +177,9 @@ def del_iceberg_staging_table(
         logging.info(msg=f"Staging table {table} dropped successfully !")
 
     # Delete staging files from S3
-    s3_handler = create_default_s3_handler(
-        connection_id=s3_conn_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
     )
     staging_keys = s3_handler.list_files(directory=catalog_name + "/" + s3_key, pattern="*_staging*")
     for key in staging_keys:
@@ -243,7 +246,10 @@ def import_file_to_iceberg(
         logging.info(msg=f"Skipping Iceberg write for selecteur <{config.storage_info.selecteur}>")
         return
 
-    s3_handler = create_default_s3_handler(connection_id=s3_conn_id)
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
+    )
     properties = generate_catalog_properties(uri=catalog_uri)
     catalog = IcebergCatalog(name=catalog_name, properties=properties)
 

@@ -19,12 +19,13 @@ from modules.enums.database import (
     LoadStrategy,
     PartitionTimePeriod,
 )
+from modules.enums.filesystem import FileHandlerType
 from modules.infra.database.base import DBInterface
 from modules.infra.database.factory import create_db_handler
 from modules.infra.file_system.dataframe import read_dataframe
 from modules.infra.file_system.factory import (
-    create_default_s3_handler,
-    create_local_handler,
+    FSConfig,
+    create_file_handler,
 )
 from modules.types.projet import (
     SelecteurConfig,
@@ -625,8 +626,14 @@ def import_file_to_db(
 
     # Define hooks
     db_handler = create_db_handler(connection_id=pg_conn_id)
-    s3_handler = create_default_s3_handler(connection_id=s3_conn_id)
-    local_handler = create_local_handler(base_path=None)
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
+    )
+    local_handler = create_file_handler(
+        handler_type=FileHandlerType.LOCAL,
+        config=FSConfig(base_path=None),
+    )
 
     # Variables
     tbl_name = config.storage_info.tbl_name

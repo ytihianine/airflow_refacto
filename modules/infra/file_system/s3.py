@@ -3,42 +3,22 @@
 import io
 import logging
 import mimetypes
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, BinaryIO
 
-from .base import FileMetadata, FSInterface
-from .exceptions import FileHandlerError, FileNotFoundError
+from modules.infra.file_system.base import FileMetadata, FSInterface
+from modules.infra.file_system.exceptions import FileHandlerError, FileNotFoundError
 
 
+@dataclass
 class S3FS(FSInterface):
     """Handler for S3 storage operations using Airflow's S3Hook or a boto3 client."""
 
-    def __init__(
-        self,
-        bucket: str,
-        connection_id: str | None = None,
-        client: Any | None = None,
-    ):
-        """
-        Initialize S3 file handler.
-
-        Provide either ``connection_id`` (Airflow S3Hook) or ``client`` (boto3 client).
-
-        Args:
-            bucket: S3 bucket name
-            connection_id: Airflow connection ID for S3 (uses S3Hook)
-            client: A boto3 S3 client instance
-        """
-        if connection_id is None and client is None:
-            raise ValueError("Either connection_id or client must be provided")
-        if connection_id is not None and client is not None:
-            raise ValueError("Provide only one of connection_id or client, not both")
-
-        super().__init__()
-        self.connection_id = connection_id
-        self.bucket = bucket
-        self._client = client
-        self._hook = None
+    bucket: str
+    connection_id: str | None = None
+    _client: Any | None = None
+    _hook: Any | None = None  # Internal S3Hook instance, lazily initialized
 
     @property
     def client(self) -> Any:

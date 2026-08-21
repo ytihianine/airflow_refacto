@@ -9,7 +9,7 @@ from modules.enums.database import DatabaseType
 from modules.enums.filesystem import FileHandlerType
 from modules.infra.database.factory import create_db_handler
 from modules.infra.file_system.dataframe import read_dataframe
-from modules.infra.file_system.factory import create_file_handler
+from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.types.projet import SelecteurConfig
 
 
@@ -69,12 +69,16 @@ class GristReaderStrategy(ReaderStrategy):
         # Handlers
         s3_handler = create_file_handler(
             handler_type=FileHandlerType.S3,
-            connection_id=selecteur.storage_options.s3_conn_id,
-            bucket=table_info.bucket,
+            config=FSConfig(
+                bucket=table_info.bucket,
+                connection_id=selecteur.storage_options.s3_conn_id,
+            ),
         )
         local_handler = create_file_handler(
             handler_type=FileHandlerType.LOCAL,
-            base_path="/tmp",
+            config=FSConfig(
+                base_path="/tmp",
+            ),
         )
 
         doc_local_path = Path("/tmp") / document_info.filename
@@ -110,8 +114,10 @@ class FileReaderStrategy(ReaderStrategy):
     ) -> DataContext:
         fs_handler = create_file_handler(
             handler_type=self.fs_type,
-            connection_id=selecteur.storage_options.s3_conn_id,
-            bucket=selecteur.storage_info.bucket,
+            config=FSConfig(
+                bucket=selecteur.storage_info.bucket,
+                connection_id=selecteur.storage_options.s3_conn_id,
+            ),
         )
         df = read_dataframe(
             file_handler=fs_handler,
