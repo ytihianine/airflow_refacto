@@ -1,9 +1,9 @@
 import logging
+
 import pandas as pd
 from modules.constants import NO_PROCESS_MSG
 from modules.utils.process.structures import (
     convert_str_of_list_to_list,
-    handle_grist_null_references,
 )
 
 """
@@ -81,14 +81,6 @@ def process_ref_typologie_accompagnement(df: pd.DataFrame) -> pd.DataFrame:
 # Fonctions de processing dsci
 # =================================
 def process_effectif_dsci(df: pd.DataFrame) -> pd.DataFrame:
-    cols_to_drop = [
-        "created_at",
-        "updated_at",
-        "created_by",
-        "updated_by",
-        "bureau_texte",
-    ]
-    df = df.drop(columns=[col for col in cols_to_drop if col in df.columns])
     # Gestion doublon mail
     df = df.drop_duplicates(subset=["mail"], keep="last")
     return df
@@ -135,16 +127,7 @@ def process_accompagnement_mi(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def process_accompagnement_mi_satisfaction(df: pd.DataFrame) -> pd.DataFrame:
-    num_cols = [
-        "nombre_de_participants",
-        "nombre_de_reponses",
-        "taux_de_reponse",
-        "note_moyenne_de_satisfaction",
-    ]
-    cols_presentes = [col for col in num_cols if col in df.columns]
-    if cols_presentes:
-        df[cols_presentes] = df[cols_presentes].apply(pd.to_numeric, errors="coerce")
-
+    logging.info(msg=NO_PROCESS_MSG)
     return df
 
 
@@ -230,22 +213,11 @@ def process_formation_fac_quest_satisfaction(df: pd.DataFrame) -> pd.DataFrame:
 def process_formation_fac_envie_suite_quest_satisfaction(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
-    # Gestion des colonnes
-    cols_to_keep = ["id", "envies_pour_la_suite"]
-    df = df.loc[:, [col for col in cols_to_keep if col in df.columns]]
-    if "id" in df.columns:
-        df = df.rename(columns={"id": "id_formation_fac"})
-
-    # Gestion des refs
-    ref_cols = ["id_formation_fac"]
-    df = handle_grist_null_references(df=df, columns=[c for c in ref_cols if c in df.columns])
-
     # Convertion et Explode
     df = convert_str_of_list_to_list(df=df, col_to_convert="envies_pour_la_suite")
     df = df.explode(column="envies_pour_la_suite")
     # Nettoyage des lignes vides
     df = df.dropna(subset=["envies_pour_la_suite"])
-
     return df
 
 
@@ -265,7 +237,7 @@ def process_fac_hors_bercylab_quest_type_accompagnement(
     return df
 
 
-def process_fac_hors_bercylab_quest_accompagnement_partiicipants(
+def process_fac_hors_bercylab_quest_accompagnement_participants(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
     df = convert_str_of_list_to_list(df=df, col_to_convert="participants")
@@ -300,10 +272,6 @@ def process_accompagnement_cci_opportunite(df: pd.DataFrame) -> pd.DataFrame:
 
 def process_charge_agent_cci(df: pd.DataFrame) -> pd.DataFrame:
     df["annee"] = pd.to_numeric(arg=df["annee"], errors="coerce").astype("Int64")  # type: ignore
-    num_cols = ["temps_passe", "taux_de_charge"]
-    for col in num_cols:
-        df[col] = pd.to_numeric(arg=df[col], errors="coerce")
-
     return df
 
 
