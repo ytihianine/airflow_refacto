@@ -16,12 +16,13 @@ from modules.constants import (
 )
 from modules.enums.dags import FeatureFlags
 from modules.enums.database import (
+    DatabaseType,
     LoadStrategy,
     PartitionTimePeriod,
 )
 from modules.enums.filesystem import FileHandlerType
 from modules.infra.database.base import DBInterface
-from modules.infra.database.factory import create_db_handler
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.file_system.dataframe import read_dataframe
 from modules.infra.file_system.factory import (
     FSConfig,
@@ -96,7 +97,10 @@ def _create_snapshot_id(nom_projet: str, execution_date: datetime, nom_projet_pa
     import_date = execution_date.date()
 
     # Init hook
-    db_client = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db_client = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=DEFAULT_PG_DATA_CONN_ID),
+    )
 
     # Get project id
     id_projet_result = db_client.fetch_one(
@@ -231,7 +235,10 @@ def update_projet_snapshot_status(
         return
 
     # Hook
-    db_client = create_db_handler(connection_id=pg_conn_id)
+    db_client = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     projet_metadata = get_projet_metadata(nom_projet=nom_projet)
 
@@ -300,7 +307,10 @@ def ensure_partition(
     prod_schema = db_info.prod_schema
 
     # Hook
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     # Get partition period range
     from_date, to_date = determine_partition_period(
@@ -348,7 +358,10 @@ def create_tmp_tables(
     print(prod_schema, tmp_schema)
 
     # Hook
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     # Get selecteur config
     storage_info = get_list_selecteur_storage_info(nom_projet=nom_projet)
@@ -401,7 +414,10 @@ def delete_tmp_tables(
     selecteur_config = merge_selecteur_config(storage_info=storage_info, storage_options=storage_options)
 
     # Hook
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     for config in selecteur_config:
         if not config.should_write_to_db():
@@ -510,7 +526,10 @@ def copy_tmp_table_to_real_table(
     tmp_schema = db_info.tmp_schema
 
     # Hook
-    db_handler = create_db_handler(connection_id=pg_conn_id)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     # Get selecteur config
     storage_info = get_list_selecteur_storage_info(nom_projet=nom_projet)
@@ -625,7 +644,10 @@ def import_file_to_db(
     schema = db_info.prod_schema if config.storage_options.use_prod_schema else db_info.tmp_schema
 
     # Define hooks
-    db_handler = create_db_handler(connection_id=pg_conn_id)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
     s3_handler = create_file_handler(
         handler_type=FileHandlerType.S3,
         config=FSConfig(connection_id=s3_conn_id),
@@ -694,7 +716,10 @@ def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
     db_info = get_db_info(context=context)
     prod_schema = db_info.prod_schema
 
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     get_mview_query = """
         SELECT matviewname

@@ -6,9 +6,10 @@ from dags.sg.siep.mmsi.eligibilite_fcu.process import (
     get_eligibilite_fcu,
 )
 from dags.sg.siep.mmsi.oad.config import nom_projet_oad
-from modules.constants import AGENT, DEFAULT_PG_DATA_CONN_ID, PROXY
+from modules.constants import AGENT, PROXY
+from modules.enums.database import DatabaseType
 from modules.enums.http import HttpHandlerType
-from modules.infra.database.factory import create_db_handler
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.http_client.adapters import ClientConfig
 from modules.infra.http_client.factory import create_http_client
 from modules.utils.config.tasks import get_projet_metadata
@@ -20,7 +21,10 @@ def eligibilite_fcu(context: dict[str, Any]) -> pd.DataFrame:
     http_internet_client = create_http_client(client_type=HttpHandlerType.REQUEST, config=client_config)
 
     # Hooks
-    db_hook = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db_hook = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(),
+    )
 
     metadata = get_projet_metadata(nom_projet=nom_projet_oad, dag_completed=True)
     logging.info(msg=f"Snapshot ID récupéré : {metadata}")

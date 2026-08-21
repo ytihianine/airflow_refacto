@@ -13,9 +13,10 @@ from tenacity import (
 )
 
 from modules.constants import DEFAULT_PG_DATA_CONN_ID
+from modules.enums.database import DatabaseType
 from modules.infra.database.base import DBInterface
 from modules.infra.database.exceptions import DatabaseError
-from modules.infra.database.factory import create_db_handler
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.types.projet import (
     Contact,
     Documentation,
@@ -35,7 +36,10 @@ def _get_db(db: DBInterface | None = None) -> DBInterface:
     """Return the provided db handler or create the default one."""
     if db is not None:
         return db
-    return create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    return create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=DEFAULT_PG_DATA_CONN_ID),
+    )
 
 
 # Configuration du retry decorator

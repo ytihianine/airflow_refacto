@@ -3,6 +3,8 @@
 import logging
 import sqlite3
 import time
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -11,18 +13,12 @@ from modules.infra.database.base import DBInterface
 from modules.infra.database.exceptions import DatabaseError
 
 
+@dataclass()
 class SQLiteAdapter(DBInterface):
     """Handler for SQLite database operations using sqlite3."""
 
-    def __init__(self, connection_id: str) -> None:
-        """
-        Initialize SQLite handler.
-
-        Args:
-            connection_id: Path to SQLite database file. Defaults to in-memory.
-        """
-        self.db_path = connection_id
-        self._conn: sqlite3.Connection | None = None
+    db_path: Path
+    _conn: sqlite3.Connection | None = None
 
     @property
     def conn(self) -> sqlite3.Connection:

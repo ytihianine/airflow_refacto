@@ -1,5 +1,9 @@
 """Factory for creating database handlers."""
 
+from dataclasses import dataclass
+from pathlib import Path
+
+from modules.constants import DEFAULT_PG_DATA_CONN_ID
 from modules.enums.database import DatabaseType
 from modules.infra.database.base import DBInterface
 from modules.infra.database.postgres import PgAdapter
@@ -7,24 +11,55 @@ from modules.infra.database.sqlite import SQLiteAdapter
 from modules.infra.database.trino import TrinoAdapter
 
 
-def _check_required_params(db_type: DatabaseType, **db_config: dict) -> None:
-    """Check if required parameters are present for the given database type."""
-    if db_type == DatabaseType.TRINO:
-        required_params = ["host", "user", "catalog", "port", "schema"]
-        missing_params = [param for param in required_params if param not in db_config]
-        if missing_params:
-            raise ValueError(f"Missing required parameters for Trino: {', '.join(missing_params)}")
+@dataclass(frozen=True)
+class DbConfig:
+    """Dataclass to hold database configuration parameters."""
 
-    if db_type in [DatabaseType.POSTGRES, DatabaseType.SQLITE] and "connection_id" not in db_config:
-        raise ValueError(f"Missing required parameter 'connection_id' for {db_type.value}")
+    # SQLite specific
+    db_path: str | None = None
+    # PostgreSQL specific
+    connection_id: str = DEFAULT_PG_DATA_CONN_ID
+    # Trino specific
+    host: str = ""
+    user: str = ""
+    catalog: str = ""
+    port: int = 443
+    schema: str = ""
+    http_scheme: str = "https"
+    verify: bool = True
 
 
-def create_db_handler(db_type: DatabaseType = DatabaseType.POSTGRES, **db_config) -> DBInterface:
+def _create_sqlite_adapter(db_config: DbConfig) -> SQLiteAdapter:
+    """Create a SQLite adapter."""
+    if db_config.db_path is None:
+        raise ValueError("db_path must be provided for SQLiteAdapter.")
+    return SQLiteAdapter(db_path=Path(db_config.db_path))
+
+
+def _create_pg_adapter(db_config: DbConfig) -> PgAdapter:
+    """Create a PostgreSQL adapter."""
+    return PgAdapter(connection_id=db_config.connection_id)
+
+
+def _create_trino_adapter(db_config: DbConfig) -> TrinoAdapter:
+    """Create a Trino adapter."""
+    return TrinoAdapter(
+        host=db_config.host,
+        user=db_config.user,
+        catalog=db_config.catalog,
+        port=db_config.port,
+        schema=db_config.schema,
+        http_scheme=db_config.http_scheme,
+        verify=db_config.verify,
+    )
+
+
+def create_db_handler(db_type: DatabaseType, db_config: DbConfig) -> DBInterface:
     """Create a database handler based on connection type.
 
     Args:
-        connection_id: Airflow connection ID or database path for sqlite
-        db_type: Type of database ('postgres', etc.)
+        db_config: Database configuration
+        db_type: Type of database (e.g., 'postgres', 'trino', 'sqlite')
 
     Returns:
         A database handler instance
@@ -32,22 +67,13 @@ def create_db_handler(db_type: DatabaseType = DatabaseType.POSTGRES, **db_config
     Raises:
         ValueError: If db_type is not supported
     """
+    _registry = {
+        DatabaseType.POSTGRES: _create_pg_adapter(db_config),
+        DatabaseType.TRINO: _create_trino_adapter(db_config),
+        DatabaseType.SQLITE: _create_sqlite_adapter(db_config),
+    }
 
-    _check_required_params(db_type, **db_config)
-
-    if db_type == DatabaseType.POSTGRES:
-        return PgAdapter(connection_id=db_config.get("connection_id", ""))
-    elif db_type == DatabaseType.TRINO:
-        return TrinoAdapter(
-            host=db_config.get("host", ""),
-            user=db_config.get("user", ""),
-            catalog=db_config.get("catalog", ""),
-            port=db_config.get("port", 443),
-            schema=db_config.get("schema"),
-            http_scheme=db_config.get("http_scheme", "https"),
-            verify=db_config.get("verify", True),
-        )
-    elif db_type == DatabaseType.SQLITE:
-        return SQLiteAdapter(connection_id=db_config.get("connection_id", ""))
-
-    raise ValueError(f"Unsupported database type: {db_type}")
+    handler = _registry.get(db_type)
+    if handler is None:
+        raise ValueError(f"Unsupported database type: {db_type}")
+    return handler

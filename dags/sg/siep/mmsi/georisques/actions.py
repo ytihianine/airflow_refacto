@@ -5,9 +5,10 @@ from dags.sg.siep.mmsi.georisques.process import (
     format_query_param,
     format_risque_results,
 )
-from modules.constants import AGENT, DEFAULT_PG_DATA_CONN_ID, PROXY
+from modules.constants import AGENT, PROXY
+from modules.enums.database import DatabaseType
 from modules.enums.http import HttpHandlerType
-from modules.infra.database.factory import create_db_handler
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.http_client.base import HttpInterface
 from modules.infra.http_client.config import ClientConfig
 from modules.infra.http_client.exceptions import HTTPClientError
@@ -28,7 +29,10 @@ logger = logging.getLogger(name=__name__)
 
 def get_bien_from_db(context: dict) -> pd.DataFrame:
     # Hook & config
-    db_handler = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(),
+    )
     schema = get_db_info(context=context).prod_schema
     snapshot_id = context["ti"].xcom_pull(key="return_value", task_ids="get_projet_snapshot")
     logging.info(msg=f"Snapshot ID récupéré : {snapshot_id}")

@@ -6,10 +6,10 @@ from airflow.sdk import Variable
 from modules.constants import (
     AGENT,
     DEFAULT_GRIST_HOST,
-    DEFAULT_PG_DATA_CONN_ID,
     PROXY,
 )
-from modules.infra.database.factory import create_db_handler
+from modules.enums.database import DatabaseType
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import RequestsClient
 from modules.infra.http_client.config import ClientConfig
@@ -21,7 +21,10 @@ def get_agent_db(context: Mapping[str, Any]) -> pd.DataFrame:
     schema = get_db_info(context=context).prod_schema
 
     # Hook
-    db_handler = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(),
+    )
 
     # Retrieve data
     df = db_handler.fetch_df(query=f"""

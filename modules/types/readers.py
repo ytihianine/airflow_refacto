@@ -7,7 +7,7 @@ import pandas as pd
 
 from modules.enums.database import DatabaseType
 from modules.enums.filesystem import FileHandlerType
-from modules.infra.database.factory import create_db_handler
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.file_system.dataframe import read_dataframe
 from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.types.projet import SelecteurConfig
@@ -84,8 +84,10 @@ class GristReaderStrategy(ReaderStrategy):
         doc_local_path = Path("/tmp") / document_info.filename
 
         sqlite_handler = create_db_handler(
-            connection_id=str(doc_local_path),
             db_type=DatabaseType.SQLITE,
+            db_config=DbConfig(
+                db_path=str(doc_local_path),
+            ),
         )
 
         # Download the Grist document locally
@@ -138,8 +140,10 @@ class DbReaderStrategy(ReaderStrategy):
         selecteurs: Mapping[str, SelecteurConfig] | None = None,
     ) -> DataContext:
         db_handler = create_db_handler(
-            connection_id=selecteur.storage_options.db_conn_id,
             db_type=DatabaseType.POSTGRES,
+            db_config=DbConfig(
+                connection_id=selecteur.storage_options.db_conn_id,
+            ),
         )
         df = db_handler.fetch_df(query=self.query)
         self.context.add(name=selecteur.storage_info.selecteur, df=df)

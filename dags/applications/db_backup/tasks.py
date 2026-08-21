@@ -5,8 +5,9 @@ import subprocess
 import tempfile
 
 from airflow.sdk import chain, get_current_context, task, task_group
+from modules.enums.database import DatabaseType
 from modules.enums.filesystem import FileHandlerType
-from modules.infra.database.factory import create_db_handler
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.utils.config.dag_params import get_project_name
 from modules.utils.config.tasks import get_projet_s3_info
@@ -17,7 +18,10 @@ def export_database(db_conn_id: str) -> None:
     @task
     def list_databases(db_conn_id: str) -> list[str]:
         # Variables
-        db_handler = create_db_handler(connection_id=db_conn_id)
+        db_handler = create_db_handler(
+            db_type=DatabaseType.POSTGRES,
+            db_config=DbConfig(connection_id=db_conn_id),
+        )
 
         query = """
             select
@@ -48,7 +52,10 @@ def export_database(db_conn_id: str) -> None:
         dest_tmp_key = projet_info.key_tmp + f"/{db_name}_dump.sql.gz"
 
         # Hooks
-        db_handler = create_db_handler(connection_id=db_conn_id)
+        db_handler = create_db_handler(
+            db_type=DatabaseType.POSTGRES,
+            db_config=DbConfig(connection_id=db_conn_id),
+        )
         s3_handler = create_file_handler(
             handler_type=FileHandlerType.S3,
             config=FSConfig(),
