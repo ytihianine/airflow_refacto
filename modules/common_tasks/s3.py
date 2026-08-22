@@ -126,15 +126,17 @@ def del_s3_files(
 
     for config in selecteur_config:
         logging.info(msg=f"{config}")
-        if config.storage_info.type_source == TypeSource.FILE:
-            s3_key_source = config.storage_info.get_full_s3_key(use_id_source=True)
-            try:
-                logging.info(msg=f"Deleting source file {s3_key_source}")
-                s3_handler.delete_single(file_path=s3_key_source)
-                logging.info(msg="Source file deleted successfully")
-            except FileHandlerError as e:
-                logging.error(msg=f"Failed to delete source file {s3_key_source}: {e!s}")
-                raise
+        if config.storage_info.type_source != TypeSource.FILE:
+            continue
+
+        s3_key_source = config.storage_info.get_full_s3_key(use_id_source=True)
+        try:
+            logging.info(msg=f"Deleting source file {s3_key_source}")
+            s3_handler.delete_single(file_path=s3_key_source)
+            logging.info(msg="Source file deleted successfully")
+        except FileHandlerError as e:
+            logging.error(msg=f"Failed to delete source file {s3_key_source}: {e!s}")
+            raise
 
         if config.storage_options.write_to_s3 is True:
             s3_key = config.storage_info.get_full_s3_key(with_tmp_segment=True)

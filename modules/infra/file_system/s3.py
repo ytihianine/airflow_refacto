@@ -157,26 +157,22 @@ class S3FS(FSInterface):
         """List files in S3 directory."""
         prefix = str(directory).rstrip("/") + "/"
         logging.info(msg=f"Listing files in S3 directory: {prefix} with pattern: {pattern}")
-        try:
-            keys: list[str] = []
-            paginator = self.client.get_paginator("list_objects_v2")
-            for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
-                for obj in page.get("Contents", []):
-                    keys.append(obj["Key"])
+        keys: list[str] = []
+        paginator = self.client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                keys.append(obj["Key"])
 
-            if not keys:
-                return []
+        if not keys:
+            return []
 
-            if pattern:
-                import fnmatch
+        if pattern:
+            import fnmatch
 
-                keys = fnmatch.filter(names=keys, pat=pattern)
+            keys = fnmatch.filter(names=keys, pat=pattern)
 
-            logging.info(msg=f"Found {len(keys)} files in S3 directory")
-            return keys
-
-        except Exception as e:
-            raise FileHandlerError(f"Error listing S3 directory: {prefix}") from e
+        logging.info(msg=f"Found {len(keys)} files in S3 directory")
+        return keys
 
     def move(self, source: str | Path, destination: str | Path) -> None:
         """Move/rename file in S3."""

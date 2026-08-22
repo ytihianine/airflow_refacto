@@ -11,14 +11,12 @@ from modules.enums.http import HttpHandlerType
 from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.http_client.base import HttpInterface
 from modules.infra.http_client.config import ClientConfig
-from modules.infra.http_client.exceptions import HTTPClientError
 from modules.infra.http_client.factory import create_http_client
 from modules.infra.http_client.types import HTTPResponse
 from modules.utils.config.dag_params import get_db_info
 from tenacity import (
     before_sleep_log,
     retry,
-    retry_if_exception,
     retry_if_result,
     stop_after_attempt,
     wait_exponential,
@@ -70,21 +68,10 @@ def _should_retry_response(response: HTTPResponse | None) -> bool:
     return response.status_code in retry_status_codes
 
 
-def _should_retry_exception(exception: BaseException) -> bool:
-    """Retry only transient HTTP client failures."""
-    if not isinstance(exception, HTTPClientError):
-        return False
-
-    if exception.status_code is None:
-        return True
-
-    return exception.status_code in {429, 500, 502, 503, 504}
-
-
 @retry(
     stop=stop_after_attempt(max_attempt_number=30),
     wait=wait_exponential(multiplier=1, min=1, max=30),
-    retry=(retry_if_exception(predicate=_should_retry_exception) | retry_if_result(predicate=_should_retry_response)),
+    retry=retry_if_result(predicate=_should_retry_response),
     before_sleep=before_sleep_log(logger, log_level=logging.WARNING),
     reraise=False,
 )
@@ -101,22 +88,8 @@ def get_risque(http_client: HttpInterface, url: str, query_param: str) -> HTTPRe
         HTTPResponse ou None en cas d'échec après tous les retries
     """
     full_url = f"{url}?{query_param}"
-    response = http_client.get(url=full_url, timeout=180, check_response_statut=False)
+    response = http_client.get(url=full_url, timeout=180, check_response_statut=True)
 
-    # Return response if successful (200) or non-retryable error
-    if response and response.status_code == 200:
-        return response
-
-    # If response has retryable status code, trigger retry
-    if response and response.status_code in {429, 500, 502, 503, 504}:
-        logger.warning(msg=f"⚠️ Erreur {response.status_code}, nouvelle tentative...")
-        raise HTTPClientError(
-            message=f"Retryable status code: {response.status_code}",
-            status_code=response.status_code,
-            response=response,
-        )
-
-    # For other errors, return response without retry
     return response
 
 
