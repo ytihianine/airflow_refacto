@@ -5,15 +5,17 @@ from airflow.sdk import task
 from modules.constants import (
     DEFAULT_S3_CONN_ID,
 )
-from modules.infra.file_system.factory import create_default_s3_handler
+from modules.enums.filesystem import FileHandlerType
+from modules.infra.file_system.factory import FSConfig, create_file_handler
 
 
 @task()
 def delete_tmp_keys(connection_id: str = DEFAULT_S3_CONN_ID) -> None:
     """List all keys in the S3 bucket and return them as a DataFrame."""
     # Hook
-    s3_handler = create_default_s3_handler(
-        connection_id=connection_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=connection_id),
     )
 
     # List objects
@@ -30,8 +32,9 @@ def delete_tmp_keys(connection_id: str = DEFAULT_S3_CONN_ID) -> None:
 def delete_keys_with_date(connection_id: str = DEFAULT_S3_CONN_ID) -> None:
     """List all keys in the S3 bucket and return them as a DataFrame."""
     # Hook
-    s3_handler = create_default_s3_handler(
-        connection_id=connection_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=connection_id),
     )
 
     # List objects
@@ -48,8 +51,9 @@ def delete_keys_with_date(connection_id: str = DEFAULT_S3_CONN_ID) -> None:
 def delete_airflow_keys(connection_id: str = DEFAULT_S3_CONN_ID) -> None:
     """List all keys in the S3 bucket and return them as a DataFrame."""
     # Hook
-    s3_handler = create_default_s3_handler(
-        connection_id=connection_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=connection_id),
     )
 
     # List objects

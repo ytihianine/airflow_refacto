@@ -1,6 +1,7 @@
 """Base interface for file handling operations."""
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, BinaryIO
@@ -10,33 +11,21 @@ from .exceptions import (
 )
 
 
+@dataclass(frozen=True)
 class FileMetadata:
     """Class to hold file metadata."""
 
-    def __init__(
-        self,
-        name: str,
-        size: int,
-        created_at: datetime,
-        modified_at: datetime,
-        mime_type: str,
-        checksum: str,
-        extra: dict[str, Any] | None = None,
-    ):
-        self.name = name
-        self.size = size
-        self.created_at = created_at
-        self.modified_at = modified_at
-        self.mime_type = mime_type
-        self.checksum = checksum
-        self.extra = extra or {}
+    name: str
+    size: int
+    created_at: datetime
+    modified_at: datetime
+    mime_type: str
+    checksum: str
+    extra: dict[str, Any] | None = None
 
 
 class FSInterface(ABC):
     """Abstract base class for file handling operations."""
-
-    def __init__(self, base_path: str | Path | None = None):
-        self.base_path = Path(base_path) if base_path else None
 
     @abstractmethod
     def read(self, file_path: str | Path, validate: bool = True) -> BinaryIO:
@@ -98,6 +87,4 @@ class FSInterface(ABC):
     def get_absolute_path(self, file_path: str | Path) -> Path:
         """Convert relative path to absolute path."""
         path = Path(file_path)
-        if self.base_path and not path.is_absolute():
-            return self.base_path / path
         return path

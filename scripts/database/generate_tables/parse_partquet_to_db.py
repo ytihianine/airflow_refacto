@@ -18,28 +18,25 @@ FICHIER_SQL = settings.generate_tables.fichier_sql
 def mapper_type_postgres(type_pandas):
     """Convertit un type pandas/pyarrow en type PostgreSQL"""
     type_str = str(type_pandas).lower()
+    mapper = {
+        "int64": "INTEGER",
+        "int32": "INTEGER",
+        "int16": "SMALLINT",
+        "int8": "SMALLINT",
+        "double": "DOUBLE PRECISION",
+        "float64": "DOUBLE PRECISION",
+        "float32": "REAL",
+        "float": "REAL",
+        "bool": "BOOLEAN",
+        "datetime64": "TIMESTAMP",
+        "timestamp": "TIMESTAMP",
+        "date": "DATE",
+        "object": "TEXT",
+        "string": "TEXT",
+        "category": "VARCHAR(255)",
+    }
 
-    # Mapping des types
-    if "int64" in type_str or "int32" in type_str:
-        return "INTEGER"
-    elif "int16" in type_str or "int8" in type_str:
-        return "SMALLINT"
-    elif "float64" in type_str or "double" in type_str:
-        return "DOUBLE PRECISION"
-    elif "float32" in type_str or "float" in type_str:
-        return "REAL"
-    elif "bool" in type_str:
-        return "BOOLEAN"
-    elif "datetime64" in type_str or "timestamp" in type_str:
-        return "TIMESTAMP"
-    elif "date" in type_str:
-        return "DATE"
-    elif "object" in type_str or "string" in type_str:
-        return "TEXT"
-    elif "category" in type_str:
-        return "VARCHAR(255)"
-    else:
-        return "TEXT"  # Type par défaut
+    return mapper.get(type_str, "TEXT")  # Type par défaut si non trouvé
 
 
 def generer_create_table(fichier_parquet, nom_table=None):

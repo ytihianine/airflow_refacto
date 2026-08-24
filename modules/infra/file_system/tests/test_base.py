@@ -14,8 +14,8 @@ from modules.infra.file_system.exceptions import FileNotFoundError
 class ConcreteFileHandler(FSInterface):
     """Minimal concrete implementation of FSInterface for testing."""
 
-    def __init__(self, base_path: str | Path | None = None):
-        super().__init__(base_path)
+    def __init__(self):
+        super().__init__()
         self._files: dict[str, bytes] = {}
 
     def read(self, file_path: str | Path, validate: bool = True) -> BinaryIO:

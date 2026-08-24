@@ -16,15 +16,17 @@ from modules.constants import (
 )
 from modules.enums.dags import FeatureFlags
 from modules.enums.database import (
+    DatabaseType,
     LoadStrategy,
     PartitionTimePeriod,
 )
+from modules.enums.filesystem import FileHandlerType
 from modules.infra.database.base import DBInterface
-from modules.infra.database.factory import create_db_handler
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.file_system.dataframe import read_dataframe
 from modules.infra.file_system.factory import (
-    create_default_s3_handler,
-    create_local_handler,
+    FSConfig,
+    create_file_handler,
 )
 from modules.types.projet import (
     SelecteurConfig,
@@ -95,7 +97,10 @@ def _create_snapshot_id(nom_projet: str, execution_date: datetime, nom_projet_pa
     import_date = execution_date.date()
 
     # Init hook
-    db_client = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db_client = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=DEFAULT_PG_DATA_CONN_ID),
+    )
 
     # Get project id
     id_projet_result = db_client.fetch_one(
@@ -230,7 +235,10 @@ def update_projet_snapshot_status(
         return
 
     # Hook
-    db_client = create_db_handler(connection_id=pg_conn_id)
+    db_client = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     projet_metadata = get_projet_metadata(nom_projet=nom_projet)
 
@@ -299,7 +307,10 @@ def ensure_partition(
     prod_schema = db_info.prod_schema
 
     # Hook
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     # Get partition period range
     from_date, to_date = determine_partition_period(
@@ -347,7 +358,10 @@ def create_tmp_tables(
     print(prod_schema, tmp_schema)
 
     # Hook
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     # Get selecteur config
     storage_info = get_list_selecteur_storage_info(nom_projet=nom_projet)
@@ -400,7 +414,10 @@ def delete_tmp_tables(
     selecteur_config = merge_selecteur_config(storage_info=storage_info, storage_options=storage_options)
 
     # Hook
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     for config in selecteur_config:
         if not config.should_write_to_db():
@@ -412,76 +429,89 @@ def delete_tmp_tables(
         db.execute(query=f"DROP TABLE IF EXISTS {tmp_schema}.tmp_{tbl_name};")
 
 
+def _create_append_copy_query(prod_table: str, tmp_table: str, cols: str) -> str:
+    """Create SQL query for APPEND load strategy."""
+    return f"INSERT INTO {prod_table} ({cols}) SELECT {cols} FROM {tmp_table};"
+
+
+def _create_full_load_copy_query(prod_table: str, tmp_table: str, cols: str) -> str:
+    """Create SQL query for FULL_LOAD load strategy."""
+    return f"DELETE FROM {prod_table}; INSERT INTO {prod_table} ({cols}) SELECT {cols} FROM {tmp_table};"
+
+
+def _create_incremental_copy_query() -> str:
+    """Create SQL query for INCREMENTAL load strategy."""
+    return ""
+
+
 def _generate_copy_query(
-    selecteur_config: list[SelecteurConfig],
+    selecteur_config: SelecteurConfig,
     db_handler: DBInterface,
     prod_schema: str = DEFAULT_TMP_SCHEMA,
     tmp_schema: str = DEFAULT_TMP_SCHEMA,
     merge_delete: bool = False,
-) -> list[str]:
+) -> str:
     """
     Generate SQL query to copy data from temporary table to production table based on the specified strategy.
 
     Args:
-        tbl_name: Name of the table.
-        primary_keys: List of primary key columns.
-        strategy: Load strategy (FULL_LOAD, INCREMENTAL, APPEND).
+        selecteur_config: Selecteur configuration object.
+        db_handler: Database handler object.
         prod_schema: Production schema name.
         tmp_schema: Temporary schema name.
+        merge_delete: Whether to perform merge delete operation.
     """
-    queries = []
-    for config in selecteur_config:
-        if not config.should_write_to_db():
-            logging.info(msg=f"Skipping DB copy to real table for selecteur <{config.storage_info.selecteur}>")
-            continue
+    load_strategy = selecteur_config.storage_options.load_strategy
+    tbl_name = selecteur_config.storage_info.tbl_name
+    assert tbl_name is not None  # guaranteed by should_write_to_db()
+    prod_table = f"{prod_schema}.{tbl_name}"
+    tmp_table = f"{tmp_schema}.tmp_{tbl_name}"
 
-        load_strategy = config.storage_options.load_strategy
-        tbl_name = config.storage_info.tbl_name
-        assert tbl_name is not None  # guaranteed by should_write_to_db()
-        prod_table = f"{prod_schema}.{tbl_name}"
-        tmp_table = f"{tmp_schema}.tmp_{tbl_name}"
+    col_list = sort_db_colnames(
+        db_handler=db_handler,
+        selecteur_config=selecteur_config,
+        schema=prod_schema,
+    )
+    cols = ", ".join(col_list)
 
-        col_list = sort_db_colnames(
-            db_handler=db_handler,
-            selecteur_config=config,
-            schema=prod_schema,
-        )
-        cols = ", ".join(col_list)
+    _registry = {
+        LoadStrategy.APPEND: _create_append_copy_query,
+        LoadStrategy.FULL_LOAD: _create_full_load_copy_query,
+        LoadStrategy.INCREMENTAL: _create_incremental_copy_query,
+    }
+    query = ""
+    if load_strategy == LoadStrategy.APPEND:
+        query = _registry[LoadStrategy.APPEND](prod_table=prod_table, tmp_table=tmp_table, cols=cols)
 
-        if load_strategy == LoadStrategy.APPEND:
-            insert_query = f"INSERT INTO {prod_table} ({cols}) SELECT {cols} FROM {tmp_table};"
-            queries.append(insert_query)
+    if load_strategy == LoadStrategy.FULL_LOAD:
+        del_query = f"DELETE FROM {prod_table};"
+        insert_query = f"INSERT INTO {prod_table} ({cols}) SELECT {cols} FROM {tmp_table};"
+        query = f"{del_query} {insert_query}"
 
-        if load_strategy == LoadStrategy.FULL_LOAD:
-            del_query = f"DELETE FROM {prod_table};"
-            insert_query = f"INSERT INTO {prod_table} ({cols}) SELECT {cols} FROM {tmp_table};"
-            queries.append(del_query)
-            queries.append(insert_query)
+    if load_strategy == LoadStrategy.INCREMENTAL:
+        pk_cols = _get_primary_keys(schema=prod_schema, table=tbl_name, db_handler=db_handler)
+        logging.info(msg=f"Table <{tbl_name}> primary key: {pk_cols}")
 
-        if load_strategy == LoadStrategy.INCREMENTAL:
-            pk_cols = _get_primary_keys(schema=prod_schema, table=tbl_name, db_handler=db_handler)
-            logging.info(msg=f"Table <{tbl_name}> primary key: {pk_cols}")
+        merge_query = f"""
+            MERGE INTO {prod_table} tbl_target
+            USING {tmp_table} tbl_source ON ({' AND '.join([f'tbl_source.{col} = tbl_target.{col}' for col in pk_cols])})
+            WHEN MATCHED THEN
+                UPDATE SET {", ".join([f"{col}=tbl_source.{col}" for col in col_list if col not in pk_cols])}
+            WHEN NOT MATCHED THEN
+                INSERT ({', '.join(col_list)})
+                    VALUES ({', '.join([f'tbl_source.{col}' for col in col_list])})
+        """
 
-            merge_query = f"""
-                MERGE INTO {prod_table} tbl_target
-                USING {tmp_table} tbl_source ON ({' AND '.join([f'tbl_source.{col} = tbl_target.{col}' for col in pk_cols])})
-                WHEN MATCHED THEN
-                    UPDATE SET {", ".join([f"{col}=tbl_source.{col}" for col in col_list if col not in pk_cols])}
-                WHEN NOT MATCHED THEN
-                    INSERT ({', '.join(col_list)})
-                        VALUES ({', '.join([f'tbl_source.{col}' for col in col_list])})
+        if merge_delete:
+            merge_query += """
+                WHEN NOT MATCHED BY SOURCE THEN
+                    DELETE
+                ;
             """
 
-            if merge_delete:
-                merge_query += """
-                    WHEN NOT MATCHED BY SOURCE THEN
-                        DELETE
-                    ;
-                """
+        query = merge_query
 
-            queries.append(merge_query)
-
-    return queries
+    return query
 
 
 @task(task_id="copy_tmp_table_to_real_table")
@@ -509,7 +539,10 @@ def copy_tmp_table_to_real_table(
     tmp_schema = db_info.tmp_schema
 
     # Hook
-    db_handler = create_db_handler(connection_id=pg_conn_id)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     # Get selecteur config
     storage_info = get_list_selecteur_storage_info(nom_projet=nom_projet)
@@ -518,13 +551,20 @@ def copy_tmp_table_to_real_table(
     selecteur_config = sorted(selecteur_config, key=lambda x: x.storage_options.tbl_order)
     logging.info(msg=f"Nombre de tables à copier: {len(selecteur_config)}")
 
-    queries = _generate_copy_query(
-        selecteur_config=selecteur_config,
-        db_handler=db_handler,
-        prod_schema=prod_schema,
-        tmp_schema=tmp_schema,
-        merge_delete=merge_delete,
-    )
+    queries = []
+    for config in selecteur_config:
+        if not config.should_write_to_db():
+            continue
+
+        queries.append(
+            _generate_copy_query(
+                selecteur_config=config,
+                db_handler=db_handler,
+                prod_schema=prod_schema,
+                tmp_schema=tmp_schema,
+                merge_delete=merge_delete,
+            )
+        )
 
     if len(queries) == 0:
         logging.info(msg="No query to execute")
@@ -624,9 +664,18 @@ def import_file_to_db(
     schema = db_info.prod_schema if config.storage_options.use_prod_schema else db_info.tmp_schema
 
     # Define hooks
-    db_handler = create_db_handler(connection_id=pg_conn_id)
-    s3_handler = create_default_s3_handler(connection_id=s3_conn_id)
-    local_handler = create_local_handler(base_path=None)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
+    )
+    local_handler = create_file_handler(
+        handler_type=FileHandlerType.LOCAL,
+        config=FSConfig(base_path=None),
+    )
 
     # Variables
     tbl_name = config.storage_info.tbl_name
@@ -687,7 +736,10 @@ def refresh_views(pg_conn_id: str = DEFAULT_PG_DATA_CONN_ID, **context) -> None:
     db_info = get_db_info(context=context)
     prod_schema = db_info.prod_schema
 
-    db = create_db_handler(connection_id=pg_conn_id)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=pg_conn_id),
+    )
 
     get_mview_query = """
         SELECT matviewname

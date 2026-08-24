@@ -7,9 +7,11 @@ from typing import Any
 import pandas as pd
 from airflow.sdk import XComArg, task
 
+from modules.enums.filesystem import FileHandlerType
 from modules.infra.file_system.dataframe import read_dataframe, write_dataframe
 from modules.infra.file_system.factory import (
-    create_default_s3_handler,
+    FSConfig,
+    create_file_handler,
 )
 from modules.types.dags import ETLStep, TaskConfig
 from modules.utils.config.dag_params import get_project_name
@@ -113,11 +115,13 @@ def create_task(
     )
     def _task(**context) -> None:
         """The actual generic task function."""
-        # Get project name from context
+        # Hooks & variables
         nom_projet = get_project_name(context=context)
-
-        # Initialize handler
-        s3_handler = create_default_s3_handler()
+        output_config = get_selecteur_storage_info(nom_projet=nom_projet, selecteur=output_selecteur)
+        s3_handler = create_file_handler(
+            handler_type=FileHandlerType.S3,
+            config=FSConfig(),
+        )
 
         # Execute steps
         result: Any = None
@@ -140,9 +144,6 @@ def create_task(
         # Export final result - always a DataFrame and the last step output
         if not export_output:
             return
-
-        # Resolve configs
-        output_config = get_selecteur_storage_info(nom_projet=nom_projet, selecteur=output_selecteur)
 
         if add_metadata:
             result = _add_metadata(df=result, nom_projet=nom_projet)

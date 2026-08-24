@@ -14,9 +14,9 @@ from modules.constants import (
     DEFAULT_TRINO_HOST,
 )
 from modules.enums.dags import DagStatus
-from modules.enums.filesystem import IcebergTableStatus
+from modules.enums.filesystem import FileHandlerType, IcebergTableStatus
 from modules.infra.catalog.iceberg import IcebergCatalog, generate_catalog_properties
-from modules.infra.file_system.factory import create_default_s3_handler
+from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.infra.mails.default_smtp import (
     MailMessage,
     MailStatus,
@@ -86,7 +86,10 @@ def dag_verification() -> None:
 
     @task
     def check_s3_hook() -> None:
-        s3_hook = create_default_s3_handler(connection_id=DEFAULT_S3_CONN_ID)
+        s3_hook = create_file_handler(
+            handler_type=FileHandlerType.S3,
+            config=FSConfig(connection_id=DEFAULT_S3_CONN_ID),
+        )
         keys = s3_hook.list_files(directory="data_store/test_namespace/")
         print(keys)
         print(len(keys))

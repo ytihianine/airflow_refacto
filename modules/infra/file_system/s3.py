@@ -3,42 +3,22 @@
 import io
 import logging
 import mimetypes
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, BinaryIO
 
-from .base import FileMetadata, FSInterface
-from .exceptions import FileHandlerError, FileNotFoundError
+from modules.infra.file_system.base import FileMetadata, FSInterface
+from modules.infra.file_system.exceptions import FileHandlerError, FileNotFoundError
 
 
+@dataclass
 class S3FS(FSInterface):
     """Handler for S3 storage operations using Airflow's S3Hook or a boto3 client."""
 
-    def __init__(
-        self,
-        bucket: str,
-        connection_id: str | None = None,
-        client: Any | None = None,
-    ):
-        """
-        Initialize S3 file handler.
-
-        Provide either ``connection_id`` (Airflow S3Hook) or ``client`` (boto3 client).
-
-        Args:
-            bucket: S3 bucket name
-            connection_id: Airflow connection ID for S3 (uses S3Hook)
-            client: A boto3 S3 client instance
-        """
-        if connection_id is None and client is None:
-            raise ValueError("Either connection_id or client must be provided")
-        if connection_id is not None and client is not None:
-            raise ValueError("Provide only one of connection_id or client, not both")
-
-        super().__init__()
-        self.connection_id = connection_id
-        self.bucket = bucket
-        self._client = client
-        self._hook = None
+    bucket: str
+    connection_id: str | None = None
+    _client: Any | None = None
+    _hook: Any | None = None  # Internal S3Hook instance, lazily initialized
 
     @property
     def client(self) -> Any:
@@ -177,26 +157,22 @@ class S3FS(FSInterface):
         """List files in S3 directory."""
         prefix = str(directory).rstrip("/") + "/"
         logging.info(msg=f"Listing files in S3 directory: {prefix} with pattern: {pattern}")
-        try:
-            keys: list[str] = []
-            paginator = self.client.get_paginator("list_objects_v2")
-            for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
-                for obj in page.get("Contents", []):
-                    keys.append(obj["Key"])
+        keys: list[str] = []
+        paginator = self.client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                keys.append(obj["Key"])
 
-            if not keys:
-                return []
+        if not keys:
+            return []
 
-            if pattern:
-                import fnmatch
+        if pattern:
+            import fnmatch
 
-                keys = fnmatch.filter(names=keys, pat=pattern)
+            keys = fnmatch.filter(names=keys, pat=pattern)
 
-            logging.info(msg=f"Found {len(keys)} files in S3 directory")
-            return keys
-
-        except Exception as e:
-            raise FileHandlerError(f"Error listing S3 directory: {prefix}") from e
+        logging.info(msg=f"Found {len(keys)} files in S3 directory")
+        return keys
 
     def move(self, source: str | Path, destination: str | Path) -> None:
         """Move/rename file in S3."""

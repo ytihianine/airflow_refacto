@@ -8,8 +8,9 @@ import pandas as pd
 from airflow.sdk import task
 
 from modules.enums.dags import FeatureFlags
+from modules.enums.filesystem import FileHandlerType
 from modules.infra.file_system.dataframe import read_dataframe
-from modules.infra.file_system.factory import create_default_s3_handler
+from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.utils.config.dag_params import get_project_name, should_skip_task
 from modules.utils.config.tasks import (
     column_mapping_dataframe,
@@ -51,7 +52,10 @@ def create_parquet_converter_task(
     @task(**task_params)
     def convert_to_parquet(**context) -> None:
         """Convert file to Parquet format and upload to S3."""
-        s3_handler = create_default_s3_handler()
+        s3_handler = create_file_handler(
+            handler_type=FileHandlerType.S3,
+            config=FSConfig(),
+        )
 
         nom_projet = get_project_name(context=context)
 

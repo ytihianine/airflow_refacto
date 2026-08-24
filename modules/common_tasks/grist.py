@@ -8,13 +8,11 @@ from airflow.sdk import Variable, task
 from modules.constants import (
     AGENT,
     DEFAULT_GRIST_HOST,
-    DEFAULT_S3_BUCKET,
-    DEFAULT_S3_CONN_ID,
     PROXY,
 )
 from modules.enums.dags import FeatureFlags
 from modules.enums.filesystem import FileHandlerType
-from modules.infra.file_system.factory import create_file_handler
+from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import RequestsClient
 from modules.infra.http_client.config import ClientConfig
@@ -37,7 +35,6 @@ from modules.utils.process.text import normalize_whitespace_columns
 )
 def download_grist_doc_to_s3(
     selecteur: str,
-    workspace_id: str,
     grist_host: str = DEFAULT_GRIST_HOST,
     api_token_key: str = "grist_secret_key",
     use_proxy: bool = True,
@@ -74,8 +71,7 @@ def download_grist_doc_to_s3(
     # Hooks
     s3_handler = create_file_handler(
         handler_type=FileHandlerType.S3,
-        connection_id=DEFAULT_S3_CONN_ID,
-        bucket=DEFAULT_S3_BUCKET,
+        config=FSConfig(),
     )
 
     # Get document data from Grist

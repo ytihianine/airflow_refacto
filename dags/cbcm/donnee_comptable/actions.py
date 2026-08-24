@@ -5,10 +5,10 @@ from airflow.sdk import Variable
 from modules.constants import (
     AGENT,
     DEFAULT_GRIST_HOST,
-    DEFAULT_PG_DATA_CONN_ID,
     PROXY,
 )
-from modules.infra.database.factory import create_db_handler
+from modules.enums.database import DatabaseType
+from modules.infra.database.factory import DbConfig, create_db_handler
 from modules.infra.grist.client import GristClient
 from modules.infra.http_client.adapters import RequestsClient
 from modules.infra.http_client.config import ClientConfig
@@ -36,7 +36,10 @@ def load_new_sp(
     df_source = df_source.drop_duplicates(subset=cols_to_keep)  # type: ignore
 
     # Récupérer les SP déjà connus
-    db = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(),
+    )
     df_sp = db.fetch_df(query="""SELECT DISTINCT centre_financier, centre_cout
             FROM donnee_comptable.service_prescripteur;""")
     logging.info(msg=f"Nombre de SP connus: {len(df_sp)}")
@@ -85,7 +88,10 @@ def load_new_sp(
 
 def get_sp() -> pd.DataFrame:
     # Récupérer les SP déjà connus
-    db_handler = create_db_handler(connection_id=DEFAULT_PG_DATA_CONN_ID)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(),
+    )
     df = db_handler.fetch_df(query="""SELECT dcsp.couple_cf_cc as cf_cc, dcrspc.service_prescripteur
             FROM donnee_comptable.service_prescripteur dcsp
             LEFT JOIN donnee_comptable.ref_service_prescripteur_choisi dcrspc

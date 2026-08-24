@@ -5,6 +5,7 @@ import mimetypes
 import os
 import shutil
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import BinaryIO
@@ -13,8 +14,11 @@ from .base import FileMetadata, FSInterface
 from .exceptions import FileHandlerError, FileNotFoundError, FilePermissionError
 
 
+@dataclass
 class LocalFS(FSInterface):
     """Handler for local filesystem operations."""
+
+    base_path: Path
 
     def read(self, file_path: str | Path, validate: bool = True) -> BinaryIO:
         """Read file content from local filesystem."""
@@ -31,35 +35,29 @@ class LocalFS(FSInterface):
     def write(self, file_path: str | Path, content: str | bytes | BinaryIO) -> None:
         """Write content to local filesystem."""
         abs_path = self.get_absolute_path(file_path)
-        try:
-            # Create directory if it doesn't exist
-            abs_path.parent.mkdir(parents=True, exist_ok=True)
+        # Create directory if it doesn't exist
+        abs_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Temporary file in the same directory
-            with tempfile.NamedTemporaryFile(delete=False, dir=abs_path.parent) as tmp:
-                tmp_path = Path(tmp.name)
+        # Temporary file in the same directory
+        with tempfile.NamedTemporaryFile(delete=False, dir=abs_path.parent) as tmp:
+            tmp_path = Path(tmp.name)
 
-                try:
-                    if isinstance(content, str):
-                        tmp.write(content.encode("utf-8"))
-                    elif isinstance(content, bytes):
-                        tmp.write(content)
-                    else:
-                        shutil.copyfileobj(content, tmp)  # type: ignore
+            try:
+                if isinstance(content, str):
+                    tmp.write(content.encode("utf-8"))
+                elif isinstance(content, bytes):
+                    tmp.write(content)
+                else:
+                    shutil.copyfileobj(content, tmp)  # type: ignore
 
-                    tmp.flush()
-                    os.fsync(tmp.fileno())
-                except Exception:
-                    tmp_path.unlink(missing_ok=True)
-                    raise
+                tmp.flush()
+                os.fsync(tmp.fileno())
+            except Exception:
+                tmp_path.unlink(missing_ok=True)
+                raise
 
-            # Atomic replace (guaranteed on POSIX)
-            os.replace(tmp_path, abs_path)
-
-        except PermissionError as e:
-            raise FilePermissionError(f"Permission denied: {abs_path}") from e
-        except OSError as e:
-            raise FileHandlerError(f"Error writing file: {abs_path}") from e
+        # Atomic replace (guaranteed on POSIX)
+        os.replace(tmp_path, abs_path)
 
     def delete(self, file_path: str | Path) -> None:
         """Delete file from local filesystem."""

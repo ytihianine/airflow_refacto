@@ -13,11 +13,11 @@ from modules.constants import (
     DEFAULT_S3_CONN_ID,
 )
 from modules.enums.dags import FeatureFlags, TypeSource
-from modules.enums.filesystem import IcebergTableStatus
+from modules.enums.filesystem import FileHandlerType, IcebergTableStatus
 from modules.infra.catalog.iceberg import IcebergCatalog, generate_catalog_properties
 from modules.infra.file_system.dataframe import read_dataframe
 from modules.infra.file_system.exceptions import FileHandlerError
-from modules.infra.file_system.factory import create_default_s3_handler
+from modules.infra.file_system.factory import FSConfig, create_file_handler
 from modules.types.projet import SelecteurConfig, SelecteurStorageOptions
 from modules.utils.config.dag_params import (
     get_execution_date,
@@ -58,8 +58,9 @@ def copy_s3_files(
     curr_time = execution_date.strftime(format="%Hh%M")
 
     # Créer les hooks
-    s3_handler = create_default_s3_handler(
-        connection_id=connection_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=connection_id),
     )
 
     # Get selecteur config
@@ -114,8 +115,9 @@ def del_s3_files(
     nom_projet = get_project_name(context=context)
 
     # Créer les hooks
-    s3_handler = create_default_s3_handler(
-        connection_id=s3_conn_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
     )
 
     # Get selecteur config
@@ -124,15 +126,17 @@ def del_s3_files(
 
     for config in selecteur_config:
         logging.info(msg=f"{config}")
-        if config.storage_info.type_source == TypeSource.FILE:
-            s3_key_source = config.storage_info.get_full_s3_key(use_id_source=True)
-            try:
-                logging.info(msg=f"Deleting source file {s3_key_source}")
-                s3_handler.delete_single(file_path=s3_key_source)
-                logging.info(msg="Source file deleted successfully")
-            except FileHandlerError as e:
-                logging.error(msg=f"Failed to delete source file {s3_key_source}: {e!s}")
-                raise
+        if config.storage_info.type_source != TypeSource.FILE:
+            continue
+
+        s3_key_source = config.storage_info.get_full_s3_key(use_id_source=True)
+        try:
+            logging.info(msg=f"Deleting source file {s3_key_source}")
+            s3_handler.delete_single(file_path=s3_key_source)
+            logging.info(msg="Source file deleted successfully")
+        except FileHandlerError as e:
+            logging.error(msg=f"Failed to delete source file {s3_key_source}: {e!s}")
+            raise
 
         if config.storage_options.write_to_s3 is True:
             s3_key = config.storage_info.get_full_s3_key(with_tmp_segment=True)
@@ -175,8 +179,9 @@ def del_iceberg_staging_table(
         logging.info(msg=f"Staging table {table} dropped successfully !")
 
     # Delete staging files from S3
-    s3_handler = create_default_s3_handler(
-        connection_id=s3_conn_id,
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
     )
     staging_keys = s3_handler.list_files(directory=catalog_name + "/" + s3_key, pattern="*_staging*")
     for key in staging_keys:
@@ -243,7 +248,10 @@ def import_file_to_iceberg(
         logging.info(msg=f"Skipping Iceberg write for selecteur <{config.storage_info.selecteur}>")
         return
 
-    s3_handler = create_default_s3_handler(connection_id=s3_conn_id)
+    s3_handler = create_file_handler(
+        handler_type=FileHandlerType.S3,
+        config=FSConfig(connection_id=s3_conn_id),
+    )
     properties = generate_catalog_properties(uri=catalog_uri)
     catalog = IcebergCatalog(name=catalog_name, properties=properties)
 

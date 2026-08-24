@@ -6,7 +6,6 @@ from urllib.parse import urljoin
 from tenacity import RetryCallState, retry, retry_if_exception, stop_after_attempt
 
 from modules.infra.http_client.config import ClientConfig
-from modules.infra.http_client.exceptions import RateLimitError
 from modules.infra.http_client.types import HTTPResponse
 
 DEFAULT_RETRY_AFTER_SECONDS = 2
@@ -15,7 +14,7 @@ MAX_RETRY_ATTEMPTS = 5
 
 
 def _is_rate_limit_error(exception: BaseException) -> bool:
-    return isinstance(exception, RateLimitError) or (getattr(exception, "status_code", None) == 429)
+    return getattr(exception, "status_code", None) == 429
 
 
 def _retry_wait_from_429(retry_state: RetryCallState) -> float:

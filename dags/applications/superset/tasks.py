@@ -1,12 +1,16 @@
 import logging
 
 from airflow.sdk import task
-from modules.infra.database.factory import create_db_handler
+from modules.enums.database import DatabaseType
+from modules.infra.database.factory import DbConfig, create_db_handler
 
 
 @task
 def update_admin_ownership(db_conn_id: str) -> None:
-    db_handler = create_db_handler(connection_id=db_conn_id)
+    db_handler = create_db_handler(
+        db_type=DatabaseType.POSTGRES,
+        db_config=DbConfig(connection_id=db_conn_id),
+    )
 
     # Update table owners
     logging.info(msg="Ajouter tous les admins en tant que propriétaires des tables.")
