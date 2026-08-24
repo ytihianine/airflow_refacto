@@ -68,12 +68,12 @@ def create_db_handler(db_type: DatabaseType, db_config: DbConfig) -> DBInterface
         ValueError: If db_type is not supported
     """
     _registry = {
-        DatabaseType.POSTGRES: _create_pg_adapter(db_config),
-        DatabaseType.TRINO: _create_trino_adapter(db_config),
-        DatabaseType.SQLITE: _create_sqlite_adapter(db_config),
+        DatabaseType.POSTGRES: _create_pg_adapter,
+        DatabaseType.TRINO: _create_trino_adapter,
+        DatabaseType.SQLITE: _create_sqlite_adapter,
     }
 
     handler = _registry.get(db_type)
     if handler is None:
         raise ValueError(f"Unsupported database type: {db_type}")
-    return handler
+    return handler(db_config=db_config)
