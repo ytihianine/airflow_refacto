@@ -47,10 +47,7 @@ nom_projet = "Accompagnements DSCI"
         nom_projet=nom_projet,
         dag_status=DagStatus.RUN,
         db_params=DBParams(prod_schema="activite_dsci"),
-        feature_flags=FeatureFlagsEnable(
-            db=True, mail=False, s3=True,
-            convert_files=False, download_grist_doc=True
-            ),
+        feature_flags=FeatureFlagsEnable(db=True, mail=False, s3=True, convert_files=False, download_grist_doc=True),
     ),
     on_failure_callback=create_send_mail_callback(
         mail_status=MailStatus.ERROR,
