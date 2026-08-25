@@ -674,7 +674,7 @@ def import_file_to_db(
     )
     local_handler = create_file_handler(
         handler_type=FileHandlerType.LOCAL,
-        config=FSConfig(base_path=None),
+        config=FSConfig(base_path="/tmp/"),
     )
 
     # Variables
