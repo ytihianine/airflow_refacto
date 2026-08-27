@@ -7,7 +7,7 @@ CREATE SCHEMA IF NOT EXISTS activite_dsci;
 
 CREATE TABLE activite_dsci."ref_typologie_accompagnement" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "typologie_accompagnement" text,
     import_timestamp TIMESTAMP NOT NULL,
     snapshot_id UUID NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE activite_dsci."ref_typologie_accompagnement" (
 
 CREATE TABLE activite_dsci."ref_bureau" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "bureau" text,
     import_timestamp TIMESTAMP NOT NULL,
     snapshot_id UUID NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE activite_dsci."ref_bureau" (
 DROP TABLE IF EXISTS activite_dsci."ref_profil_correspondant" CASCADE;
 CREATE TABLE activite_dsci."ref_profil_correspondant" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "profil_correspondant" text,
     "intitule_long" text,
     "created_by" text,
@@ -43,7 +43,7 @@ CREATE TABLE activite_dsci."ref_profil_correspondant" (
 
 CREATE TABLE activite_dsci."ref_direction" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "direction" text,
     "libelle_long" text,
     "administration" text,
@@ -55,7 +55,7 @@ CREATE TABLE activite_dsci."ref_direction" (
 
 CREATE TABLE activite_dsci."ref_region" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "region" text,
     import_timestamp TIMESTAMP NOT NULL,
     snapshot_id UUID NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE activite_dsci."ref_region" (
 
 CREATE TABLE activite_dsci."ref_certification" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "competence" text,
     import_timestamp TIMESTAMP NOT NULL,
     snapshot_id UUID NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE activite_dsci."ref_certification" (
 
 CREATE TABLE activite_dsci."ref_pole" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "id_bureau" int,
     "pole" text,
     import_timestamp TIMESTAMP NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE activite_dsci."ref_pole" (
 
 CREATE TABLE activite_dsci."ref_type_accompagnement" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "type_d_accompagnement" text,
     "id_pole" int,
     import_timestamp TIMESTAMP NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE activite_dsci."ref_type_accompagnement" (
 DROP TABLE IF EXISTS activite_dsci."ref_semainier" CASCADE;
 CREATE TABLE activite_dsci."ref_semainier" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "annee" int,
     "mois" text,
     "trimestre" text,
@@ -114,7 +114,7 @@ CREATE TABLE activite_dsci."ref_semainier" (
 
 CREATE TABLE activite_dsci."ref_qualite_service" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "qualite_de_service" text,
     import_timestamp TIMESTAMP NOT NULL,
     snapshot_id UUID NOT NULL,
@@ -124,7 +124,7 @@ CREATE TABLE activite_dsci."ref_qualite_service" (
 
 CREATE TABLE activite_dsci."ref_competence_particuliere" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" INTEGER,
     "competence" text,
     import_timestamp TIMESTAMP NOT NULL,
     snapshot_id UUID NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE activite_dsci."ref_competence_particuliere" (
 
 CREATE TABLE activite_dsci."effectif_dsci" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "mail" text,
     "id_bureau" int,
     "id_pole" int,
@@ -155,7 +155,7 @@ CREATE TABLE activite_dsci."effectif_dsci" (
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "annee" numeric,
     "statut" text,
     "recours_prestataire" text,
@@ -180,7 +180,7 @@ CREATE TABLE activite_dsci."accompagnement_dsci" (
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci_typologie" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci_typologie" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_accompagnement" integer,
     "id_typologie" integer,
     import_timestamp TIMESTAMP NOT NULL,
@@ -192,7 +192,7 @@ CREATE TABLE activite_dsci."accompagnement_dsci_typologie" (
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci_equipe" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci_equipe" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_accompagnement" integer,
     "id_equipe_s_dsci" integer,
     import_timestamp TIMESTAMP NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE activite_dsci."accompagnement_dsci_equipe" (
 DROP TABLE IF EXISTS activite_dsci."accompagnement_dsci_porteur" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_dsci_porteur" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_accompagnement" integer,
     "id_porteur_dsci" integer,
     import_timestamp TIMESTAMP NOT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE activite_dsci."accompagnement_dsci_porteur" (
 
 CREATE TABLE activite_dsci."bilaterale" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_direction" int,
     "date_de_rencontre" date,
     "intitule" text,
@@ -227,7 +227,7 @@ CREATE TABLE activite_dsci."bilaterale" (
 
 CREATE TABLE activite_dsci."bilaterale_remontee" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_bilaterale" int,
     "id_bureau" int,
     "information_a_remonter" text,
@@ -240,7 +240,7 @@ CREATE TABLE activite_dsci."bilaterale_remontee" (
 DROP TABLE IF EXISTS activite_dsci."correspondant" CASCADE;
 CREATE TABLE activite_dsci."correspondant" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "mail" text,
     "nom_complet" text,
     "id_direction" int,
@@ -263,7 +263,7 @@ CREATE TABLE activite_dsci."correspondant" (
 DROP TABLE IF EXISTS activite_dsci."correspondant_profil" CASCADE;
 CREATE TABLE activite_dsci."correspondant_profil" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_correspondant" integer,
     "id_type_de_correspondant" int,
     import_timestamp TIMESTAMP NOT NULL,
@@ -274,7 +274,7 @@ CREATE TABLE activite_dsci."correspondant_profil" (
 
 CREATE TABLE activite_dsci."correspondant_competence_particuliere" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_correspondant" integer,
     "id_competence_particuliere" int,
     import_timestamp TIMESTAMP NOT NULL,
@@ -285,7 +285,7 @@ CREATE TABLE activite_dsci."correspondant_competence_particuliere" (
 
 CREATE TABLE activite_dsci."correspondant_connaissance_communaute" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_correspondant" integer,
     "connaissance_communaute" text,
     import_timestamp TIMESTAMP NOT NULL,
@@ -301,7 +301,7 @@ CREATE TABLE activite_dsci."correspondant_connaissance_communaute" (
 DROP TABLE IF EXISTS activite_dsci."accompagnement_mi" CASCADE;
 CREATE TABLE activite_dsci."accompagnement_mi" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "est_ouvert_notation" boolean,
     "est_certifiant" boolean,
     "places_max" int,
@@ -322,7 +322,7 @@ CREATE TABLE activite_dsci."accompagnement_mi" (
 
 CREATE TABLE activite_dsci."accompagnement_mi_satisfaction" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_accompagnement" int,
     "nombre_de_participants" numeric,
     "nombre_de_reponses" numeric,
@@ -338,7 +338,7 @@ CREATE TABLE activite_dsci."accompagnement_mi_satisfaction" (
 
 CREATE TABLE activite_dsci."animateur_interne" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_accompagnement" int,
     "id_animateur" int,
     import_timestamp TIMESTAMP NOT NULL,
@@ -349,7 +349,7 @@ CREATE TABLE activite_dsci."animateur_interne" (
 
 CREATE TABLE activite_dsci."animateur_externe" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_accompagnement" int,
     "animateur" text,
     import_timestamp TIMESTAMP NOT NULL,
@@ -360,7 +360,7 @@ CREATE TABLE activite_dsci."animateur_externe" (
 
 CREATE TABLE activite_dsci."animateur_fac" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_accompagnement" int,
     "id_animateur" int,
     import_timestamp TIMESTAMP NOT NULL,
@@ -372,7 +372,7 @@ CREATE TABLE activite_dsci."animateur_fac" (
 DROP TABLE IF EXISTS activite_dsci."animateur_fac_certification" CASCADE;
 CREATE TABLE activite_dsci."animateur_fac_certification" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_animateur_fac" integer,
     "id_certifications_souhaitees" integer,
     import_timestamp TIMESTAMP NOT NULL,
@@ -384,7 +384,7 @@ CREATE TABLE activite_dsci."animateur_fac_certification" (
 DROP TABLE IF EXISTS activite_dsci."animateur_fac_certification_valide" CASCADE;
 CREATE TABLE activite_dsci."animateur_fac_certification_valide" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    --"id" bigserial,
     "id_animateur_fac" integer,
     "id_certifications_validees" integer,
     import_timestamp TIMESTAMP NOT NULL,
@@ -395,7 +395,7 @@ CREATE TABLE activite_dsci."animateur_fac_certification_valide" (
 
 CREATE TABLE activite_dsci."laboratoires_territoriaux" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "nom" text,
     "id_direction" int,
     "id_region" int,
@@ -409,7 +409,7 @@ CREATE TABLE activite_dsci."laboratoires_territoriaux" (
 
 CREATE TABLE activite_dsci."pleniere_quest_inscription" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "is_duplicate" int,
     "id_direction" int,
     "mail" text,
@@ -423,7 +423,7 @@ CREATE TABLE activite_dsci."pleniere_quest_inscription" (
 
 CREATE TABLE activite_dsci."pleniere_quest_satisfaction" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "mail" text,
     "ce_que_j_ai_apprecie" text,
     "ce_qui_peut_etre_ameliore" text,
@@ -436,8 +436,8 @@ CREATE TABLE activite_dsci."pleniere_quest_satisfaction" (
 
 CREATE TABLE activite_dsci."passinnov_quest_inscription" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
-    "is_duplicate" numeric,
+    "id" bigserial,
+    --"is_duplicate" numeric,
     "id_region" int,
     "mail" text,
     "id_direction" int,
@@ -452,7 +452,7 @@ CREATE TABLE activite_dsci."passinnov_quest_inscription" (
 
 CREATE TABLE activite_dsci."passinnov_quest_satisfaction" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "is_duplicate" int,
     "mail" text,
     "id_id_passinnov" int,
@@ -467,7 +467,7 @@ CREATE TABLE activite_dsci."passinnov_quest_satisfaction" (
 
 CREATE TABLE activite_dsci."formation_codev_quest_inscription"(
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "mail" text,
     "id_direction" int,
     "formation_codev" text,
@@ -486,7 +486,7 @@ CREATE TABLE activite_dsci."formation_codev_quest_inscription"(
 DROP TABLE IF EXISTS activite_dsci."formation_fac_quest_satisfaction" CASCADE;
 CREATE TABLE activite_dsci."formation_fac_quest_satisfaction"(
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_quest_formation" int,
     "mail" text,
     "id_promotion" int,
@@ -509,7 +509,7 @@ CREATE TABLE activite_dsci."formation_fac_quest_satisfaction"(
 DROP TABLE IF EXISTS activite_dsci."formation_fac_envie_suite_quest_satisfaction" CASCADE;
 CREATE TABLE activite_dsci."formation_fac_envie_suite_quest_satisfaction"(
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_formation_fac" integer,
     "envies_pour_la_suite" text,
     import_timestamp TIMESTAMP NOT NULL,
@@ -521,7 +521,7 @@ CREATE TABLE activite_dsci."formation_fac_envie_suite_quest_satisfaction"(
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_accompagnement" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "id_facilitateur_1" int,
     "id_facilitateur_2" int,
     "id_facilitateur_3" int,
@@ -540,7 +540,7 @@ CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement" (
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_accompagnement_facilitateurs" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement_facilitateurs" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_formation_fac_hors_bercylab" integer,
     "id_facilitateurs" integer,
     import_timestamp TIMESTAMP NOT NULL,
@@ -552,7 +552,7 @@ CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement_facilitateurs
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_type_accompagnement" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_type_accompagnement" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_formation_fac_hors_bercylab" integer,
     "type_d_accompagnement" text,
     import_timestamp TIMESTAMP NOT NULL,
@@ -564,7 +564,7 @@ CREATE TABLE activite_dsci."fac_hors_bercylab_quest_type_accompagnement" (
 DROP TABLE IF EXISTS activite_dsci."fac_hors_bercylab_quest_accompagnement_participants" CASCADE;
 CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement_participants" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" bigint,
+    "id" bigserial,
     "id_formation_fac_hors_bercylab" integer,
     "participants" text,
     import_timestamp TIMESTAMP NOT NULL,
@@ -579,7 +579,7 @@ CREATE TABLE activite_dsci."fac_hors_bercylab_quest_accompagnement_participants"
 
 CREATE TABLE activite_dsci."charge_agent_cci" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "trimestre" text,
     "type_de_charge" text,
     "equipe" text,
@@ -597,7 +597,7 @@ CREATE TABLE activite_dsci."charge_agent_cci" (
 
 CREATE TABLE activite_dsci."accompagnement_cci_opportunite" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "date_prise_de_decision" date,
     "date_de_proposition_d_accompagnement" date,
     "decision" text,
@@ -620,7 +620,7 @@ CREATE TABLE activite_dsci."accompagnement_cci_opportunite" (
 
 CREATE TABLE activite_dsci."accompagnement_cci_quest_satisfaction" (
     id_row bigint GENERATED ALWAYS AS IDENTITY,
-    "id" integer,
+    "id" bigserial,
     "appreciation_globale" text,
     "points_d_ameliorations" text,
     "points_forts" text,
