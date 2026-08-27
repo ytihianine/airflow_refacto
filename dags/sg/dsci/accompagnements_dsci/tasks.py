@@ -737,11 +737,10 @@ def mission_innovation() -> None:
                 fn=partial(
                     generic_grist_processing,
                     cols_mapping={
-                        "id": "id_animateur_fac",
                         "certifications_souhaitees": "id_certifications_souhaitees",
                     },
                     cols_to_keep=["id", "certifications_souhaitees"],
-                    ref_columns=["id_animateur_fac", "id_certifications_souhaitees"],
+                    ref_columns=["id_certifications_souhaitees"],
                     custom_fn=process.process_animateur_fac_certification,
                 ),
                 input_key="animateur_fac_certification",
@@ -760,11 +759,10 @@ def mission_innovation() -> None:
                 fn=partial(
                     generic_grist_processing,
                     cols_mapping={
-                        "id": "id_animateur_fac",
                         "certifications_validees": "id_certifications_validees",
                     },
                     cols_to_keep=["id", "certifications_validees"],
-                    ref_columns=["id_animateur_fac", "id_certifications_validees"],
+                    ref_columns=["id_certifications_validees"],
                     custom_fn=process.process_animateur_fac_certification_valide,
                 ),
                 input_key="animateur_fac_certification_valide",
@@ -846,6 +844,14 @@ def mission_innovation() -> None:
             SingleInputStep(
                 fn=partial(
                     generic_grist_processing,
+                    cols_mapping={
+                        "direction": "id_direction",
+                        "region": "id_region",
+                        "passinnov": "id_passinnov",
+                        "id_accompagnement": "id_id_accompagnement",
+                    },
+                    cols_to_keep=["id", "mail", "direction", "region", "role", "passinnov", "id_accompagnement"],
+                    ref_columns=["id_direction", "id_region", "id_passinnov", "id_idaccompagnement"],
                     custom_fn=process.process_passinnov_quest_inscription,
                 ),
                 input_key="passinnov_quest_inscription",
@@ -890,6 +896,18 @@ def mission_innovation() -> None:
                         "id_accompagnement": "id_id_accompagnement",
                         "session_formation_codev": "id_session_formation_codev",
                     },
+                    cols_to_keep=[
+                        "id",
+                        "mail",
+                        "direction",
+                        "formation_codev",
+                        "experience_codev",
+                        "details_experience",
+                        "difficultes",
+                        "attentes",
+                        "session_formation_codev",
+                        "id_accompagnement",
+                    ],
                     txt_columns=[
                         "formation_codev",
                         "experience_codev",
