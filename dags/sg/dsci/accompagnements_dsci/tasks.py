@@ -737,6 +737,7 @@ def mission_innovation() -> None:
                 fn=partial(
                     generic_grist_processing,
                     cols_mapping={
+                        "id": "id_animateur_fac",
                         "certifications_souhaitees": "id_certifications_souhaitees",
                     },
                     cols_to_keep=["id", "certifications_souhaitees"],
@@ -759,6 +760,7 @@ def mission_innovation() -> None:
                 fn=partial(
                     generic_grist_processing,
                     cols_mapping={
+                        "id": "id_animateur_fac",
                         "certifications_validees": "id_certifications_validees",
                     },
                     cols_to_keep=["id", "certifications_validees"],
@@ -851,7 +853,7 @@ def mission_innovation() -> None:
                         "id_accompagnement": "id_id_accompagnement",
                     },
                     cols_to_keep=["id", "mail", "direction", "region", "role", "passinnov", "id_accompagnement"],
-                    ref_columns=["id_direction", "id_region", "id_passinnov", "id_idaccompagnement"],
+                    ref_columns=["id_direction", "id_region", "id_passinnov", "id_id_accompagnement"],
                     custom_fn=process.process_passinnov_quest_inscription,
                 ),
                 input_key="passinnov_quest_inscription",
