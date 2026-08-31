@@ -83,7 +83,7 @@ def process_reseaux_sociaux(df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(subset=["abonnes"])
 
     # Data control
-    if not is_upper(df=df, cols_to_check=["abonnes"], seuil=0, inclusive=False):
+    if not is_upper(df=df, cols_to_check=["abonnes"], seuil=0, inclusive=True):
         raise ValueError("Certaines valeurs sont négatives !")
     # Add additionnal info
     df = tag_last_value_rows(df=df, colname_max_value="date")
