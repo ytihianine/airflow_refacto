@@ -6,18 +6,18 @@ Ce repo contient des scripts et dags permettant de traiter des données.
 
 ```
 .
-├── src
-│    ├── _types: types transverses
-│    ├── common_tasks: tâches génériques réutilisables
-│    ├── dags: Contient l'ensemble des dags
-│    ├── enums: enums transverses
-│    ├── infra: Code pour interagir avec l'infrastructure / systèmes externes
-│    ├── utils: Code réutilisable (fonctions de traitements, récupération des configs ...)
-│    └── constants.py: variables globales
+├── dags: Contient l'ensemble des dags
 ├── docs: Contient toute la documentation du repo
+├── modules: Contient du conde réutilisable
+│   ├── common_tasks: tâches génériques réutilisables (S3, SQL, Grist, ...)
+│   ├── enums: enums transverses
+│   ├── infra: Code pour interagir avec l'infrastructure / systèmes externes
+│   ├── types: types transverses
+│   ├── utils: fonctions réutilisable (fonctions de traitements, récupération des configs ...)
+│   └── constants.py: variables globales
+├── scripts: Contient différents scripts utilitaires
 ├── test: Contient tous les tests unitaires
-├── pyproject.toml: Contient tous les tests unitaires
-└── scripts: Contient différents scripts utilitaires
+└── pyproject.toml: Contient la description du projet
 ```
 
 Le code est organisé de façon modulaire et réutilisable. L'objectif est de développer uniquement les éléments spécifiques à chaque traitement (les logiques métiers).
