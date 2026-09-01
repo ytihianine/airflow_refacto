@@ -792,7 +792,6 @@ def suivi_questionnaire_1() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_cas_d_usage_envisages"],
                     custom_fn=process.process_questionnaire_1_cas_usage,
                 ),
                 input_key="questionnaire_1_cas_usage",
@@ -1017,7 +1016,6 @@ def suivi_questionnaire_2() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_participation_programme_rdv"],
                     custom_fn=process.process_questionnaire_2_participation,
                 ),
                 input_key="questionnaire_2_participation",
@@ -1039,7 +1037,6 @@ def suivi_questionnaire_2() -> None:
                     cols_mapping={
                         "freins_a_l_utilisation": "id_freins_a_l_utilisation",
                     },
-                    ref_columns=["id_freins_a_l_utilisation"],
                     custom_fn=process.process_questionnaire_2_freins,
                 ),
                 input_key="questionnaire_2_freins",
@@ -1064,7 +1061,6 @@ def suivi_questionnaire_2() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_facteurs_de_progression"],
                     custom_fn=process.process_questionnaire_2_facteurs_progression,
                 ),
                 input_key="questionnaire_2_facteurs_progression",
@@ -1089,7 +1085,6 @@ def suivi_questionnaire_2() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_taches_realisees_avec_ia"],
                     custom_fn=process.process_questionnaire_2_taches,
                 ),
                 input_key="questionnaire_2_taches",
@@ -1114,7 +1109,6 @@ def suivi_questionnaire_2() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_types_d_erreurs_frequentes2"],
                     custom_fn=process.process_questionnaire_2_typologie_erreurs,
                 ),
                 input_key="questionnaire_2_typologie_erreurs",
@@ -1139,7 +1133,6 @@ def suivi_questionnaire_2() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_observations_des_impacts"],
                     custom_fn=process.process_questionnaire_2_impact_observe,
                 ),
                 input_key="questionnaire_2_impact_observe",
@@ -1164,7 +1157,6 @@ def suivi_questionnaire_2() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_impacts_identifies_au_travail"],
                     custom_fn=process.process_questionnaire_2_impact_identifie,
                 ),
                 input_key="questionnaire_2_impact_identifie",
@@ -1231,7 +1223,6 @@ def suivi_questionnaire_2_bis() -> None:
                         "raisons_non_utilisation_assistant_ia": "id_raisons_non_utilisation",
                     },
                     txt_columns=["courriel"],
-                    ref_columns=["id_raisons_non_utilisation"],
                     custom_fn=process.process_questionnaire_2_bis_raisons_non_utilisation,
                 ),
                 input_key="questionnaire_2_bis_raisons_non_utilisation",
@@ -1353,7 +1344,6 @@ def suivi_questionnaire_3() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_formation_suivie"],
                     custom_fn=process.process_questionnaire_3_formation_suivie,
                 ),
                 input_key="questionnaire_3_formation_suivie",
@@ -1376,7 +1366,6 @@ def suivi_questionnaire_3() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_programme_de_rdv"],
                     custom_fn=process.process_questionnaire_3_programme_rdv,
                 ),
                 input_key="questionnaire_3_programme_rdv",
@@ -1401,7 +1390,6 @@ def suivi_questionnaire_3() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_leviers_progression"],
                     custom_fn=process.process_questionnaire_3_leviers_progression,
                 ),
                 input_key="questionnaire_3_leviers_progression",
@@ -1424,7 +1412,6 @@ def suivi_questionnaire_3() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_fonctionnalites"],
                     custom_fn=process.process_questionnaire_3_fonctionnalites,
                 ),
                 input_key="questionnaire_3_fonctionnalites",
@@ -1449,7 +1436,6 @@ def suivi_questionnaire_3() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_risques_identifies"],
                     custom_fn=process.process_questionnaire_3_risques_identifies,
                 ),
                 input_key="questionnaire_3_risques_identifies",
@@ -1474,7 +1460,6 @@ def suivi_questionnaire_3() -> None:
                     txt_columns=[
                         "no_id",
                     ],
-                    ref_columns=["id_besoins_prioritaires"],
                     custom_fn=process.process_questionnaire_3_besoins_prioritaires,
                 ),
                 input_key="questionnaire_3_besoins_prioritaires",
@@ -1494,7 +1479,6 @@ def suivi_questionnaire_3() -> None:
                     generic_grist_processing,
                     cols_to_keep=["no_id", "besoins_moindres"],
                     cols_mapping={"besoins_moindres": "id_besoins_moindres"},
-                    ref_columns=["id_besoins_moindres"],
                     custom_fn=process.process_questionnaire_3_besoins_moindres,
                 ),
                 input_key="questionnaire_3_besoins_moindres",
