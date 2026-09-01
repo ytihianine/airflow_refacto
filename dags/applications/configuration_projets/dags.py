@@ -17,6 +17,7 @@ from modules.common_tasks.sql import (
     create_projet_snapshot,
     create_tmp_tables,
     delete_tmp_tables,
+    ensure_partition,
     import_file_to_db,
     update_projet_snapshot_status,
 )
@@ -68,6 +69,7 @@ def configuration_projets() -> None:
             reset_id_seq=False,
         ),
         import_file_to_db.expand(selecteur_config=selecteur_configs),
+        ensure_partition.expand(selecteur_config=selecteur_configs),
         copy_tmp_table_to_real_table(storage_options=storage_options),
         copy_s3_files(
             storage_options=storage_options,
