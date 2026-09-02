@@ -991,7 +991,7 @@ def mission_innovation() -> None:
                     generic_grist_processing,
                     cols_mapping={"id": "id_formation_fac"},
                     cols_to_keep=["id", "envies_pour_la_suite"],
-                    ref_columns=["id_animateur_fac"],
+                    ref_columns=["id_formation_fac"],
                     custom_fn=process.process_formation_fac_envie_suite_quest_satisfaction,
                 ),
                 input_key="formation_fac_envie_suite_quest_satisfaction",
