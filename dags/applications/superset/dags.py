@@ -6,6 +6,7 @@ from modules.enums.dags import DagStatus
 from modules.infra.mails.default_smtp import MailStatus, create_send_mail_callback
 from modules.types.dags import FeatureFlagsEnable
 from modules.utils.config.dag_params import create_dag_params, create_default_args
+from modules.utils.config.db_params import DBParams
 
 nom_projet = "Superset opérations"
 
@@ -22,7 +23,7 @@ nom_projet = "Superset opérations"
     params=create_dag_params(
         nom_projet=nom_projet,
         dag_status=DagStatus.RUN,
-        db_params=None,
+        db_params=DBParams(prod_schema="superset", tmp_schema="tmp_superset"),
         feature_flags=FeatureFlagsEnable(db=True, mail=True, s3=True, convert_files=False, download_grist_doc=False),
     ),
     on_failure_callback=create_send_mail_callback(
