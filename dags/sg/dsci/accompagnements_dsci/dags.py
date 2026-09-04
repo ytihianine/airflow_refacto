@@ -38,7 +38,7 @@ nom_projet = "Accompagnements DSCI"
 
 @dag(
     dag_id="accompagnements_dsci",
-    schedule="*/8 8-13,14-19 * * 1-5",
+    schedule="0 8-13,14-19 * * 1-5",
     default_args=create_default_args(),
     max_consecutive_failed_dag_runs=1,
     max_active_runs=1,
