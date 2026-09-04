@@ -4,9 +4,8 @@ from dags.applications.superset.tasks import update_admin_ownership
 from modules.common_tasks.validation import validate_dag_parameters
 from modules.enums.dags import DagStatus
 from modules.infra.mails.default_smtp import MailStatus, create_send_mail_callback
-from modules.types.dags import FeatureFlagsEnable
+from modules.types.dags import DBParams, FeatureFlagsEnable
 from modules.utils.config.dag_params import create_dag_params, create_default_args
-from modules.utils.config.db_params import DBParams
 
 nom_projet = "Superset opérations"
 
