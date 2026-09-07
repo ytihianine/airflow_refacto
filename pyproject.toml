@@ -55,7 +55,7 @@ airflow-providers = [
 # ---- Iceberg / S3 ----------------------------------------------------------
 
 iceberg = [
-    "pyiceberg[s3fs,pandas,pyarrow,sql-postgres]==0.11.1",
+    "pyiceberg[s3fs,pandas,pyarrow,sql-postgres]==0.12.0",
 ]
 
 # ---- Development -----------------------------------------------------------
